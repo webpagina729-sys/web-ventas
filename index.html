@@ -1976,6 +1976,7 @@ let cart = [];
 let currentSlide = 0;
 let slideInterval;
 let selectedPayment = null;
+let toastTimer;
 
 // ── RENDER PRODUCTOS ──
 function discount(before, price) {
@@ -2402,43 +2403,19 @@ function closeSearch() {
   document.getElementById('searchSuggest').classList.remove('open');
 }
 
-const searchInput = document.getElementById('searchInput');
-const suggest = document.getElementById('searchSuggest');
 
-searchInput.addEventListener('input', () => {
-  const q = searchInput.value.toLowerCase().trim();
-  if (!q) { suggest.classList.remove('open'); return; }
-  const results = allProducts.filter(p => p.name.toLowerCase().includes(q)).slice(0, 6);
-  if (!results.length) { suggest.classList.remove('open'); return; }
-  suggest.innerHTML = results.map(p => `
-    <div class="suggest-item" onclick="selectSuggest('${p.name}', '${p.id}', ${p.price})">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <span>${p.name}</span>
-      <span style="margin-left:auto;color:var(--accent);font-weight:700;font-size:.8rem">$ ${p.price.toLocaleString('es-AR')}</span>
-    </div>`).join('');
-  suggest.classList.add('open');
-});
 
-function selectSuggest(name, id, price) {
-  searchInput.value = name;
-  suggest.classList.remove('open');
-  showToast(`Buscando: ${name}`);
-}
-
-document.addEventListener('click', e => {
-  const wrap = document.getElementById('searchWrap');
-  if (!wrap.contains(e.target)) {
-    suggest.classList.remove('open');
-  }
-});
 
 // ── MOBILE NAV ──
 function toggleMobileNav() {
   document.getElementById('mobileNav').classList.toggle('open');
 }
 
+// ── CARRUSEL HOVER ──
+function pauseCarousel(el) { el.dataset.paused = '1'; }
+function resumeCarousel(el) { delete el.dataset.paused; }
+
 // ── TOAST ──
-let toastTimer;
 function showToast(msg) {
   clearTimeout(toastTimer);
   document.getElementById('toastMsg').textContent = msg;
