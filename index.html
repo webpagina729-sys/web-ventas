@@ -2257,6 +2257,18 @@ function confirmOrder() {
 // ════════════════════════════════════════════════
 const MP_PUBLIC_KEY = 'TEST-f86ff695-f4bd-4bb9-9d81-28a2e39ce685'; // ✅ PUBLIC KEY TEST CONFIGURADA
 
+// ════════════════════════════════════════════════════════════════════
+// 🌐 URL DE TU CLOUDFLARE WORKER — ÚNICO LUGAR QUE DEBÉS CAMBIAR
+//
+//  1. Subí el archivo worker.js a Cloudflare Workers (gratis)
+//  2. Cloudflare te da una URL como:
+//        https://techstore.tunombre.workers.dev
+//  3. Pegála abajo reemplazando el texto entre comillas
+//
+//  ⚠️  Dejá la URL SIN barra al final
+// ════════════════════════════════════════════════════════════════════
+const WORKER_URL = 'https://TU-WORKER.tunombre.workers.dev'; // 🔧 REEMPLAZÁ ESTO CON TU URL
+
 async function initMercadoPago(customerData) {
   // ─────────────────────────────────────────────────────────────────────
   // ⚠️  NO TOCAR esta función — conecta el carrito con el backend
@@ -2268,9 +2280,9 @@ async function initMercadoPago(customerData) {
   // ─────────────────────────────────────────────────────────────────────
   showToast('Conectando con Mercado Pago...');
   try {
-    // 📡 Llamada al BACKEND — Access Token está del lado del servidor
-    // Tu backend debe exponer: POST /api/mp/create-preference
-    const response = await fetch('/api/mp/create-preference', {
+    // 📡 Llamada al CLOUDFLARE WORKER (tu backend)
+    // El Worker usa el Access Token guardado como variable secreta
+    const response = await fetch(`${WORKER_URL}/api/mp/create-preference`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
