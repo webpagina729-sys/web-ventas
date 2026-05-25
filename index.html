@@ -1260,10 +1260,30 @@
     </div>
 
     <script>
-        // ═══════════════════════════════════════════════════════════════════
-        // CONFIGURACIÓN DEL WORKER DE CLOUDFLARE
-        // Reemplazá TU-WORKER.workers.dev con la URL de tu worker
-        // ═══════════════════════════════════════════════════════════════════
+        // ═══════════════════════════════════════════════════════════════════════════
+        // 🔧 CONFIGURACIÓN CRÍTICA - LEER CUIDADOSAMENTE
+        // ═══════════════════════════════════════════════════════════════════════════
+        //
+        // ❗ REEMPLAZÁ ESTA LÍNEA CON LA URL REAL DE TU CLOUDFLARE WORKER:
+        //
+        // Dónde conseguir la URL:
+        //   1. Entrá a https://workers.cloudflare.com
+        //   2. Abrí tu Worker
+        //   3. Clic en "Deployments"
+        //   4. COPIA la URL (ejemplo: https://mi-tienda.workers.dev)
+        //   5. REEMPLAZÁ 'https://TU-WORKER.workers.dev' por la URL que copiaste
+        //
+        // ✅ CORRECTO:     const CLOUDFLARE_WORKER_URL = 'https://mi-tienda.workers.dev';
+        // ❌ INCORRECTO:   const CLOUDFLARE_WORKER_URL = 'https://TU-WORKER.workers.dev';
+        //
+        // IMPORTANTE:
+        //   - NO agregar / al final
+        //   - Asegúrate que comience con https://
+        //   - Debe terminar con .workers.dev
+        //   - Guarda con Ctrl+S después de cambiar
+        //
+        // ═══════════════════════════════════════════════════════════════════════════
+        
         const CLOUDFLARE_WORKER_URL = 'https://TU-WORKER.workers.dev';
         const MIN_ORDER = 150000;
         
@@ -1612,6 +1632,12 @@
             payButton.textContent = 'Procesando...';
 
             try {
+                // 🔍 LOGGING - Mostrar qué URL se está llamando
+                console.log('%c🔧 INICIANDO PAGO', 'color: blue; font-weight: bold; font-size: 14px');
+                console.log('📍 URL del Worker:', CLOUDFLARE_WORKER_URL);
+                console.log('🔗 Ruta completa:', CLOUDFLARE_WORKER_URL + '/api/mp/create-preference');
+                console.log('💰 Monto total:', '$' + total.toLocaleString());
+
                 // Preparar datos para el worker
                 const items = cart.map(item => ({
                     title: item.nombre,
@@ -1635,7 +1661,14 @@
                     external_reference: 'order_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
                 };
 
+                console.log('📦 Datos enviados:', {
+                    items: items.length,
+                    total: total,
+                    reference: paymentData.external_reference
+                });
+
                 // Llamar al worker de Cloudflare
+                console.log('📡 Enviando fetch a Worker...');
                 const response = await fetch(CLOUDFLARE_WORKER_URL + '/api/mp/create-preference', {
                     method: 'POST',
                     headers: {
@@ -1644,22 +1677,41 @@
                     body: JSON.stringify(paymentData)
                 });
 
+                console.log('📥 Respuesta recibida:', response.status, response.statusText);
+
                 if (!response.ok) {
-                    throw new Error('Error al procesar el pago');
+                    const errorData = await response.json();
+                    console.error('❌ Error en respuesta:', errorData);
+                    throw new Error(errorData.error || 'Error al procesar el pago');
                 }
 
                 const data = await response.json();
+                console.log('✅ Datos de pago recibidos:', data);
 
                 // Redirigir a Mercado Pago
                 if (data.init_point) {
+                    console.log('🔗 Redirigiendo a Mercado Pago...');
                     window.location.href = data.init_point;
                 } else {
                     throw new Error('No se obtuvo la URL de pago');
                 }
 
             } catch (error) {
-                console.error('Error:', error);
-                alert('❌ Error al procesar el pago: ' + error.message + '\n\nAsegúrate de que:\n1. El Worker esté desplegado en Cloudflare\n2. El Access Token esté configurado\n3. La URL del Worker sea correcta');
+                console.error('%c❌ ERROR EN PAGO', 'color: red; font-weight: bold; font-size: 14px');
+                console.error('Mensaje:', error.message);
+                console.error('URL del Worker configurada:', CLOUDFLARE_WORKER_URL);
+                console.error('Stack:', error.stack);
+                
+                alert(
+                    '❌ Error al procesar el pago\n\n' +
+                    'Mensaje: ' + error.message + '\n\n' +
+                    'VERIFICÁ:\n' +
+                    '1. ¿Está la URL del Worker correcta?\n' +
+                    '   URL actual: ' + CLOUDFLARE_WORKER_URL + '\n' +
+                    '2. ¿Está el Access Token configurado en Cloudflare?\n' +
+                    '3. ¿El Worker está desplegado (Save and Deploy)?\n\n' +
+                    'Abre DevTools (F12) → Console para más detalles'
+                );
                 payButton.disabled = false;
                 payButton.textContent = originalText;
             }
