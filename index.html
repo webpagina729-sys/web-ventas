@@ -805,6 +805,128 @@
             opacity: 0.6;
         }
 
+        /* MODAL CHECKOUT */
+        #modal-checkout {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+        }
+        #modal-checkout.active {
+            display: flex;
+        }
+        .checkout-container {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+        .checkout-header {
+            background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%);
+            color: white;
+            padding: 24px;
+            border-radius: 12px 12px 0 0;
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .checkout-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .checkout-form {
+            padding: 24px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+        .form-group label {
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--text);
+        }
+        .form-group input,
+        .form-group textarea {
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: var(--font-body);
+            transition: border-color .2s;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        .checkout-footer {
+            padding: 20px 24px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+        }
+        .btn-checkout-cancel {
+            flex: 1;
+            background: var(--gray-light);
+            color: var(--text);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background .2s;
+        }
+        .btn-checkout-cancel:hover {
+            background: #e0e0e0;
+        }
+        #btn-checkout-pay {
+            flex: 1;
+            background: #1B7F3D;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            transition: background .2s;
+        }
+        #btn-checkout-pay:hover:not(:disabled) {
+            background: #156432;
+        }
+        #btn-checkout-pay:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
         /* RESPONSIVE */
         @media (max-width: 768px) {
             .header-searchbar { display: flex; }
@@ -1259,32 +1381,66 @@
         </div>
     </div>
 
+    <!-- MODAL CHECKOUT -->
+    <div id="modal-checkout" onclick="closeCheckoutIfClickBackground(event)">
+        <div class="checkout-container">
+            <div class="checkout-header">
+                💳 Datos de Envío
+                <button class="checkout-close" onclick="closeCheckout()">✕</button>
+            </div>
+            <form class="checkout-form" id="checkout-form">
+                <div class="form-group">
+                    <label for="checkout-nombre">Nombre *</label>
+                    <input type="text" id="checkout-nombre" placeholder="Tu nombre" required>
+                </div>
+                <div class="form-group">
+                    <label for="checkout-apellido">Apellido *</label>
+                    <input type="text" id="checkout-apellido" placeholder="Tu apellido" required>
+                </div>
+                <div class="form-group full">
+                    <label for="checkout-email">Email *</label>
+                    <input type="email" id="checkout-email" placeholder="tu@email.com" required>
+                </div>
+                <div class="form-group full">
+                    <label for="checkout-telefono">Teléfono *</label>
+                    <input type="tel" id="checkout-telefono" placeholder="+54 9 11 1234-5678" required>
+                </div>
+                <div class="form-group">
+                    <label for="checkout-provincia">Provincia *</label>
+                    <input type="text" id="checkout-provincia" placeholder="Ej: Buenos Aires" required>
+                </div>
+                <div class="form-group">
+                    <label for="checkout-ciudad">Ciudad *</label>
+                    <input type="text" id="checkout-ciudad" placeholder="Ej: CABA" required>
+                </div>
+                <div class="form-group">
+                    <label for="checkout-cp">Código Postal *</label>
+                    <input type="text" id="checkout-cp" placeholder="Ej: 1425" required>
+                </div>
+                <div class="form-group full">
+                    <label for="checkout-direccion">Dirección *</label>
+                    <input type="text" id="checkout-direccion" placeholder="Ej: Avenida Corrientes 1234" required>
+                </div>
+                <div class="form-group full">
+                    <label for="checkout-observaciones">Observaciones</label>
+                    <textarea id="checkout-observaciones" placeholder="Notas adicionales (opcional)"></textarea>
+                </div>
+            </form>
+            <div class="checkout-footer">
+                <button class="btn-checkout-cancel" onclick="closeCheckout()">Cancelar</button>
+                <button id="btn-checkout-pay" onclick="submitCheckoutAndPay()">💳 Comprar Ahora</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // ═══════════════════════════════════════════════════════════════════════════
-        // 🔧 CONFIGURACIÓN CRÍTICA - LEER CUIDADOSAMENTE
-        // ═══════════════════════════════════════════════════════════════════════════
-        //
-        // ❗ REEMPLAZÁ ESTA LÍNEA CON LA URL REAL DE TU CLOUDFLARE WORKER:
-        //
-        // Dónde conseguir la URL:
-        //   1. Entrá a https://workers.cloudflare.com
-        //   2. Abrí tu Worker
-        //   3. Clic en "Deployments"
-        //   4. COPIA la URL (ejemplo: https://mi-tienda.workers.dev)
-        //   5. REEMPLAZÁ 'https://TU-WORKER.workers.dev' por la URL que copiaste
-        //
-        // ✅ CORRECTO:     const CLOUDFLARE_WORKER_URL = 'https://mi-tienda.workers.dev';
-        // ❌ INCORRECTO:   const CLOUDFLARE_WORKER_URL = 'https://TU-WORKER.workers.dev';
-        //
-        // IMPORTANTE:
-        //   - NO agregar / al final
-        //   - Asegúrate que comience con https://
-        //   - Debe terminar con .workers.dev
-        //   - Guarda con Ctrl+S después de cambiar
-        //
+        // 🔧 CONFIGURACIÓN - MERCADO PAGO INTEGRATION
         // ═══════════════════════════════════════════════════════════════════════════
         
-        const CLOUDFLARE_WORKER_URL = 'https://TU-WORKER.workers.dev';
+        const WORKER_URL = 'https://workerpagos.tuweb.workers.dev';
+        const MP_PUBLIC_KEY = 'TEST-f86ff695-f4bd-4bb9-9d81-28a2e39ce685';
+        const MP_ENDPOINT = '/api/mp/create-preference';
         const MIN_ORDER = 150000;
         
         // DATOS DE PRODUCTOS (100 perfumes árabes)
@@ -1615,9 +1771,11 @@
         }
 
         // ═══════════════════════════════════════════════════════════════════
-        // PAGO CON MERCADO PAGO via CLOUDFLARE WORKER
+        // PAGO CON MERCADO PAGO - FLUJO COMPLETO
         // ═══════════════════════════════════════════════════════════════════
-        async function proceedToPayment() {
+        
+        // Abrir modal de checkout antes de pagar
+        function proceedToPayment() {
             const total = cart.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
             
             if (total < MIN_ORDER) {
@@ -1625,32 +1783,73 @@
                 return;
             }
 
+            // Mostrar modal de checkout
+            document.getElementById('modal-checkout').classList.add('active');
+        }
+
+        // Procesar pago una vez rellenado el formulario
+        async function submitCheckoutAndPay() {
+            const total = cart.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+            
+            // Obtener datos del formulario
+            const checkout = {
+                nombre: document.getElementById('checkout-nombre').value.trim(),
+                apellido: document.getElementById('checkout-apellido').value.trim(),
+                email: document.getElementById('checkout-email').value.trim(),
+                telefono: document.getElementById('checkout-telefono').value.trim(),
+                provincia: document.getElementById('checkout-provincia').value.trim(),
+                ciudad: document.getElementById('checkout-ciudad').value.trim(),
+                cp: document.getElementById('checkout-cp').value.trim(),
+                direccion: document.getElementById('checkout-direccion').value.trim(),
+                observaciones: document.getElementById('checkout-observaciones').value.trim()
+            };
+
+            // VALIDACIONES
+            if (!checkout.nombre) { alert('❌ Nombre requerido'); return; }
+            if (!checkout.apellido) { alert('❌ Apellido requerido'); return; }
+            if (!checkout.email) { alert('❌ Email requerido'); return; }
+            if (!checkout.telefono) { alert('❌ Teléfono requerido'); return; }
+            if (!checkout.provincia) { alert('❌ Provincia requerida'); return; }
+            if (!checkout.ciudad) { alert('❌ Ciudad requerida'); return; }
+            if (!checkout.cp) { alert('❌ Código postal requerido'); return; }
+            if (!checkout.direccion) { alert('❌ Dirección requerida'); return; }
+
             // Mostrar estado de carga
-            const payButton = document.getElementById('btn-pay');
+            const payButton = document.getElementById('btn-checkout-pay');
             const originalText = payButton.textContent;
             payButton.disabled = true;
             payButton.textContent = 'Procesando...';
 
             try {
-                // 🔍 LOGGING - Mostrar qué URL se está llamando
-                console.log('%c🔧 INICIANDO PAGO', 'color: blue; font-weight: bold; font-size: 14px');
-                console.log('📍 URL del Worker:', CLOUDFLARE_WORKER_URL);
-                console.log('🔗 Ruta completa:', CLOUDFLARE_WORKER_URL + '/api/mp/create-preference');
-                console.log('💰 Monto total:', '$' + total.toLocaleString());
+                console.log('%c💳 INICIANDO MERCADO PAGO', 'color: green; font-weight: bold; font-size: 14px');
+                console.log('📍 URL del Worker:', WORKER_URL);
+                console.log('🔗 Endpoint:', WORKER_URL + MP_ENDPOINT);
+                console.log('💰 Monto total:', '$' + total.toLocaleString() + ' ARS');
+                console.log('👤 Cliente:', checkout.nombre, checkout.apellido);
 
-                // Preparar datos para el worker
-                const items = cart.map(item => ({
-                    title: item.nombre,
-                    quantity: item.cantidad,
-                    unit_price: item.precio,
-                    currency_id: 'ARS'
-                }));
-
-                const paymentData = {
-                    items: items,
+                // Estructura EXACTA que el Worker espera
+                const requestBody = {
+                    items: cart.map(item => ({
+                        title: item.nombre,
+                        quantity: item.cantidad,
+                        unit_price: Number(item.precio),
+                        currency_id: 'ARS'
+                    })),
                     payer: {
-                        name: 'Revendedor Revende Ways',
-                        email: 'pedido@revendeways.com'
+                        name: checkout.nombre,
+                        surname: checkout.apellido,
+                        email: checkout.email,
+                        phone: {
+                            number: checkout.telefono
+                        },
+                        address: {
+                            street_name: checkout.direccion,
+                            zip_code: checkout.cp
+                        }
+                    },
+                    metadata: {
+                        cliente: checkout,
+                        carrito: cart
                     },
                     back_urls: {
                         success: window.location.origin + '?status=success',
@@ -1658,63 +1857,71 @@
                         pending: window.location.origin + '?status=pending'
                     },
                     auto_return: 'approved',
-                    external_reference: 'order_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
+                    external_reference: 'order_' + Date.now()
                 };
 
-                console.log('📦 Datos enviados:', {
-                    items: items.length,
-                    total: total,
-                    reference: paymentData.external_reference
+                console.log('📦 Enviando:', {
+                    items: requestBody.items.length,
+                    cliente: checkout.nombre + ' ' + checkout.apellido,
+                    email: checkout.email,
+                    total: total
                 });
 
-                // Llamar al worker de Cloudflare
-                console.log('📡 Enviando fetch a Worker...');
-                const response = await fetch(CLOUDFLARE_WORKER_URL + '/api/mp/create-preference', {
+                // FETCH EXACTO
+                const response = await fetch(WORKER_URL + MP_ENDPOINT, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(paymentData)
+                    body: JSON.stringify(requestBody)
                 });
 
-                console.log('📥 Respuesta recibida:', response.status, response.statusText);
+                console.log('📥 Status:', response.status, response.statusText);
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    console.error('❌ Error en respuesta:', errorData);
+                    console.error('❌ Error del servidor:', errorData);
                     throw new Error(errorData.error || 'Error al procesar el pago');
                 }
 
                 const data = await response.json();
-                console.log('✅ Datos de pago recibidos:', data);
+                console.log('✅ Respuesta del Worker:', data);
 
-                // Redirigir a Mercado Pago
+                // REDIRECCIÓN FINAL
                 if (data.init_point) {
                     console.log('🔗 Redirigiendo a Mercado Pago...');
+                    console.log('init_point:', data.init_point);
                     window.location.href = data.init_point;
                 } else {
-                    throw new Error('No se obtuvo la URL de pago');
+                    console.error('❌ No init_point en respuesta:', data);
+                    throw new Error('No se obtuvo la URL de pago de Mercado Pago');
                 }
 
             } catch (error) {
-                console.error('%c❌ ERROR EN PAGO', 'color: red; font-weight: bold; font-size: 14px');
+                console.error('%c❌ ERROR AL PAGAR', 'color: red; font-weight: bold; font-size: 14px');
                 console.error('Mensaje:', error.message);
-                console.error('URL del Worker configurada:', CLOUDFLARE_WORKER_URL);
                 console.error('Stack:', error.stack);
+                console.error('Worker URL:', WORKER_URL);
                 
                 alert(
                     '❌ Error al procesar el pago\n\n' +
-                    'Mensaje: ' + error.message + '\n\n' +
-                    'VERIFICÁ:\n' +
-                    '1. ¿Está la URL del Worker correcta?\n' +
-                    '   URL actual: ' + CLOUDFLARE_WORKER_URL + '\n' +
-                    '2. ¿Está el Access Token configurado en Cloudflare?\n' +
-                    '3. ¿El Worker está desplegado (Save and Deploy)?\n\n' +
+                    'Error: ' + error.message + '\n\n' +
+                    'Worker: ' + WORKER_URL + '\n' +
+                    'Endpoint: ' + MP_ENDPOINT + '\n\n' +
                     'Abre DevTools (F12) → Console para más detalles'
                 );
+                
                 payButton.disabled = false;
                 payButton.textContent = originalText;
             }
+        }
+
+        function closeCheckout() {
+            document.getElementById('modal-checkout').classList.remove('active');
+        }
+
+        function closeCheckoutIfClickBackground(e) {
+            if (e.target === document.getElementById('modal-checkout')) closeCheckout();
         }
 
         // INIT
