@@ -47,8 +47,8 @@
             box-shadow: var(--shadow);
         }
         .header-top-inner {
-            max-width: 1200px;
-            margin: 0 auto;
+            max-width: 100%;
+            margin: 0 40px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -150,8 +150,8 @@
             border-bottom: 1px solid var(--border);
         }
         .banner-inner {
-            max-width: 1200px;
-            margin: 0 auto;
+            max-width: 100%;
+            margin: 0 40px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -211,9 +211,9 @@
 
         /* FILTERS */
         .filters {
-            max-width: 1200px;
-            margin: 24px auto 20px;
-            padding: 0 16px;
+            max-width: 100%;
+            margin: 24px 40px 20px;
+            padding: 0;
             display: flex;
             justify-content: center;
             gap: 12px;
@@ -240,9 +240,9 @@
 
         /* FILTERS AND SORT CONTAINER */
         .filters-container {
-            max-width: 1200px;
-            margin: 24px auto 20px;
-            padding: 0 16px;
+            max-width: 100%;
+            margin: 24px 40px 20px;
+            padding: 0;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -281,9 +281,9 @@
 
         /* GRID */
         .products-container {
-            max-width: 1200px;
-            margin: 32px auto;
-            padding: 0 16px;
+            max-width: 100%;
+            margin: 32px 40px;
+            padding: 0;
         }
         .products-grid {
             display: grid;
@@ -1001,31 +1001,79 @@
             .modal-details-image { width: 100%; height: 200px; }
         }
 
-        @media (max-width: 480px) {
-            .header-top-inner {
-                gap: 8px;
-            }
-            .logo { font-size: 18px; }
-            .header-searchbar { display: none; }
-            .products-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 10px;
-            }
-            .product-card { border-radius: 6px; }
-            .filters {
-                padding: 0 16px;
-                gap: 8px;
-                margin: 16px auto 16px;
-            }
-            .filter-btn {
-                padding: 6px 12px;
-                font-size: 13px;
-            }
-            .banner-title {
-                font-size: 22px;
-            }
+        @media (max-width: 768px) and (min-width: 481px) {
+            .header-top-inner { margin: 0 20px; }
+            .banner-inner { margin: 0 20px; }
+            .filters { margin: 20px 20px 16px; }
+            .filters-container { margin: 20px 20px 16px; }
+            .products-container { margin: 24px 20px; }
+            .cta-section-inner { margin: 0 20px; }
+            .footer-banner-inner { margin: 0 20px; }
+            .portada-image-section { margin: 30px 20px; }
+            .revend-section-inner { margin: 0 20px; }
+            .final-footer-inner { margin: 0 20px; }
+            .products-grid { gap: 10px; }
             .product-name { font-size: 12px; }
             .price-current { font-size: 14px; }
+            .btn-more { font-size: 12px; }
+        }
+
+        @media (max-width: 480px) {
+            .header-top-inner {
+                margin: 0 8px;
+                gap: 8px;
+            }
+            .logo { font-size: 16px; }
+            .login-btn { font-size: 10px; padding: 5px 8px; }
+            .cart-btn { font-size: 10px; padding: 5px 8px; }
+            .header-searchbar { display: none; }
+            .banner-inner { margin: 0 8px; }
+            .banner-title { font-size: 18px; }
+            .banner-subtitle { font-size: 11px; }
+            .banner-badge { font-size: 10px; padding: 6px 10px; }
+            .filters { 
+                margin: 16px 8px 16px;
+                gap: 8px;
+                padding: 0;
+            }
+            .filters-container { margin: 16px 8px 16px; }
+            .products-container { margin: 20px 8px; }
+            .products-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+            .product-card { border-radius: 6px; }
+            .product-name { font-size: 11px; line-height: 1.2; }
+            .price-current { font-size: 13px; }
+            .btn-more { font-size: 11px; padding: 6px; }
+            .filter-btn {
+                padding: 6px 12px;
+                font-size: 11px;
+            }
+            .banner-title { font-size: 18px; }
+            .cta-section { padding: 40px 8px; }
+            .cta-section-inner { margin: 0 8px; }
+            .cta-title { font-size: 20px; }
+            .cta-button { padding: 10px 20px; font-size: 14px; }
+            .footer-banner { padding: 30px 8px; }
+            .footer-banner-inner { margin: 0 8px; grid-template-columns: 1fr; }
+            .footer-links-section { grid-template-columns: 1fr; }
+            .portada-image-section { margin: 30px 8px; }
+            .revend-section { padding: 40px 8px; }
+            .revend-section-inner { padding: 0 4px; display: flex; flex-direction: column; align-items: center; }
+            .revend-section-inner h2 { font-size: 11px !important; white-space: normal !important; display: block !important; width: 100% !important; }
+            .revend-section-inner img { max-width: 100%; height: auto; margin-bottom: 8px !important; }
+            .revend-title { font-size: 13px; }
+            .revend-subtitle { font-size: 13px; margin-bottom: 16px; }
+            .revend-btn { font-size: 11px; padding: 10px 6px; letter-spacing: 0px; line-height: 1.2; white-space: nowrap; text-align: center; }
+            .final-footer { padding: 30px 8px; }
+            .final-footer-inner { margin: 0 8px; }
+            .final-footer-title { line-height: 1.3; font-size: 11px; word-break: break-word; text-align: left !important; max-width: 340px; }
+            .final-footer-links { grid-template-columns: 1fr; gap: 0; padding: 0; flex-direction: column; }
+            .final-footer-link { padding: 4px 0; font-size: 11px; }
+            .modal-details-content { padding: 20px; }
+            .modal-details-header { flex-direction: column; }
+            .modal-details-image { width: 100%; height: 200px; }
         }
 
         /* LOAD MORE SECTION */
@@ -1060,8 +1108,8 @@
             border-bottom: 1px solid var(--border);
         }
         .cta-section-inner {
-            max-width: 1200px;
-            margin: 0 auto;
+            max-width: 100%;
+            margin: 0 40px;
         }
         .cta-title {
             font-size: 28px;
@@ -1096,8 +1144,8 @@
             padding: 40px 16px;
         }
         .footer-banner-inner {
-            max-width: 1200px;
-            margin: 0 auto;
+            max-width: 100%;
+            margin: 0 40px;
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 40px;
@@ -1165,9 +1213,9 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            max-width: 1200px;
-            margin: 40px auto;
-            padding: 0 16px;
+            max-width: 100%;
+            margin: 40px 40px;
+            padding: 0;
         }
         .portada-image {
             width: 100%;
@@ -1199,8 +1247,8 @@
             pointer-events: none;
         }
         .revend-section-inner {
-            max-width: 700px;
-            margin: 0 auto;
+            max-width: 100%;
+            margin: 0 40px;
             position: relative;
             z-index: 1;
         }
@@ -1233,7 +1281,6 @@
             box-shadow: 0 8px 24px rgba(0,0,0,.25);
             letter-spacing: 0.3px;
             display: inline-block;
-            text-transform: uppercase;
         }
         .revend-btn:hover {
             transform: translateY(-4px);
@@ -1252,8 +1299,8 @@
             margin-top: 40px;
         }
         .final-footer-inner {
-            max-width: 1200px;
-            margin: 0 auto;
+            max-width: 100%;
+            margin: 0 40px;
         }
         .final-footer-title {
             font-size: 18px;
