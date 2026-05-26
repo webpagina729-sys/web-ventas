@@ -804,20 +804,24 @@
         }
         .modal-cart-actions {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
+            grid-template-columns: 1fr;
+            gap: 10px;
             padding: 20px 24px;
         }
         .btn-continue-shopping {
             background: white;
             color: var(--primary);
             border: 2px solid var(--primary);
-            padding: 14px 24px;
+            padding: 10px 16px;
             border-radius: var(--radius);
             font-weight: 600;
-            font-size: 15px;
+            font-size: 14px;
             cursor: pointer;
             transition: all .2s;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            order: -1;
         }
         .btn-continue-shopping:hover {
             background: var(--gray-light);
@@ -826,14 +830,17 @@
             background: #1B7F3D;
             color: white;
             border: none;
-            padding: 14px 24px;
+            padding: 10px 16px;
             border-radius: var(--radius);
             font-weight: 700;
-            font-size: 15px;
+            font-size: 14px;
             cursor: pointer;
             transition: all .2s;
             text-transform: uppercase;
             letter-spacing: 0.3px;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
         }
         .btn-pay:hover:not(:disabled) {
             background: #156432;
@@ -866,10 +873,12 @@
             background: white;
             border-radius: 12px;
             width: 90%;
-            max-width: 500px;
-            max-height: 90vh;
+            max-width: 550px;
+            max-height: 85vh;
             overflow-y: auto;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
         }
         .checkout-header {
             background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%);
@@ -890,10 +899,12 @@
             cursor: pointer;
         }
         .checkout-form {
-            padding: 24px;
+            padding: 20px 24px;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
+            gap: 10px;
+            flex: 1;
+            overflow-y: auto;
         }
         .form-group {
             display: flex;
@@ -910,10 +921,10 @@
         }
         .form-group input,
         .form-group textarea {
-            padding: 10px 12px;
+            padding: 8px 10px;
             border: 1px solid var(--border);
             border-radius: 6px;
-            font-size: 14px;
+            font-size: 13px;
             font-family: var(--font-body);
             transition: border-color .2s;
         }
@@ -924,24 +935,26 @@
             box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
         }
         .form-group textarea {
-            resize: vertical;
-            min-height: 80px;
+            resize: none;
+            min-height: 60px;
         }
         .checkout-footer {
-            padding: 20px 24px;
+            padding: 16px 24px;
             border-top: 1px solid var(--border);
             display: flex;
-            gap: 12px;
+            gap: 10px;
+            flex-shrink: 0;
         }
         .btn-checkout-cancel {
             flex: 1;
             background: var(--gray-light);
             color: var(--text);
             border: none;
-            padding: 12px 20px;
+            padding: 10px 16px;
             border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
+            font-size: 13px;
             transition: background .2s;
         }
         .btn-checkout-cancel:hover {
@@ -952,13 +965,15 @@
             background: #1B7F3D;
             color: white;
             border: none;
-            padding: 12px 20px;
+            padding: 10px 16px;
             border-radius: 6px;
             cursor: pointer;
             font-weight: 700;
+            font-size: 13px;
             text-transform: uppercase;
             letter-spacing: 0.3px;
             transition: background .2s;
+            white-space: nowrap;
         }
         #btn-checkout-pay:hover:not(:disabled) {
             background: #156432;
@@ -1145,6 +1160,23 @@
             background: var(--primary-light);
         }
 
+        /* PORTADA IMAGES */
+        .portada-image-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 16px;
+        }
+        .portada-image {
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,.1);
+        }
+
         /* REVEND SECTION */
         .revend-section {
             background: linear-gradient(135deg, #1B7F3D 0%, #2BA84F 100%);
@@ -1329,10 +1361,15 @@
         <button class="view-more-btn" onclick="loadMoreProducts()">Ver más productos</button>
     </div>
 
+    <!-- IMAGEN PORTADA DOS -->
+    <div class="portada-image-section" id="portada-dos-section">
+        <img src="portadados.png" alt="Portada Dos" class="portada-image">
+    </div>
+
     <!-- REVEND SECTION -->
     <div class="revend-section">
         <div class="revend-section-inner">
-            <h2 class="revend-title">Comenzá a revender con nosotros</h2>
+            <img src="portadauno.png" alt="Portada Revende" class="portada-image" style="margin-bottom: 20px;">
             <button class="revend-btn" onclick="alert('Redirigiendo a formulario de registro... próximamente')">Quiero mi tienda</button>
         </div>
     </div>
@@ -1757,6 +1794,7 @@
         let cart = [];
         let currentFilter = 'todos';
         let currentSort = 'default';
+        let currentSearch = '';
         let currentProduct = null;
         let itemsDisplayed = 6;
 
@@ -1777,6 +1815,16 @@
         function renderProducts() {
             const grid = document.getElementById('products-grid');
             let filtered = currentFilter === 'todos' ? products : products.filter(p => p.categoria === currentFilter);
+            
+            // Aplicar búsqueda
+            if (currentSearch.trim() !== '') {
+                const searchTerm = currentSearch.toLowerCase().trim();
+                filtered = filtered.filter(p => 
+                    p.nombre.toLowerCase().includes(searchTerm) ||
+                    p.caracteristicas.some(c => c.toLowerCase().includes(searchTerm)) ||
+                    p.info.toLowerCase().includes(searchTerm)
+                );
+            }
             
             // Aplicar ordenamiento
             if (currentSort === 'price-asc') {
@@ -2146,7 +2194,20 @@
             if (e.target === document.getElementById('modal-checkout')) closeCheckout();
         }
 
+        // BÚSQUEDA INTELIGENTE
+        function setupSearch() {
+            const searchInputs = document.querySelectorAll('.search-input, .banner-search input');
+            searchInputs.forEach(input => {
+                input.addEventListener('input', (e) => {
+                    currentSearch = e.target.value;
+                    itemsDisplayed = 6;
+                    renderProducts();
+                });
+            });
+        }
+
         // INIT
+        setupSearch();
         renderProducts();
     </script>
 </body>
