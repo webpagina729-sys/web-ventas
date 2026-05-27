@@ -3354,7 +3354,7 @@
 
                         // Carrera entre guardar en Firestore y el timeout
                         const docRef = await Promise.race([
-                            usuariosCollection.add(userData),
+                            usuariosCollection.doc(user.uid).set(userData),
                             timeoutPromise
                         ]);
                         
@@ -3608,12 +3608,21 @@
                 document.getElementById('profileEmail').textContent = user.email;
                 
                 // Obtener nombre y código desde Firestore
-                firebase.firestore().collection('usuarios').where('uid', '==', user.uid).get().then(snapshot => {
-                    if (!snapshot.empty) {
-                        const userData = snapshot.docs[0].data();
+                firebase.firestore().collection('usuarios').doc(user.uid).get().then(doc => {
+                    if (doc.exists) {
+                        const userData = doc.data();
                         document.getElementById('profileName').textContent = userData.nombre || '-';
                         document.getElementById('profileCode').textContent = userData.codigoVendedor || '-';
+                        console.log('✅ Datos del perfil cargados desde Firestore:', userData);
+                    } else {
+                        console.warn('⚠️  Documento de usuario no encontrado en Firestore');
+                        document.getElementById('profileName').textContent = '-';
+                        document.getElementById('profileCode').textContent = '-';
                     }
+                }).catch(error => {
+                    console.error('❌ Error al leer datos del perfil:', error);
+                    document.getElementById('profileName').textContent = '-';
+                    document.getElementById('profileCode').textContent = '-';
                 });
             }
             document.getElementById('profileModal').classList.add('active');
