@@ -2825,23 +2825,40 @@
             console.log("🔐 Contraseña:", password ? "***" : "vacía");
             console.log("🎟️ Código vendedor:", codigoVendedor);
 
+            let userCreatedSuccessfully = false;
+
             try {
                 console.log("🔐 Creando usuario en Firebase Auth...");
                 // Crear usuario en Firebase Auth
                 const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
                 const user = userCredential.user;
                 console.log("✅ Usuario creado en Firebase Auth:", user.uid);
+                userCreatedSuccessfully = true;
 
-                console.log("💾 Guardando datos en Firestore...");
-                // Guardar datos en Firestore
-                await firebase.firestore().collection('usuarios').add({
+                console.log("💾 Preparando datos para Firestore...");
+                const userData = {
                     uid: user.uid,
                     nombre: nombre,
                     email: email,
                     codigoVendedor: codigoVendedor,
                     creado: new Date()
-                });
-                console.log("✅ Datos guardados en Firestore");
+                };
+                console.log("✅ Datos preparados:", userData);
+
+                console.log("💾 Verificando firebase.firestore()...");
+                if (!firebase.firestore) {
+                    console.warn("⚠️  firebase.firestore() no está disponible. Continuando sin guardar en Firestore...");
+                } else {
+                    console.log("✅ firebase.firestore() está disponible");
+
+                    console.log("💾 Obteniendo referencia a colección 'usuarios'...");
+                    const usuariosCollection = firebase.firestore().collection('usuarios');
+                    console.log("✅ Referencia a colección obtenida");
+
+                    console.log("💾 Guardando documento en Firestore...");
+                    const docRef = await usuariosCollection.add(userData);
+                    console.log("✅ Datos guardados en Firestore. Doc ID:", docRef.id);
+                }
 
                 console.log("🎯 Buscando modal con ID 'registration-confirmation-modal'...");
                 const modal = document.getElementById('registration-confirmation-modal');
@@ -2865,10 +2882,39 @@
                 console.log("✅ showRegistrationConfirmation() ejecutada correctamente");
                 
             } catch (error) {
-                console.error("❌ ERROR en el try-catch:", error);
-                console.error("Código de error:", error.code);
-                console.error("Mensaje:", error.message);
-                showRegistrationError(error);
+                console.error("❌ ERROR CAPTURADO EN REGISTRO:");
+                console.error("   Tipo de error:", typeof error);
+                console.error("   Error completo:", error);
+                console.error("   Code:", error?.code);
+                console.error("   Message:", error?.message);
+                console.error("   Stack:", error?.stack);
+                console.error("   Nombre:", error?.name);
+                
+                if (error?.code === 'permission-denied') {
+                    console.error("⚠️  PROBLEMA: Permisos insuficientes en Firestore");
+                } else if (error?.code === 'unavailable') {
+                    console.error("⚠️  PROBLEMA: Firestore no está disponible");
+                } else if (error?.code === 'unauthenticated') {
+                    console.error("⚠️  PROBLEMA: Usuario no autenticado");
+                } else if (error?.code === 'invalid-argument') {
+                    console.error("⚠️  PROBLEMA: Argumento inválido enviado a Firestore");
+                }
+                
+                // FALLBACK: Si el usuario se creó en Firebase pero falló Firestore,
+                // mostrar el modal de todas formas
+                if (userCreatedSuccessfully) {
+                    console.warn("⚠️  Usuario creado en Firebase, pero hubo error en Firestore");
+                    console.warn("📢 Mostrando modal de confirmación de todas formas...");
+                    try {
+                        showRegistrationConfirmation(codigoVendedor, nombre);
+                        console.log("✅ Modal mostrado (fallback)");
+                    } catch (modalError) {
+                        console.error("❌ Error al mostrar modal fallback:", modalError);
+                        showRegistrationError(error);
+                    }
+                } else {
+                    showRegistrationError(error);
+                }
             }
         }
 
