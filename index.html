@@ -2786,7 +2786,10 @@
     <script>
         // Verificar que los elementos críticos existan en el DOM
         document.addEventListener('DOMContentLoaded', () => {
-            // DOM cargado
+            // Inicializar cuando el DOM está listo
+            setupSearch();
+            renderProducts();
+            handlePaymentReturn();
         });
         
         // ═══════════════════════════════════════════════════════════════════════════
@@ -3809,7 +3812,7 @@
             });
         }
 
-        // Procesar resultado del pago después del retorno de Mercado Pago
+        // HANDLESTAMENTO DEL PAGO
         function handlePaymentReturn() {
             const urlParams = new URLSearchParams(window.location.search);
             const status = urlParams.get('status');
@@ -3828,11 +3831,6 @@
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
         }
-
-        // INIT
-        setupSearch();
-        renderProducts();
-        handlePaymentReturn();
 
         // ═══════════════════════════════════════════════════════════════════════════
         // 🔐 AUTENTICACIÓN CON FIREBASE
