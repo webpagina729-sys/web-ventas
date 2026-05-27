@@ -3829,34 +3829,18 @@
                 } else {
                     const usuariosCollection = firebase.firestore().collection('usuarios');
                     
-                    try {
-                        // Crear un timeout promise
-                        const timeoutPromise = new Promise((_, reject) => 
-                            setTimeout(() => reject(new Error("Timeout en Firestore después de 5 segundos")), 5000)
-                        );
-
-                        // Carrera entre guardar en Firestore y el timeout
-                        const docRef = await Promise.race([
-                            usuariosCollection.doc(user.uid).set(userData),
-                            timeoutPromise
-                        ]);
-                    } catch (firestoreError) {
-                        console.warn("Firestore: " + firestoreError.message);
-                    }
+                    // Guardar en Firestore sin bloquear el flujo
+                    // Esto permite que el registro continúe incluso si Firestore falla
+                    usuariosCollection.doc(user.uid).set(userData)
+                        .then(() => console.log('Usuario guardado en Firestore'))
+                        .catch(err => console.warn('Firestore: ' + err.message));
                 }
 
                 // Mostrar modal de confirmación con el código vendedor
                 showRegistrationConfirmation(codigoVendedor, nombre);
                 
-                // Pequeño delay para permitir que Firebase sincronice la sesión
-                setTimeout(() => {
-                    // El listener de onAuthStateChanged() debería haberse disparado
-                    // Si no, forzar la actualización
-                    const currentUser = firebase.auth().currentUser;
-                    if (currentUser) {
-                        loadUserSessionOnPageLoad(currentUser);
-                    }
-                }, 500);
+                // El listener de onAuthStateChanged() se ejecutará automáticamente
+                // y mantendrá la sesión abierta después de que el usuario cierre el modal
                 
             } catch (error) {
                 console.error("Error en registro:", error?.message);
@@ -3887,17 +3871,25 @@
                 const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
                 const user = userCredential.user;
                 
-                // Obtener datos del usuario desde Firestore
-                const snapshot = await firebase.firestore().collection('usuarios').where('uid', '==', user.uid).get();
+                // El listener onAuthStateChanged() se ejecutará automáticamente
+                // así que cerramos el modal y dejamos que Firebase mantenga la sesión
+                closeAuthModal();
                 
-                if (!snapshot.empty) {
-                    const userData = snapshot.docs[0].data();
-                    // Inicializar sesión del usuario
-                    await loadUserSessionOnPageLoad(user);
-                    closeAuthModal();
-                } else {
-                    closeAuthModal();
-                    showLoginError(new Error('Usuario no encontrado en base de datos'));
+                // Si no está en Firestore, intentar crear el documento
+                const existingUser = await loadUserDataFromFirestore(user.uid);
+                if (!existingUser) {
+                    try {
+                        await firebase.firestore().collection('usuarios').doc(user.uid).set({
+                            uid: user.uid,
+                            email: user.email,
+                            nombre: user.email.split('@')[0],
+                            codigoVendedor: generarCodigoVendedor(),
+                            creado: new Date()
+                        });
+                    } catch (err) {
+                        console.warn('No se pudo guardar usuario en Firestore:', err.message);
+                        // Continuar sin Firestore
+                    }
                 }
                 
             } catch (error) {
@@ -4257,15 +4249,22 @@
 
         // Reconstruye la interfaz completa del usuario desde los datos cargados
         function initializeUserSession(userData, authUser) {
-            if (!userData || !authUser) return;
+            if (!authUser) return;
+
+            // Si no hay datos de Firestore, crear objeto mínimo
+            const safeUserData = userData || {
+                nombre: authUser.email.split('@')[0],
+                codigoVendedor: '',
+                creado: new Date()
+            };
 
             // Guardar datos en variables globales para acceso rápido
             window.currentUser = {
                 uid: authUser.uid,
                 email: authUser.email,
-                nombre: userData.nombre || '',
-                codigoVendedor: userData.codigoVendedor || '',
-                creado: userData.creado || new Date()
+                nombre: safeUserData.nombre || authUser.email.split('@')[0],
+                codigoVendedor: safeUserData.codigoVendedor || '',
+                creado: safeUserData.creado || new Date()
             };
 
             // Cargar carrito desde Firebase
