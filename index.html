@@ -1515,12 +1515,12 @@
             display: flex;
             align-items: center;
             justify-content: flex-end;
-            gap: 24px;
+            gap: 12px;
         }
 
         .ribbon-option {
             color: #999;
-            font-size: 13px;
+            font-size: 12px;
             cursor: pointer;
             transition: color 0.2s;
             text-decoration: none;
@@ -1528,6 +1528,7 @@
             background: none;
             padding: 0;
             font-family: var(--font-body);
+            white-space: nowrap;
         }
 
         .ribbon-option:hover {
@@ -3253,7 +3254,10 @@
                 }
                 return [];
             } catch (error) {
-                console.error('Error cargando carrito desde Firebase:', error);
+                // No loguear errores de conexión offline (esperados)
+                if (error.code !== 'unavailable' && !error.message.includes('offline')) {
+                    console.warn('Error cargando carrito:', error.message);
+                }
                 return [];
             }
         }
@@ -4147,7 +4151,10 @@
                     }
                 })
                 .catch(error => {
-                    console.error('Error cargando perfil desde Firestore:', error);
+                    // No loguear errores de conexión offline (esperados)
+                    if (error.code !== 'unavailable' && !error.message.includes('offline')) {
+                        console.warn('Error cargando perfil:', error.message);
+                    }
                     // Mostrar datos del currentUser como fallback
                     if (window.currentUser) {
                         document.getElementById('profileName').textContent = window.currentUser.nombre || user.email.split('@')[0];
