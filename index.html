@@ -2150,6 +2150,7 @@
         /* PORTADA IMAGES */
         .portada-image-section {
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             width: 100%;
@@ -2162,6 +2163,17 @@
             height: auto;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,.1);
+        }
+        #portada-dos-section .portada-image {
+            width: calc(100% - 16px);
+            max-width: calc(100vw - 16px);
+        }
+        #portada-dos-label {
+            font-size: 12px;
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+            white-space: nowrap;
         }
 
         /* REVEND SECTION */
@@ -2372,13 +2384,16 @@
 
     <!-- IMAGEN PORTADA DOS -->
     <div class="portada-image-section" id="portada-dos-section">
+        <div id="portada-dos-label">Trabajá con nosotros con amplio margen de ganancias!</div>
         <img src="portadados.png" alt="Portada Dos" class="portada-image">
     </div>
 
     <!-- REVEND SECTION -->
     <div class="revend-section">
         <div class="revend-section-inner">
-            <img src="portadauno.png" alt="Portada Revende" class="portada-image" style="margin-bottom: 20px;">
+            <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
+                <img src="portadauno.png" alt="Portada Revende" class="portada-image" style="margin-bottom: 20px;">
+            </div>
             <button class="revend-btn" onclick="alert('Redirigiendo a formulario de registro... próximamente')">Quiero mi tienda</button>
         </div>
     </div>
@@ -4163,11 +4178,16 @@
                             userData.codigoVendedor || 'Código no disponible';
 
                         // reconstruir memoria global
+                        console.log('ANTES DE ASIGNAR currentUser [Profile Modal]:', JSON.parse(JSON.stringify(window.currentUser)));
+                        
                         window.currentUser = {
                             uid: user.uid,
                             email: user.email,
                             ...userData
                         };
+                        
+                        console.log('DESPUÉS DE ASIGNAR currentUser [Profile Modal]:', JSON.parse(JSON.stringify(window.currentUser)));
+                        console.log('codigoVendedor final [Profile Modal]:', window.currentUser?.codigoVendedor);
 
                     } else {
                         document.getElementById('profileName').textContent =
@@ -4377,6 +4397,8 @@
             console.log('🔧 [Session] codigoVendedor antes de guardar:', safeUserData.codigoVendedor);
 
             // Guardar datos en variables globales para acceso rápido
+            console.log('ANTES DE ASIGNAR currentUser [initializeUserSession]:', JSON.parse(JSON.stringify(window.currentUser)));
+            
             window.currentUser = {
                 uid: authUser.uid,
                 email: authUser.email,
@@ -4384,7 +4406,9 @@
                 codigoVendedor: safeUserData.codigoVendedor || '',
                 creado: safeUserData.creado || new Date()
             };
-
+            
+            console.log('DESPUÉS DE ASIGNAR currentUser [initializeUserSession]:', JSON.parse(JSON.stringify(window.currentUser)));
+            console.log('codigoVendedor final [initializeUserSession]:', window.currentUser?.codigoVendedor);
             console.log('🔧 [Session] window.currentUser guardado:', window.currentUser);
             console.log('🔧 [Session] window.currentUser.codigoVendedor:', window.currentUser.codigoVendedor);
 
@@ -4464,7 +4488,9 @@
             } else {
                 // Usuario no autenticado: limpiar interfaz
                 console.log('🔓 [Auth] No hay usuario autenticado');
+                console.log('ANTES DE ASIGNAR currentUser a null:', JSON.parse(JSON.stringify(window.currentUser)));
                 window.currentUser = null;
+                console.log('DESPUÉS DE ASIGNAR currentUser a null:', window.currentUser);
                 updateUIForAuthentication(false);
                 const loginBtn = document.querySelector('.login-btn');
                 if (loginBtn) {
