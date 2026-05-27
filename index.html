@@ -959,11 +959,22 @@
             font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.2s ease;
         }
 
         .auth-btn:hover {
             background: #0052cc;
+            transform: scale(0.98);
+        }
+
+        .auth-btn:active {
+            transform: scale(0.96);
+        }
+
+        .auth-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: scale(1);
         }
 
         .auth-switch {
@@ -1147,8 +1158,17 @@
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
             font-family: var(--font-body);
+        }
+
+        .confirmation-button:active {
+            transform: scale(0.96);
+        }
+
+        .confirmation-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
         
         .confirmation-button-primary {
@@ -1158,7 +1178,7 @@
         
         .confirmation-button-primary:hover {
             background: #0052cc;
-            transform: translateY(-2px);
+            transform: scale(0.98);
             box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
         }
         
@@ -1170,6 +1190,7 @@
         
         .confirmation-button-secondary:hover {
             background: #e5e7eb;
+            transform: scale(0.98);
         }
         
         .whatsapp-button {
@@ -1183,7 +1204,7 @@
         
         .whatsapp-button:hover {
             background: #1fad56;
-            transform: translateY(-2px);
+            transform: scale(0.98);
             box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
         }
         
@@ -1257,11 +1278,260 @@
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
         }
         
         .close-error-btn:hover {
             background: #0052cc;
+            transform: scale(0.98);
+        }
+
+        .close-error-btn:active {
+            transform: scale(0.96);
+        }
+
+        /* LOADER SPINNER */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-state {
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .loading-state.show {
+            display: flex;
+        }
+
+        /* CINTA NEGRA SUPERIOR */
+        .top-ribbon {
+            display: none;
+            background: #1a1a1a;
+            padding: 8px 16px;
+            text-align: center;
+        }
+
+        .top-ribbon.show {
+            display: block;
+        }
+
+        .ribbon-content {
+            max-width: 100%;
+            margin: 0 40px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 24px;
+        }
+
+        .ribbon-option {
+            color: #999;
+            font-size: 13px;
+            cursor: pointer;
+            transition: color 0.2s;
+            text-decoration: none;
+            border: none;
+            background: none;
+            padding: 0;
+            font-family: var(--font-body);
+        }
+
+        .ribbon-option:hover {
+            color: white;
+        }
+
+        .ribbon-divider {
+            color: #444;
+            font-size: 12px;
+        }
+
+        /* MODALES ADICIONALES */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1003;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 32px;
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-light);
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover {
+            color: var(--text);
+        }
+
+        .modal-section {
+            margin-bottom: 20px;
+        }
+
+        .modal-section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-light);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-section-value {
+            font-size: 16px;
+            color: var(--text);
+            word-break: break-all;
+        }
+
+        .modal-divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 20px 0;
+        }
+
+        .guide-item {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .guide-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .guide-number {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 12px;
+        }
+
+        .guide-text {
+            display: inline-block;
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text);
+        }
+
+        .product-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .product-option {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .product-option:hover {
+            border-color: var(--primary);
+            background: #f9fafb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 102, 255, 0.1);
+        }
+
+        .product-option-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .product-option-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .modal-cta-text {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            font-size: 13px;
+        }
+
+        .modal-cta-link {
+            color: var(--primary);
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .modal-cta-link:hover {
+            text-decoration: underline;
         }
 
         .checkout-container {
@@ -2005,9 +2275,9 @@
     <!-- MODAL CONFIRMACIÓN REGISTRO -->
     <div id="registration-confirmation-modal" onclick="closeConfirmationIfClickBackground(event)">
         <div class="registration-confirmation-content">
-            <span class="confirmation-icon">✅</span>
-            <h2>¡Ya estás registrado en Revende Ways!</h2>
-            <p>Tu cuenta fue creada correctamente.</p>
+            <div class="confirmation-icon" style="font-size: 48px; color: var(--success);">✓</div>
+            <h2>Registro completado</h2>
+            <p>Tu cuenta en Revende Ways fue creada correctamente.</p>
             
             <div class="codigo-vendedor-box">
                 <div class="codigo-label">
@@ -2019,13 +2289,13 @@
             <div class="copy-feedback" id="copy-feedback">✓ ¡Código copiado!</div>
             
             <div class="importante-box">
-                <strong>⚠️ IMPORTANTE:</strong> Guardá este código. Lo vas a necesitar para realizar pedidos y gestionar tu cuenta de vendedor.
+                <strong>Importante:</strong> Guardá este código. Lo vas a necesitar para realizar pedidos y gestionar tu cuenta de vendedor.
             </div>
             
             <div class="confirmation-buttons">
                 <button type="button" class="confirmation-button confirmation-button-primary" onclick="closeConfirmationAndContinue()">Continuar</button>
                 <button type="button" class="confirmation-button whatsapp-button" onclick="notifyWhatsApp()">
-                    <span>💬</span> Notificar a nuestro equipo
+                    Notificar a nuestro equipo
                 </button>
             </div>
         </div>
@@ -2034,13 +2304,115 @@
     <!-- MODAL ERROR REGISTRO -->
     <div id="registration-error-modal" onclick="closeErrorIfClickBackground(event)">
         <div class="registration-error-content">
-            <span class="error-icon">⚠️</span>
-            <h2>Oops, algo salió mal</h2>
+            <div class="error-icon" style="font-size: 48px; color: #ff6b6b;">!</div>
+            <h2>Error en el registro</h2>
             <p>No pudimos completar tu registro. Por favor, intenta de nuevo.</p>
             
             <div class="error-messages" id="error-message">Error desconocido</div>
             
             <button type="button" class="close-error-btn" onclick="closeErrorModal()">Intentar de nuevo</button>
+        </div>
+    </div>
+
+    <!-- CINTA NEGRA SUPERIOR -->
+    <div class="top-ribbon" id="topRibbon">
+        <div class="ribbon-content">
+            <button class="ribbon-option" onclick="openProfileModal()">Perfil</button>
+            <span class="ribbon-divider">•</span>
+            <button class="ribbon-option" onclick="openGuideModal()">Guía rápida</button>
+        </div>
+    </div>
+
+    <!-- MODAL PERFIL -->
+    <div class="modal-overlay" id="profileModal" onclick="closeProfileModal(event)">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Mi Perfil</h2>
+                <button class="modal-close" onclick="closeProfileModal()">×</button>
+            </div>
+
+            <div class="modal-section">
+                <div class="modal-section-title">Nombre</div>
+                <div class="modal-section-value" id="profileName">-</div>
+            </div>
+
+            <div class="modal-section">
+                <div class="modal-section-title">Email</div>
+                <div class="modal-section-value" id="profileEmail">-</div>
+            </div>
+
+            <div class="modal-divider"></div>
+
+            <div class="modal-section">
+                <div class="modal-section-title">Código de Revendedor</div>
+                <div class="modal-section-value" id="profileCode">-</div>
+                <p style="font-size: 12px; color: var(--text-light); margin-top: 12px;">Utilizá este código para aprobar tus pedidos.</p>
+            </div>
+
+            <button type="button" class="confirmation-button confirmation-button-primary" style="width: 100%; margin-top: 20px;" onclick="closeProfileModal()">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- MODAL GUÍA RÁPIDA -->
+    <div class="modal-overlay" id="guideModal" onclick="closeGuideModal(event)">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Guía Rápida</h2>
+                <button class="modal-close" onclick="closeGuideModal()">×</button>
+            </div>
+
+            <div class="guide-item">
+                <span class="guide-number">1</span>
+                <span class="guide-text">Te damos tu tienda lista para comenzar a revender.</span>
+            </div>
+
+            <div class="guide-item">
+                <span class="guide-number">2</span>
+                <span class="guide-text">Juntá pedidos semanales o cuando vos quieras. Coordiná una fecha de entrega con tus clientes, vendé con una seña del 50%, realizá el pedido y luego entregá los productos obteniendo tu ganancia.</span>
+            </div>
+
+            <div class="guide-item">
+                <span class="guide-number">3</span>
+                <span class="guide-text">Revisá tus correos electrónicos. Si no encontrás nuestros mensajes en bandeja principal, revisá spam o promociones. Todas las semanas enviaremos ideas y estrategias para ayudarte a vender más.</span>
+            </div>
+
+            <div class="guide-item">
+                <span class="guide-number">4</span>
+                <span class="guide-text">Mirá nuestras demás opciones de reventa y expandí tu negocio.</span>
+            </div>
+
+            <div class="modal-cta-text">
+                <button class="modal-cta-link" onclick="openProductsModal()">Ver más opciones de reventa →</button>
+            </div>
+
+            <button type="button" class="confirmation-button confirmation-button-primary" style="width: 100%; margin-top: 20px;" onclick="closeGuideModal()">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- MODAL AGREGAR PRODUCTOS -->
+    <div class="modal-overlay" id="productsModal" onclick="closeProductsModal(event)">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Agregar productos a tu tienda</h2>
+                <button class="modal-close" onclick="closeProductsModal()">×</button>
+            </div>
+
+            <div class="product-options">
+                <div class="product-option" onclick="selectProduct('Hogar')">
+                    <div class="product-option-icon">🏠</div>
+                    <div class="product-option-name">Hogar</div>
+                </div>
+                <div class="product-option" onclick="selectProduct('Maquillajes')">
+                    <div class="product-option-icon">💄</div>
+                    <div class="product-option-name">Maquillajes</div>
+                </div>
+                <div class="product-option" onclick="selectProduct('Peluches')">
+                    <div class="product-option-icon">🧸</div>
+                    <div class="product-option-name">Peluches</div>
+                </div>
+            </div>
+
+            <button type="button" class="confirmation-button confirmation-button-primary" style="width: 100%; margin-top: 20px;" onclick="closeProductsModal()">Cerrar</button>
         </div>
     </div>
 
@@ -2812,6 +3184,9 @@
         async function registerUser(e) {
             e.preventDefault();
             
+            // Mostrar loading state
+            setRegisterButtonLoading(true);
+            
             console.log("🔄 Iniciando registro...");
             
             const nombre = document.getElementById('register-nombre').value;
@@ -2964,6 +3339,9 @@
         // FUNCIONES PARA MODALES DE CONFIRMACIÓN Y ERROR
         
         function showRegistrationConfirmation(codigoVendedor, nombre) {
+            // Ocultar loading state
+            setRegisterButtonLoading(false);
+            
             console.log("📢 Función showRegistrationConfirmation() iniciada");
             console.log("   Código:", codigoVendedor);
             console.log("   Nombre:", nombre);
@@ -3003,6 +3381,9 @@
         }
         
         function showRegistrationError(error) {
+            // Ocultar loading state
+            setRegisterButtonLoading(false);
+            
             let errorMessage = 'Algo salió mal durante el registro. Intenta de nuevo.';
             
             // Mensajes de error específicos
@@ -3095,16 +3476,101 @@
             
             window.open(urlWhatsApp, '_blank');
         }
+
+        // FUNCIONES PARA NUEVOS MODALES
+
+        function openProfileModal() {
+            const user = firebase.auth().currentUser;
+            if (user) {
+                document.getElementById('profileEmail').textContent = user.email;
+                
+                // Obtener nombre y código desde Firestore
+                firebase.firestore().collection('usuarios').where('uid', '==', user.uid).get().then(snapshot => {
+                    if (!snapshot.empty) {
+                        const userData = snapshot.docs[0].data();
+                        document.getElementById('profileName').textContent = userData.nombre || '-';
+                        document.getElementById('profileCode').textContent = userData.codigoVendedor || '-';
+                    }
+                });
+            }
+            document.getElementById('profileModal').classList.add('active');
+        }
+
+        function closeProfileModal(e) {
+            if (!e || e.target.id === 'profileModal') {
+                document.getElementById('profileModal').classList.remove('active');
+            }
+        }
+
+        function openGuideModal() {
+            document.getElementById('guideModal').classList.add('active');
+        }
+
+        function closeGuideModal(e) {
+            if (!e || e.target.id === 'guideModal') {
+                document.getElementById('guideModal').classList.remove('active');
+            }
+        }
+
+        function openProductsModal() {
+            document.getElementById('productsModal').classList.add('active');
+        }
+
+        function closeProductsModal(e) {
+            if (!e || e.target.id === 'productsModal') {
+                document.getElementById('productsModal').classList.remove('active');
+            }
+        }
+
+        function selectProduct(category) {
+            console.log("Producto seleccionado:", category);
+            // Aquí se puede agregar lógica futura
+            closeProductsModal();
+        }
+
+        // MOSTRAR/OCULTAR CINTA SUPERIOR DESPUÉS DEL LOGIN
+        function updateUIForAuthentication(isLoggedIn) {
+            const ribbon = document.getElementById('topRibbon');
+            const loginBtn = document.querySelector('.login-btn');
+            
+            if (isLoggedIn) {
+                ribbon.classList.add('show');
+                if (loginBtn) {
+                    loginBtn.style.display = 'none';
+                }
+            } else {
+                ribbon.classList.remove('show');
+                if (loginBtn) {
+                    loginBtn.style.display = 'block';
+                }
+            }
+        }
+
+        // LOADING STATE EN REGISTRO
+        function setRegisterButtonLoading(isLoading) {
+            const btn = document.querySelector('.auth-form-container button[type="submit"]');
+            if (!btn) return;
+            
+            if (isLoading) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner"></span>Registrando...';
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = 'Crear Cuenta';
+            }
+        }
         
         // VERIFICAR ESTADO DE AUTENTICACIÓN
         if (typeof firebase !== 'undefined') {
             firebase.auth().onAuthStateChanged((user) => {
                 if (user) {
                     console.log('✅ Usuario autenticado:', user.email);
+                    updateUIForAuthentication(true);
                     document.querySelector('.login-btn').textContent = 'Cerrar sesión';
                     document.querySelector('.login-btn').onclick = logoutUser;
                 } else {
                     console.log('❌ Usuario no autenticado');
+                    updateUIForAuthentication(false);
                     document.querySelector('.login-btn').textContent = 'Iniciar sesión';
                     document.querySelector('.login-btn').onclick = abrirLogin;
                 }
@@ -3115,9 +3581,12 @@
         async function logoutUser() {
             try {
                 await firebase.auth().signOut();
-                alert('✅ Sesión cerrada');
+                // Cerrar cinta superior y recargar página
+                updateUIForAuthentication(false);
+                window.location.reload();
             } catch (error) {
-                alert(`❌ Error al cerrar sesión: ${error.message}`);
+                console.error('Error al cerrar sesión:', error.message);
+                window.location.reload();
             }
         }
     </script>
