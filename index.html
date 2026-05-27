@@ -2802,6 +2802,20 @@
         };
 
         // ═══════════════════════════════════════════════════════════════════════════
+        // 🔧 INICIALIZAR FIREBASE INMEDIATAMENTE
+        // ═══════════════════════════════════════════════════════════════════════════
+        // CRÍTICO: Esto DEBE ejecutarse AQUÍ, ANTES de cualquier código que use Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+            console.log('✅ Firebase inicializado CORRECTAMENTE en configuración');
+        }
+        
+        // Configurar persistencia de sesión
+        firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+            .then(() => console.log('✅ Persistencia de sesión configurada'))
+            .catch(err => console.error('❌ Error configurando persistencia:', err.message));
+
+        // ═══════════════════════════════════════════════════════════════════════════
         // 🔧 CONFIGURACIÓN - MERCADO PAGO INTEGRATION
         // ═══════════════════════════════════════════════════════════════════════════
         
@@ -4483,33 +4497,34 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+    
     <script>
-        // Inicializar Firebase
-        firebase.initializeApp(firebaseConfig);
-        
-        // CONFIGURAR PERSISTENCIA DE SESIÓN - OBLIGATORIO ANTES DE AUTH
-        firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-            .catch(err => console.error('Error configurando persistencia:', err.message));
-        
         // SISTEMA DE REINTENTOS PARA FIRESTORE
         async function loadUserDataFromFirestoreWithRetry(uid, maxRetries = 3, delayMs = 500) {
             console.log('🔍 [Firestore] Intentando cargar usuario con UID:', uid);
-            console.log('🔍 [Firestore] window.currentUser ANTES de cargar Firestore:', JSON.parse(JSON.stringify(window.currentUser || {})));
             
             for (let attempt = 1; attempt <= maxRetries; attempt++) {
                 try {
                     const userDoc = await firebase.firestore().collection('usuarios').doc(uid).get();
                     if (userDoc.exists) {
                         const data = userDoc.data();
-                        console.log('✅ [Firestore] Documento EXISTE');
-                        console.log('✅ [Firestore] Datos COMPLETOS desde Firestore:', JSON.stringify(data, null, 2));
-                        console.log('✅ [Firestore] codigoVendedor VALOR:', data?.codigoVendedor || 'UNDEFINED');
-                        console.log('✅ [Firestore] TODAS las keys:', Object.keys(data || {}));
+                        console.log('✅ [Firestore] Documento EXISTE en intento', attempt);
                         return data;
                     }
-                    console.log('⚠️ [Firestore] Usuario NO EXISTE en Firestore en intento', attempt);
+                    console.log('⚠️ [Firestore] Usuario NO EXISTE en intento', attempt);
                     return null;
                 } catch (error) {
+                    console.warn(`⚠️ [Firestore] Error en intento ${attempt}:`, error.message);
+                    if (attempt < maxRetries) {
+                        await new Promise(resolve => setTimeout(resolve, delayMs * attempt));
+                    }
+                }
+            }
+            return null;
+        }
+
+        // LISTENER DE AUTENTICACIÓN - MONITOREAR CAMBIOS EN SESIÓN
+        firebase.auth().onAuthStateChanged(async (user) => {
             console.log('════════════════════════════════════════════════════════════════');
             console.log('👤 [Auth] onAuthStateChanged disparado');
             
@@ -4517,45 +4532,18 @@
                 console.log('👤 [Auth] ✅ Usuario autenticado detectado');
                 console.log('👤 [Auth] Email:', user.email);
                 console.log('👤 [Auth] UID:', user.uid);
-                console.log('════════════════════════════════════════════════════════════════');
                 
                 // Intentar cargar datos de Firestore CON REINTENTOS
-                console.log('📦 [Auth] Llamando loadUserDataFromFirestoreWithRetry...');
                 const userData = await loadUserDataFromFirestoreWithRetry(user.uid);
-                console.log('📦 [Auth] ✅ Datos retornados:', userData ? JSON.stringify(userData, null, 2) : 'NULL');
-                
-                if (userData && userData.codigoVendedor) {
-                    console.log('📦 [Auth] ✅✅ codigoVendedor EXISTE:', userData.codigoVendedor);
-                } else {
-                    console.warn('📦 [Auth] ⚠️ codigoVendedor NO EXISTE O NULL');
-                }
+                console.log('📦 [Auth] ✅ Datos retornados:', userData ? 'CON DATOS' : 'NULL');
                 
                 // Inicializar sesión con datos de Firestore o datos mínimos
-                console.log('📦 [Auth] Llamando initializeUserSession...');
                 initializeUserSession(userData, user);
-                console.log('════════════════════════════════════════════════════════════════');
                 
             } else {
                 // Usuario no autenticado: limpiar interfaz
                 console.log('🔓 [Auth] ❌ No hay usuario autenticado');
-                console.log('ANTES DE ASIGNAR currentUser a null:', JSON.parse(JSON.stringify(window.currentUser || {}
-            if (user) {
-                console.log('👤 [Auth] Usuario autenticado detectado:', user.email);
-                console.log('👤 [Auth] UID actual:', user.uid);
-                
-                // Intentar cargar datos de Firestore CON REINTENTOS
-                const userData = await loadUserDataFromFirestoreWithRetry(user.uid);
-                console.log('📦 [Auth] userData recibido completo:', userData);
-                
-                // Inicializar sesión con datos de Firestore o datos mínimos
-                initializeUserSession(userData, user);
-                
-            } else {
-                // Usuario no autenticado: limpiar interfaz
-                console.log('🔓 [Auth] No hay usuario autenticado');
-                console.log('ANTES DE ASIGNAR currentUser a null:', JSON.parse(JSON.stringify(window.currentUser)));
                 window.currentUser = null;
-                console.log('DESPUÉS DE ASIGNAR currentUser a null:', window.currentUser);
                 updateUIForAuthentication(false);
                 const loginBtn = document.querySelector('.login-btn');
                 if (loginBtn) {
