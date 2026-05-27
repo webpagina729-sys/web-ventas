@@ -1635,6 +1635,58 @@
             margin: 20px 0;
         }
 
+        /* ESTILOS PARA EL CÓDIGO DE REVENDEDOR EN PERFIL */
+        .profile-code-section {
+            background: linear-gradient(135deg, var(--primary) 0%, #0052cc 100%);
+            color: white;
+            padding: 24px 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .profile-code-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            opacity: 0.9;
+            margin-bottom: 12px;
+        }
+
+        .profile-code-value {
+            font-size: 32px;
+            font-weight: 800;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+            margin: 12px 0;
+            word-break: break-all;
+        }
+
+        .profile-code-description {
+            font-size: 13px;
+            opacity: 0.95;
+            margin-top: 12px;
+        }
+
+        .profile-code-copy-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: all 0.2s;
+        }
+
+        .profile-code-copy-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
         .guide-item {
             margin-bottom: 24px;
             padding: 16px 16px 16px 44px;
@@ -2602,10 +2654,12 @@
 
             <div class="modal-divider"></div>
 
-            <div class="modal-section">
-                <div class="modal-section-title">Código de Revendedor</div>
-                <div class="modal-section-value" id="profileCode">-</div>
-                <p style="font-size: 12px; color: var(--text-light); margin-top: 12px;">Utilizá este código para aprobar tus pedidos.</p>
+            <!-- CÓDIGO DE REVENDEDOR - SECCIÓN DESTACADA -->
+            <div class="profile-code-section">
+                <div class="profile-code-title">Código de Revendedor</div>
+                <div class="profile-code-value" id="profileCode">-</div>
+                <div class="profile-code-description">Utilizá este código para aprobar tus pedidos</div>
+                <button type="button" class="profile-code-copy-btn" onclick="copyCodigoVendedor()">Copiar código</button>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; margin-top: 20px;">
@@ -3868,28 +3922,35 @@
             const password = document.getElementById('login-password').value;
 
             try {
-                const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
-                const user = userCredential.user;
-                
+                // Firebase Auth se encargará de la persistencia
                 // El listener onAuthStateChanged() se ejecutará automáticamente
-                // así que cerramos el modal y dejamos que Firebase mantenga la sesión
+                const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+                
+                // El usuario ya está autenticado por Firebase
+                // onAuthStateChanged() se disparará automáticamente
                 closeAuthModal();
                 
-                // Si no está en Firestore, intentar crear el documento
-                const existingUser = await loadUserDataFromFirestore(user.uid);
-                if (!existingUser) {
-                    try {
-                        await firebase.firestore().collection('usuarios').doc(user.uid).set({
-                            uid: user.uid,
-                            email: user.email,
-                            nombre: user.email.split('@')[0],
-                            codigoVendedor: generarCodigoVendedor(),
-                            creado: new Date()
-                        });
-                    } catch (err) {
-                        console.warn('No se pudo guardar usuario en Firestore:', err.message);
-                        // Continuar sin Firestore
-                    }
+                // Guardar en Firestore si no existe (en background, sin bloquear)
+                // IMPORTANTE: NO regenerar el codigoVendedor si ya existe
+                if (userCredential.user) {
+                    firebase.firestore().collection('usuarios').doc(userCredential.user.uid).get()
+                        .then(doc => {
+                            if (!doc.exists) {
+                                // Usuario no en Firestore, crear documento SOLO SI NO EXISTE
+                                // El código se genera UNA SOLA VEZ
+                                firebase.firestore().collection('usuarios').doc(userCredential.user.uid).set({
+                                    uid: userCredential.user.uid,
+                                    email: userCredential.user.email,
+                                    nombre: userCredential.user.email.split('@')[0],
+                                    codigoVendedor: generarCodigoVendedor(),
+                                    creado: new Date()
+                                }).catch(err => console.warn('Error guardando usuario en Firestore:', err.message));
+                            } else {
+                                // Usuario ya existe: NO modificar su código
+                                console.log('Usuario existe en Firestore, código no se regenera');
+                            }
+                        })
+                        .catch(err => console.warn('Error verificando usuario en Firestore:', err.message));
                 }
                 
             } catch (error) {
@@ -3996,22 +4057,33 @@
         }
         
         function copyCodigoVendedor() {
-            const codigo = window.currentCodigoVendedor;
+            // Copiar el código que se ve actualmente en el perfil (desde Firestore)
+            const codigoElement = document.getElementById('profileCode');
+            const codigo = codigoElement ? codigoElement.textContent : '';
+            
+            // No copiar si dice "no disponible"
+            if (!codigo || codigo === 'Código no disponible' || codigo === 'Cargando...') {
+                console.warn('Código no disponible para copiar');
+                return;
+            }
+            
             const btn = event.target;
             
             navigator.clipboard.writeText(codigo).then(() => {
                 // Mostrar feedback
                 btn.classList.add('copied');
                 const feedback = document.getElementById('copy-feedback');
-                feedback.classList.add('show');
-                
-                // Resetear después de 2 segundos
-                setTimeout(() => {
-                    btn.classList.remove('copied');
-                    feedback.classList.remove('show');
-                }, 2000);
+                if (feedback) {
+                    feedback.classList.add('show');
+                    
+                    // Resetear después de 2 segundos
+                    setTimeout(() => {
+                        btn.classList.remove('copied');
+                        feedback.classList.remove('show');
+                    }, 2000);
+                }
             }).catch(err => {
-                // Error al copiar
+                console.error('Error al copiar código:', err);
             });
         }
         
@@ -4036,30 +4108,56 @@
 
         function openProfileModal() {
             const user = firebase.auth().currentUser;
-            if (user) {
-                // Usar datos del currentUser que ya cargamos desde Firestore
-                if (window.currentUser) {
-                    document.getElementById('profileEmail').textContent = window.currentUser.email || user.email;
-                    document.getElementById('profileName').textContent = window.currentUser.nombre || '-';
-                    document.getElementById('profileCode').textContent = window.currentUser.codigoVendedor || '-';
-                } else {
-                    // Fallback: cargar desde Firestore si no están en currentUser
-                    document.getElementById('profileEmail').textContent = user.email;
-                    firebase.firestore().collection('usuarios').doc(user.uid).get().then(doc => {
-                        if (doc.exists) {
-                            const userData = doc.data();
-                            document.getElementById('profileName').textContent = userData.nombre || '-';
-                            document.getElementById('profileCode').textContent = userData.codigoVendedor || '-';
-                        } else {
-                            document.getElementById('profileName').textContent = '-';
-                            document.getElementById('profileCode').textContent = '-';
-                        }
-                    }).catch(error => {
-                        document.getElementById('profileName').textContent = '-';
-                        document.getElementById('profileCode').textContent = '-';
-                    });
-                }
+            if (!user) {
+                console.error('No hay usuario autenticado');
+                return;
             }
+
+            // Mostrar email de inmediato
+            document.getElementById('profileEmail').textContent = user.email;
+            document.getElementById('profileName').textContent = 'Cargando...';
+            document.getElementById('profileCode').textContent = 'Cargando...';
+
+            // SIEMPRE cargar desde Firestore para garantizar datos actuales
+            // El código de revendedor DEBE venir de Firestore
+            firebase.firestore().collection('usuarios').doc(user.uid).get()
+                .then(doc => {
+                    if (doc.exists) {
+                        const userData = doc.data();
+                        
+                        // Cargar nombre
+                        const nombre = userData.nombre || user.email.split('@')[0];
+                        document.getElementById('profileName').textContent = nombre;
+                        
+                        // CRÍTICO: Cargar código de revendedor desde Firestore
+                        // Nunca usar placeholder, siempre leer de Firestore
+                        if (userData.codigoVendedor && userData.codigoVendedor.trim() !== '') {
+                            document.getElementById('profileCode').textContent = userData.codigoVendedor;
+                            console.log('Código de revendedor cargado:', userData.codigoVendedor);
+                        } else {
+                            // Si no existe, mostrar mensaje claro (NO mostrar "-")
+                            document.getElementById('profileCode').textContent = 'Código no disponible';
+                            console.warn('El usuario no tiene código de revendedor asignado');
+                        }
+                    } else {
+                        // Usuario no existe en Firestore
+                        document.getElementById('profileName').textContent = user.email.split('@')[0];
+                        document.getElementById('profileCode').textContent = 'Código no disponible';
+                        console.warn('Usuario no encontrado en Firestore');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error cargando perfil desde Firestore:', error);
+                    // Mostrar datos del currentUser como fallback
+                    if (window.currentUser) {
+                        document.getElementById('profileName').textContent = window.currentUser.nombre || user.email.split('@')[0];
+                        document.getElementById('profileCode').textContent = window.currentUser.codigoVendedor || 'Código no disponible';
+                    } else {
+                        document.getElementById('profileName').textContent = 'Error al cargar';
+                        document.getElementById('profileCode').textContent = 'Código no disponible';
+                    }
+                });
+
             document.getElementById('profileModal').classList.add('active');
             preventBodyScroll(true);
         }
@@ -4230,22 +4328,9 @@
         }
 
         // ═══════════════════════════════════════════════════════════════════════════
-        // PERSISTENCIA DE SESIÓN - CARGAR DATOS DESDE FIREBASE
         // ═══════════════════════════════════════════════════════════════════════════
-
-        // Carga datos completos del usuario desde Firestore
-        async function loadUserDataFromFirestore(uid) {
-            try {
-                const userDoc = await firebase.firestore().collection('usuarios').doc(uid).get();
-                if (userDoc.exists) {
-                    return userDoc.data();
-                }
-                return null;
-            } catch (error) {
-                console.error('Error cargando datos de Firestore:', error);
-                return null;
-            }
-        }
+        // RECONSTRUCCIÓN DE SESIÓN DESDE FIREBASE
+        // ═══════════════════════════════════════════════════════════════════════════
 
         // Reconstruye la interfaz completa del usuario desde los datos cargados
         function initializeUserSession(userData, authUser) {
@@ -4285,12 +4370,6 @@
                 loginBtn.onclick = logoutUser;
             }
         }
-
-        // Se ejecuta cuando se carga la página y hay sesión activa
-        async function loadUserSessionOnPageLoad(authUser) {
-            const userData = await loadUserDataFromFirestore(authUser.uid);
-            initializeUserSession(userData, authUser);
-        }
     </script>
 
     <!-- FIREBASE SCRIPTS -->
@@ -4301,13 +4380,52 @@
         // Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
         
+        // CONFIGURAR PERSISTENCIA DE SESIÓN - OBLIGATORIO ANTES DE AUTH
+        firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+            .catch(err => console.error('Error configurando persistencia:', err.message));
+        
+        // SISTEMA DE REINTENTOS PARA FIRESTORE
+        async function loadUserDataFromFirestoreWithRetry(uid, maxRetries = 3, delayMs = 500) {
+            for (let attempt = 1; attempt <= maxRetries; attempt++) {
+                try {
+                    const userDoc = await firebase.firestore().collection('usuarios').doc(uid).get();
+                    if (userDoc.exists) {
+                        console.log('Datos de usuario cargados exitosamente:', userDoc.data());
+                        return userDoc.data();
+                    }
+                    // Si no existe, retornar null (no es un error)
+                    console.log('Usuario no encontrado en Firestore en intento', attempt);
+                    return null;
+                } catch (error) {
+                    console.warn(`Intento ${attempt}/${maxRetries} fallido:`, error.message);
+                    
+                    // Si es el último intento, retornar null (no romper sesión)
+                    if (attempt === maxRetries) {
+                        console.warn('Firestore no disponible después de ' + maxRetries + ' intentos. Continuando con datos mínimos.');
+                        return null;
+                    }
+                    
+                    // Esperar antes de reintentar
+                    await new Promise(resolve => setTimeout(resolve, delayMs * attempt));
+                }
+            }
+        }
+        
         // LISTENER DE AUTENTICACIÓN - RECONSTRUIR SESIÓN AUTOMÁTICAMENTE
         firebase.auth().onAuthStateChanged(async (user) => {
             if (user) {
-                // Usuario autenticado: cargar datos desde Firestore y reconstruir interfaz
-                await loadUserSessionOnPageLoad(user);
+                console.log('Usuario autenticado detectado:', user.email);
+                
+                // Intentar cargar datos de Firestore CON REINTENTOS
+                // Si falla, continuar con datos mínimos (NO romper sesión)
+                const userData = await loadUserDataFromFirestoreWithRetry(user.uid);
+                
+                // Inicializar sesión con datos de Firestore o datos mínimos
+                initializeUserSession(userData, user);
+                
             } else {
                 // Usuario no autenticado: limpiar interfaz
+                console.log('No hay usuario autenticado');
                 window.currentUser = null;
                 updateUIForAuthentication(false);
                 const loginBtn = document.querySelector('.login-btn');
