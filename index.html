@@ -2855,9 +2855,25 @@
                     const usuariosCollection = firebase.firestore().collection('usuarios');
                     console.log("✅ Referencia a colección obtenida");
 
-                    console.log("💾 Guardando documento en Firestore...");
-                    const docRef = await usuariosCollection.add(userData);
-                    console.log("✅ Datos guardados en Firestore. Doc ID:", docRef.id);
+                    console.log("💾 Guardando documento en Firestore (con timeout de 5 segundos)...");
+                    
+                    try {
+                        // Crear un timeout promise
+                        const timeoutPromise = new Promise((_, reject) => 
+                            setTimeout(() => reject(new Error("Timeout en Firestore después de 5 segundos")), 5000)
+                        );
+
+                        // Carrera entre guardar en Firestore y el timeout
+                        const docRef = await Promise.race([
+                            usuariosCollection.add(userData),
+                            timeoutPromise
+                        ]);
+                        
+                        console.log("✅ Datos guardados en Firestore. Doc ID:", docRef.id);
+                    } catch (firestoreError) {
+                        console.warn("⚠️  Error/Timeout en Firestore:", firestoreError.message);
+                        console.warn("📢 Usuario YA fue creado en Firebase Auth. Continuando con el modal...");
+                    }
                 }
 
                 console.log("🎯 Buscando modal con ID 'registration-confirmation-modal'...");
