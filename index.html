@@ -93,11 +93,80 @@
             color: var(--text-light);
             font-size: 14px;
         }
-        .header-actions {
-            display: flex;
+        .session-required-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            justify-content: center;
             align-items: center;
+        }
+        .session-required-modal.active {
+            display: flex;
+        }
+        .session-required-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 90%;
+            overflow: hidden;
+        }
+        .session-required-header {
+            display: flex;
+            justify-content: flex-end;
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        .session-required-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+        .session-required-body {
+            padding: 40px 20px;
+            text-align: center;
+        }
+        .session-required-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        .session-required-body h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 0 0 12px 0;
+        }
+        .session-required-body p {
+            font-size: 14px;
+            color: var(--text-light);
+            margin: 0;
+        }
+        .session-required-footer {
+            padding: 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
             gap: 12px;
-            flex-shrink: 0;
+        }
+        .session-required-btn {
+            flex: 1;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .2s;
+        }
+        .session-required-btn:hover {
+            background: #0052cc;
         }
         .login-btn {
             background: transparent;
@@ -3285,6 +3354,13 @@
         }
 
         function addToCartFromModal() {
+            // Validar que hay sesión activa
+            if (!firebase.auth().currentUser) {
+                closeDetails();
+                showSessionRequiredModal();
+                return;
+            }
+            
             const existingItem = cart.find(item => item.id === currentProduct.id);
             if (existingItem) {
                 existingItem.cantidad += currentQty;
@@ -3294,10 +3370,8 @@
             updateCartCount();
             updateCartDisplay();
             
-            // Guardar carrito en Firebase si hay sesión activa
-            if (firebase.auth().currentUser) {
-                saveCartToFirebase(cart);
-            }
+            // Guardar carrito en Firebase
+            saveCartToFirebase(cart);
             
             closeDetails();
             document.getElementById('modal-cart').classList.add('active');
@@ -3389,6 +3463,11 @@
         }
 
         function toggleCart() {
+            // Validar que hay sesión activa
+            if (!firebase.auth().currentUser) {
+                showSessionRequiredModal();
+                return;
+            }
             updateCartDisplay();
             document.getElementById('modal-cart').classList.add('active');
         }
@@ -3399,6 +3478,56 @@
 
         function closeCartIfClickBackground(e) {
             if (e.target === document.getElementById('modal-cart')) closeCart();
+        }
+
+        function showSessionRequiredModal() {
+            const modalHTML = `
+                <div class="session-required-modal" id="session-required-modal" onclick="if(event.target === this) closeSessionRequiredModal()">
+                    <div class="session-required-content">
+                        <div class="session-required-header">
+                            <button class="session-required-close" onclick="closeSessionRequiredModal()">✕</button>
+                        </div>
+                        <div class="session-required-body">
+                            <div class="session-required-icon">🔐</div>
+                            <h2>El carrito solo se puede armar si sos revendedor</h2>
+                            <p>Inicia sesión y vuelve a intentarlo</p>
+                        </div>
+                        <div class="session-required-footer">
+                            <button class="session-required-btn" onclick="openLoginModal()">Iniciar sesión</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Eliminar modal anterior si existe
+            const existingModal = document.getElementById('session-required-modal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            // Crear nuevo modal
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = modalHTML;
+            document.body.appendChild(tempDiv.firstElementChild);
+            
+            // Mostrar modal
+            const modal = document.getElementById('session-required-modal');
+            setTimeout(() => {
+                modal.classList.add('active');
+            }, 10);
+        }
+        
+        function closeSessionRequiredModal() {
+            const modal = document.getElementById('session-required-modal');
+            if (modal) {
+                modal.classList.remove('active');
+                setTimeout(() => modal.remove(), 300);
+            }
+        }
+        
+        function openLoginModal() {
+            closeSessionRequiredModal();
+            abrirLogin();
         }
 
         // ═══════════════════════════════════════════════════════════════════
@@ -3752,10 +3881,12 @@
                 
                 if (!snapshot.empty) {
                     const userData = snapshot.docs[0].data();
+                    // Inicializar sesión del usuario
+                    await loadUserSessionOnPageLoad(user);
                     closeAuthModal();
-                    // Bienvenida silenciosa, el usuario ya está logueado
                 } else {
                     closeAuthModal();
+                    showLoginError(new Error('Usuario no encontrado en base de datos'));
                 }
                 
             } catch (error) {
