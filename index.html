@@ -1029,6 +1029,17 @@
             }
         }
         
+        @keyframes slideUpScale {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
         .registration-confirmation-content {
             background: white;
             border-radius: 12px;
@@ -1071,16 +1082,22 @@
         }
         
         .codigo-vendedor-box {
-            background: #f8f9fa;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 18px 16px;
+            background: linear-gradient(135deg, #f0f4ff 0%, #f9fafb 100%);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 20px 18px;
             margin: 24px 0 24px 0;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 12px;
-            border-left: 4px solid var(--primary);
+            gap: 16px;
+            box-shadow: 0 4px 16px rgba(0, 102, 255, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .codigo-vendedor-box:hover {
+            box-shadow: 0 8px 24px rgba(0, 102, 255, 0.12);
+            transform: translateY(-2px);
         }
         
         .codigo-label {
@@ -1089,17 +1106,17 @@
         }
         
         .codigo-label-title {
-            font-size: 12px;
-            color: #999;
+            font-size: 11px;
+            color: #0066ff;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 6px;
-            font-weight: 600;
+            letter-spacing: 0.8px;
+            margin-bottom: 8px;
+            font-weight: 700;
         }
         
         .codigo-value {
-            font-size: 22px;
-            font-weight: 700;
+            font-size: 24px;
+            font-weight: 800;
             color: var(--primary);
             font-family: 'Courier New', monospace;
             letter-spacing: 0.5px;
@@ -1346,7 +1363,8 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
             display: none;
             align-items: center;
             justify-content: center;
@@ -1367,6 +1385,7 @@
             padding: 32px 24px;
             border-radius: 12px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.16);
+            animation: slideUp 0.4s ease-out;
         }
 
         .loading-overlay-spinner {
@@ -1435,6 +1454,7 @@
             right: 0;
             bottom: 0;
             background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(2px);
             display: none;
             align-items: center;
             justify-content: center;
@@ -1455,7 +1475,7 @@
             overflow-y: auto;
             padding: 32px;
             box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
-            animation: slideUp 0.3s ease-out;
+            animation: slideUpScale 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         .modal-header {
@@ -1523,27 +1543,34 @@
         }
 
         .guide-item {
-            margin-bottom: 20px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--border);
+            margin-bottom: 24px;
+            padding: 16px 16px 16px 44px;
+            background: #f9fafb;
+            border-left: 4px solid var(--primary);
+            border-radius: 6px;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .guide-item:hover {
+            background: #f0f4ff;
+            transform: translateX(4px);
         }
 
         .guide-item:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
+            margin-bottom: 20px;
         }
 
         .guide-number {
-            display: inline-block;
-            width: 24px;
-            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
             background: var(--primary);
             color: white;
             border-radius: 50%;
-            text-align: center;
-            line-height: 24px;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 600;
             margin-right: 12px;
         }
@@ -2454,6 +2481,11 @@
                 <div class="modal-section-value" id="profileEmail">-</div>
             </div>
 
+            <div class="modal-section">
+                <div class="modal-section-title">Contraseña</div>
+                <div class="modal-section-value" style="letter-spacing: 2px;">••••••••</div>
+            </div>
+
             <div class="modal-divider"></div>
 
             <div class="modal-section">
@@ -2462,7 +2494,10 @@
                 <p style="font-size: 12px; color: var(--text-light); margin-top: 12px;">Utilizá este código para aprobar tus pedidos.</p>
             </div>
 
-            <button type="button" class="confirmation-button confirmation-button-primary" style="width: 100%; margin-top: 20px;" onclick="closeProfileModal()">Cerrar</button>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; margin-top: 20px;">
+                <button type="button" class="confirmation-button" style="background: #f5f5f5; color: var(--text);" onclick="closeProfileModal()">Cerrar</button>
+                <button type="button" class="confirmation-button confirmation-button-primary" onclick="logoutUser()">Cerrar sesión</button>
+            </div>
         </div>
     </div>
 
@@ -2530,14 +2565,9 @@
     </div>
 
     <script>
-        console.log("🚀 Script iniciado - Verificando DOM...");
-        
         // Verificar que los elementos críticos existan en el DOM
         document.addEventListener('DOMContentLoaded', () => {
-            console.log("📋 DOM completamente cargado");
-            console.log("✅ Modal confirmación existe:", !!document.getElementById('registration-confirmation-modal'));
-            console.log("✅ Elemento codigo-display existe:", !!document.getElementById('codigo-display'));
-            console.log("✅ Modal error existe:", !!document.getElementById('registration-error-modal'));
+            // DOM cargado
         });
         
         // ═══════════════════════════════════════════════════════════════════════════
@@ -3121,12 +3151,6 @@
             payButton.textContent = 'Procesando...';
 
             try {
-                console.log('%c💳 INICIANDO MERCADO PAGO', 'color: green; font-weight: bold; font-size: 14px');
-                console.log('📍 URL del Worker:', WORKER_URL);
-                console.log('🔗 Endpoint:', WORKER_URL + MP_ENDPOINT);
-                console.log('💰 Monto total:', '$' + total.toLocaleString() + ' ARS');
-                console.log('👤 Cliente:', checkout.nombre, checkout.apellido);
-
                 // Estructura EXACTA que el Worker espera
                 const requestBody = {
                     items: cart.map(item => ({
@@ -3160,13 +3184,6 @@
                     external_reference: 'order_' + Date.now()
                 };
 
-                console.log('📦 Enviando:', {
-                    items: requestBody.items.length,
-                    cliente: checkout.nombre + ' ' + checkout.apellido,
-                    email: checkout.email,
-                    total: total
-                });
-
                 // FETCH EXACTO
                 const response = await fetch(WORKER_URL + MP_ENDPOINT, {
                     method: 'POST',
@@ -3176,32 +3193,23 @@
                     body: JSON.stringify(requestBody)
                 });
 
-                console.log('📥 Status:', response.status, response.statusText);
-
                 if (!response.ok) {
                     const errorData = await response.json();
-                    console.error('❌ Error del servidor:', errorData);
+                    console.error('Error al procesar pago:', errorData);
                     throw new Error(errorData.error || 'Error al procesar el pago');
                 }
 
                 const data = await response.json();
-                console.log('✅ Respuesta del Worker:', data);
 
                 // REDIRECCIÓN FINAL
                 if (data.init_point) {
-                    console.log('🔗 Redirigiendo a Mercado Pago...');
-                    console.log('init_point:', data.init_point);
                     window.location.href = data.init_point;
                 } else {
-                    console.error('❌ No init_point en respuesta:', data);
                     throw new Error('No se obtuvo la URL de pago de Mercado Pago');
                 }
 
             } catch (error) {
-                console.error('%c❌ ERROR AL PAGAR', 'color: red; font-weight: bold; font-size: 14px');
-                console.error('Mensaje:', error.message);
-                console.error('Stack:', error.stack);
-                console.error('Worker URL:', WORKER_URL);
+                console.error('Error al pagar:', error.message);
                 
                 alert(
                     '❌ Error al procesar el pago\n\n' +
@@ -3261,20 +3269,15 @@
 
         // CERRAR MODAL LOGIN
         function closeAuthModal() {
-            console.log("📢 Cerrando modal de autenticación...");
             const authModal = document.getElementById('auth-modal');
             if (authModal) {
                 authModal.classList.remove('active');
-                console.log("✅ Clase 'active' removida del auth-modal");
-            } else {
-                console.error("❌ ERROR: auth-modal no encontrado");
             }
             
             const loginForm = document.getElementById('login-form-container');
             const registerForm = document.getElementById('register-form-container');
             if (loginForm) loginForm.style.display = 'block';
             if (registerForm) registerForm.style.display = 'none';
-            console.log("✅ Formularios reseteados");
         }
 
         function closeAuthIfClickBackground(e) {
@@ -3301,30 +3304,19 @@
             setRegisterButtonLoading(true);
             showLoadingOverlay();
             
-            console.log("🔄 Iniciando registro...");
-            
             const nombre = document.getElementById('register-nombre').value;
             const email = document.getElementById('register-email').value;
             const password = document.getElementById('register-password').value;
             const codigoVendedor = generarCodigoVendedor();
 
-            console.log("✅ Datos del formulario obtenidos");
-            console.log("📝 Nombre:", nombre);
-            console.log("📧 Email:", email);
-            console.log("🔐 Contraseña:", password ? "***" : "vacía");
-            console.log("🎟️ Código vendedor:", codigoVendedor);
-
             let userCreatedSuccessfully = false;
 
             try {
-                console.log("🔐 Creando usuario en Firebase Auth...");
                 // Crear usuario en Firebase Auth
                 const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
                 const user = userCredential.user;
-                console.log("✅ Usuario creado en Firebase Auth:", user.uid);
                 userCreatedSuccessfully = true;
 
-                console.log("💾 Preparando datos para Firestore...");
                 const userData = {
                     uid: user.uid,
                     nombre: nombre,
@@ -3332,19 +3324,11 @@
                     codigoVendedor: codigoVendedor,
                     creado: new Date()
                 };
-                console.log("✅ Datos preparados:", userData);
 
-                console.log("💾 Verificando firebase.firestore()...");
                 if (!firebase.firestore) {
-                    console.warn("⚠️  firebase.firestore() no está disponible. Continuando sin guardar en Firestore...");
+                    console.warn("Firebase Firestore no disponible");
                 } else {
-                    console.log("✅ firebase.firestore() está disponible");
-
-                    console.log("💾 Obteniendo referencia a colección 'usuarios'...");
                     const usuariosCollection = firebase.firestore().collection('usuarios');
-                    console.log("✅ Referencia a colección obtenida");
-
-                    console.log("💾 Guardando documento en Firestore (con timeout de 5 segundos)...");
                     
                     try {
                         // Crear un timeout promise
@@ -3357,64 +3341,24 @@
                             usuariosCollection.doc(user.uid).set(userData),
                             timeoutPromise
                         ]);
-                        
-                        console.log("✅ Datos guardados en Firestore. Doc ID:", docRef.id);
                     } catch (firestoreError) {
-                        console.warn("⚠️  Error/Timeout en Firestore:", firestoreError.message);
-                        console.warn("📢 Usuario YA fue creado en Firebase Auth. Continuando con el modal...");
+                        console.warn("Firestore: " + firestoreError.message);
                     }
                 }
 
-                console.log("🎯 Buscando modal con ID 'registration-confirmation-modal'...");
-                const modal = document.getElementById('registration-confirmation-modal');
-                if (!modal) {
-                    console.error("❌ ERROR: Modal 'registration-confirmation-modal' no encontrado en el DOM");
-                } else {
-                    console.log("✅ Modal encontrado:", modal);
-                }
-
-                console.log("🎯 Buscando elemento 'codigo-display'...");
-                const codigoDisplay = document.getElementById('codigo-display');
-                if (!codigoDisplay) {
-                    console.error("❌ ERROR: Elemento 'codigo-display' no encontrado en el DOM");
-                } else {
-                    console.log("✅ Elemento codigo-display encontrado:", codigoDisplay);
-                }
-
-                console.log("📢 Llamando a showRegistrationConfirmation()...");
                 // Mostrar modal de confirmación con el código vendedor
                 showRegistrationConfirmation(codigoVendedor, nombre);
-                console.log("✅ showRegistrationConfirmation() ejecutada correctamente");
                 
             } catch (error) {
-                console.error("❌ ERROR CAPTURADO EN REGISTRO:");
-                console.error("   Tipo de error:", typeof error);
-                console.error("   Error completo:", error);
-                console.error("   Code:", error?.code);
-                console.error("   Message:", error?.message);
-                console.error("   Stack:", error?.stack);
-                console.error("   Nombre:", error?.name);
-                
-                if (error?.code === 'permission-denied') {
-                    console.error("⚠️  PROBLEMA: Permisos insuficientes en Firestore");
-                } else if (error?.code === 'unavailable') {
-                    console.error("⚠️  PROBLEMA: Firestore no está disponible");
-                } else if (error?.code === 'unauthenticated') {
-                    console.error("⚠️  PROBLEMA: Usuario no autenticado");
-                } else if (error?.code === 'invalid-argument') {
-                    console.error("⚠️  PROBLEMA: Argumento inválido enviado a Firestore");
-                }
+                console.error("Error en registro:", error?.message);
                 
                 // FALLBACK: Si el usuario se creó en Firebase pero falló Firestore,
                 // mostrar el modal de todas formas
                 if (userCreatedSuccessfully) {
-                    console.warn("⚠️  Usuario creado en Firebase, pero hubo error en Firestore");
-                    console.warn("📢 Mostrando modal de confirmación de todas formas...");
                     try {
                         showRegistrationConfirmation(codigoVendedor, nombre);
-                        console.log("✅ Modal mostrado (fallback)");
                     } catch (modalError) {
-                        console.error("❌ Error al mostrar modal fallback:", modalError);
+                        console.error("Error al mostrar modal:", modalError);
                         showRegistrationError(error);
                     }
                 } else {
@@ -3461,42 +3405,24 @@
             updateUIForAuthentication(true);
             preventBodyScroll(true);
             
-            console.log("📢 Función showRegistrationConfirmation() iniciada");
-            console.log("   Código:", codigoVendedor);
-            console.log("   Nombre:", nombre);
-            
             // Guardar código en variable global para uso en otras funciones
             window.currentCodigoVendedor = codigoVendedor;
             window.currentUserName = nombre;
-            console.log("✅ Variables globales establecidas");
             
             // Mostrar código en el modal
             const codigoDisplay = document.getElementById('codigo-display');
-            console.log("🎯 Elemento codigo-display:", codigoDisplay);
             if (codigoDisplay) {
                 codigoDisplay.textContent = codigoVendedor;
-                console.log("✅ Código mostrado en el modal");
-            } else {
-                console.error("❌ ERROR: No se encontró elemento 'codigo-display'");
             }
             
             // Mostrar modal
             const modal = document.getElementById('registration-confirmation-modal');
-            console.log("🎯 Modal encontrado:", modal);
             if (modal) {
                 modal.classList.add('active');
-                console.log("✅ Clase 'active' agregada al modal");
-                console.log("   Display del modal:", window.getComputedStyle(modal).display);
-                console.log("   Visibility del modal:", window.getComputedStyle(modal).visibility);
-                console.log("   Z-index del modal:", window.getComputedStyle(modal).zIndex);
-            } else {
-                console.error("❌ ERROR: No se encontró elemento 'registration-confirmation-modal'");
             }
             
             // Cerrar modal de login
-            console.log("📢 Cerrando modal de auth...");
             closeAuthModal();
-            console.log("✅ showRegistrationConfirmation() completada");
         }
         
         function showRegistrationError(error) {
@@ -3560,7 +3486,6 @@
             preventBodyScroll(false);
             document.getElementById('registration-confirmation-modal').classList.remove('active');
             // El usuario ya está autenticado por Firebase, simplemente cerramos el modal
-            console.log('✅ Usuario registrado y autenticado exitosamente');
         }
         
         function copyCodigoVendedor() {
@@ -3579,7 +3504,7 @@
                     feedback.classList.remove('show');
                 }, 2000);
             }).catch(err => {
-                console.error('Error al copiar:', err);
+                // Error al copiar
             });
         }
         
@@ -3613,14 +3538,11 @@
                         const userData = doc.data();
                         document.getElementById('profileName').textContent = userData.nombre || '-';
                         document.getElementById('profileCode').textContent = userData.codigoVendedor || '-';
-                        console.log('✅ Datos del perfil cargados desde Firestore:', userData);
                     } else {
-                        console.warn('⚠️  Documento de usuario no encontrado en Firestore');
                         document.getElementById('profileName').textContent = '-';
                         document.getElementById('profileCode').textContent = '-';
                     }
                 }).catch(error => {
-                    console.error('❌ Error al leer datos del perfil:', error);
                     document.getElementById('profileName').textContent = '-';
                     document.getElementById('profileCode').textContent = '-';
                 });
@@ -3634,6 +3556,15 @@
                 document.getElementById('profileModal').classList.remove('active');
                 preventBodyScroll(false);
             }
+        }
+
+        function logoutUser() {
+            firebase.auth().signOut().then(() => {
+                closeProfileModal();
+                window.location.reload();
+            }).catch(error => {
+                // Error al cerrar sesión
+            });
         }
 
         function openGuideModal() {
@@ -3667,8 +3598,6 @@
         }
 
         function selectProduct(category) {
-            console.log("Producto seleccionado:", category);
-            
             // Guardar selección en localStorage
             localStorage.setItem('selectedProductCategory', category);
             
@@ -3679,13 +3608,12 @@
                     categoriaProductos: category,
                     fechaSeleccion: new Date()
                 }).catch(err => {
-                    console.error('Error guardando categoría:', err);
+                    // Error guardando categoría
                 });
             }
             
             // Cerrar modal
             closeProductsModal();
-            console.log('✅ Categoría guardada:', category);
         }
 
         // PREVENIR/PERMITIR SCROLL DEL BODY CUANDO HAY MODALES ABIERTOS
@@ -3767,9 +3695,8 @@
         
         // LISTENER DE AUTENTICACIÓN - REGISTRAR INMEDIATAMENTE DESPUÉS DE INICIALIZAR
         firebase.auth().onAuthStateChanged((user) => {
-            console.log('🔄 onAuthStateChanged disparado');
             if (user) {
-                console.log('✅ Usuario autenticado:', user.email);
+                // Usuario autenticado
                 // Pequeño delay para asegurar que el DOM esté listo
                 setTimeout(() => {
                     updateUIForAuthentication(true);
@@ -3780,7 +3707,7 @@
                     }
                 }, 100);
             } else {
-                console.log('❌ Usuario no autenticado');
+                // Usuario no autenticado
                 updateUIForAuthentication(false);
                 const loginBtn = document.querySelector('.login-btn');
                 if (loginBtn) {
