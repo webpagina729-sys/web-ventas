@@ -211,6 +211,12 @@
             font-size: 11px;
             font-weight: 700;
         }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
+        }
 
         /* BANNER HERO */
         .banner {
@@ -3355,7 +3361,8 @@
 
         function addToCartFromModal() {
             // Validar que hay sesión activa
-            if (!firebase.auth().currentUser) {
+            const currentUser = firebase.auth().currentUser;
+            if (!currentUser) {
                 closeDetails();
                 showSessionRequiredModal();
                 return;
@@ -3464,7 +3471,8 @@
 
         function toggleCart() {
             // Validar que hay sesión activa
-            if (!firebase.auth().currentUser) {
+            const currentUser = firebase.auth().currentUser;
+            if (!currentUser) {
                 showSessionRequiredModal();
                 return;
             }
@@ -3481,24 +3489,6 @@
         }
 
         function showSessionRequiredModal() {
-            const modalHTML = `
-                <div class="session-required-modal" id="session-required-modal" onclick="if(event.target === this) closeSessionRequiredModal()">
-                    <div class="session-required-content">
-                        <div class="session-required-header">
-                            <button class="session-required-close" onclick="closeSessionRequiredModal()">✕</button>
-                        </div>
-                        <div class="session-required-body">
-                            <div class="session-required-icon">🔐</div>
-                            <h2>El carrito solo se puede armar si sos revendedor</h2>
-                            <p>Inicia sesión y vuelve a intentarlo</p>
-                        </div>
-                        <div class="session-required-footer">
-                            <button class="session-required-btn" onclick="openLoginModal()">Iniciar sesión</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
             // Eliminar modal anterior si existe
             const existingModal = document.getElementById('session-required-modal');
             if (existingModal) {
@@ -3506,14 +3496,35 @@
             }
             
             // Crear nuevo modal
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = modalHTML;
-            document.body.appendChild(tempDiv.firstElementChild);
+            const modalDiv = document.createElement('div');
+            modalDiv.id = 'session-required-modal';
+            modalDiv.className = 'session-required-modal';
+            modalDiv.onclick = function(e) { if(e.target === this) closeSessionRequiredModal(); };
             
-            // Mostrar modal
-            const modal = document.getElementById('session-required-modal');
+            modalDiv.innerHTML = `
+                <div class="session-required-content">
+                    <div class="session-required-header">
+                        <button class="session-required-close" onclick="closeSessionRequiredModal()">✕</button>
+                    </div>
+                    <div class="session-required-body">
+                        <div class="session-required-icon">🔐</div>
+                        <h2>El carrito solo se puede armar si sos revendedor</h2>
+                        <p>Inicia sesión y vuelve a intentarlo</p>
+                    </div>
+                    <div class="session-required-footer">
+                        <button class="session-required-btn" onclick="openLoginModal()">Iniciar sesión</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modalDiv);
+            
+            // Mostrar modal con un pequeño delay
             setTimeout(() => {
-                modal.classList.add('active');
+                const modal = document.getElementById('session-required-modal');
+                if (modal) {
+                    modal.classList.add('active');
+                }
             }, 10);
         }
         
@@ -4066,15 +4077,6 @@
                 document.getElementById('profileModal').classList.remove('active');
                 preventBodyScroll(false);
             }
-        }
-
-        function logoutUser() {
-            firebase.auth().signOut().then(() => {
-                closeProfileModal();
-                window.location.reload();
-            }).catch(error => {
-                // Error al cerrar sesión
-            });
         }
 
         function openGuideModal() {
