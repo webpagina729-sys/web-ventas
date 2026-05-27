@@ -4110,61 +4110,83 @@
 
         // FUNCIONES PARA NUEVOS MODALES
 
-        function openProfileModal() {
+        async function openProfileModal() {
             const user = firebase.auth().currentUser;
             if (!user) {
                 console.error('No hay usuario autenticado');
                 return;
             }
 
-            console.log('📋 [Profile] Abriendo perfil para UID:', user.uid);
-            console.log('📋 [Profile] window.currentUser en memoria:', window.currentUser);
+            console.log('📋 [Profile] Usuario autenticado:', user.uid);
+            console.log('📋 [Profile] window.currentUser:', window.currentUser);
 
-            // Mostrar email de inmediato
+            // Mostrar email
             document.getElementById('profileEmail').textContent = user.email;
-            document.getElementById('profileName').textContent = 'Cargando...';
-            document.getElementById('profileCode').textContent = 'Cargando...';
 
-            // SIEMPRE cargar desde Firestore para garantizar datos actuales
-            firebase.firestore().collection('usuarios').doc(user.uid).get()
-                .then(doc => {
+            // PRIORIDAD ABSOLUTA: usar datos reconstruidos en sesión
+            if (
+                window.currentUser &&
+                window.currentUser.codigoVendedor &&
+                window.currentUser.codigoVendedor.trim() !== ''
+            ) {
+                document.getElementById('profileName').textContent =
+                    window.currentUser.nombre || user.email.split('@')[0];
+
+                document.getElementById('profileCode').textContent =
+                    window.currentUser.codigoVendedor;
+
+                console.log(
+                    '✅ [Profile] Código cargado desde window.currentUser:',
+                    window.currentUser.codigoVendedor
+                );
+
+            } else {
+                console.warn('⚠️ window.currentUser no tiene codigoVendedor');
+
+                // FALLBACK FIRESTORE
+                try {
+                    const doc = await firebase
+                        .firestore()
+                        .collection('usuarios')
+                        .doc(user.uid)
+                        .get();
+
                     if (doc.exists) {
                         const userData = doc.data();
+
                         console.log('📋 [Profile] Datos desde Firestore:', userData);
-                        console.log('📋 [Profile] codigoVendedor desde Firestore:', userData.codigoVendedor);
-                        
-                        // Cargar nombre
-                        const nombre = userData.nombre || user.email.split('@')[0];
-                        document.getElementById('profileName').textContent = nombre;
-                        
-                        // CRÍTICO: Cargar código de revendedor desde Firestore
-                        if (userData.codigoVendedor && userData.codigoVendedor.trim() !== '') {
-                            document.getElementById('profileCode').textContent = userData.codigoVendedor;
-                            console.log('✅ [Profile] Código cargado en UI:', userData.codigoVendedor);
-                        } else {
-                            document.getElementById('profileCode').textContent = 'Código no disponible';
-                            console.warn('⚠️ [Profile] El usuario no tiene código de revendedor');
-                        }
+
+                        document.getElementById('profileName').textContent =
+                            userData.nombre || user.email.split('@')[0];
+
+                        document.getElementById('profileCode').textContent =
+                            userData.codigoVendedor || 'Código no disponible';
+
+                        // reconstruir memoria global
+                        window.currentUser = {
+                            uid: user.uid,
+                            email: user.email,
+                            ...userData
+                        };
+
                     } else {
-                        document.getElementById('profileName').textContent = user.email.split('@')[0];
-                        document.getElementById('profileCode').textContent = 'Código no disponible';
-                        console.warn('⚠️ [Profile] Usuario no encontrado en Firestore');
+                        document.getElementById('profileName').textContent =
+                            user.email.split('@')[0];
+
+                        document.getElementById('profileCode').textContent =
+                            'Código no disponible';
                     }
-                })
-                .catch(error => {
-                    if (error.code !== 'unavailable' && !error.message.includes('offline')) {
-                        console.warn('Error cargando perfil:', error.message);
-                    }
-                    // Mostrar datos del currentUser como fallback
-                    if (window.currentUser) {
-                        document.getElementById('profileName').textContent = window.currentUser.nombre || user.email.split('@')[0];
-                        document.getElementById('profileCode').textContent = window.currentUser.codigoVendedor || 'Código no disponible';
-                        console.log('📋 [Profile] Usando fallback window.currentUser.codigoVendedor:', window.currentUser.codigoVendedor);
-                    } else {
-                        document.getElementById('profileName').textContent = 'Error al cargar';
-                        document.getElementById('profileCode').textContent = 'Código no disponible';
-                    }
-                });
+
+                } catch (error) {
+                    console.error('❌ Error cargando perfil:', error);
+
+                    document.getElementById('profileName').textContent =
+                        user.email.split('@')[0];
+
+                    document.getElementById('profileCode').textContent =
+                        'Código no disponible';
+                }
+            }
 
             document.getElementById('profileModal').classList.add('active');
             preventBodyScroll(true);
