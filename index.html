@@ -2786,10 +2786,7 @@
     <script>
         // Verificar que los elementos críticos existan en el DOM
         document.addEventListener('DOMContentLoaded', () => {
-            // Inicializar cuando el DOM está listo
-            setupSearch();
-            renderProducts();
-            handlePaymentReturn();
+            // DOM cargado
         });
         
         // ═══════════════════════════════════════════════════════════════════════════
@@ -3812,7 +3809,7 @@
             });
         }
 
-        // HANDLESTAMENTO DEL PAGO
+        // Procesar resultado del pago después del retorno de Mercado Pago
         function handlePaymentReturn() {
             const urlParams = new URLSearchParams(window.location.search);
             const status = urlParams.get('status');
@@ -3831,6 +3828,11 @@
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
         }
+
+        // INIT
+        setupSearch();
+        renderProducts();
+        handlePaymentReturn();
 
         // ═══════════════════════════════════════════════════════════════════════════
         // 🔐 AUTENTICACIÓN CON FIREBASE
@@ -3916,9 +3918,15 @@
                     
                     // Guardar en Firestore sin bloquear el flujo
                     // Esto permite que el registro continúe incluso si Firestore falla
+                    console.log('💾 [Register] Guardando en Firestore:', userData);
+                    console.log('💾 [Register] codigoVendedor a guardar:', userData.codigoVendedor);
+                    
                     usuariosCollection.doc(user.uid).set(userData)
-                        .then(() => console.log('Usuario guardado en Firestore'))
-                        .catch(err => console.warn('Firestore: ' + err.message));
+                        .then(() => {
+                            console.log('✅ [Register] Usuario guardado en Firestore');
+                            console.log('✅ [Register] Datos guardados correctamente con codigoVendedor:', userData.codigoVendedor);
+                        })
+                        .catch(err => console.warn('❌ [Register] Firestore Error: ' + err.message));
                 }
 
                 // Mostrar modal de confirmación con el código vendedor
@@ -3969,19 +3977,24 @@
                             if (!doc.exists) {
                                 // Usuario no en Firestore, crear documento SOLO SI NO EXISTE
                                 // El código se genera UNA SOLA VEZ
+                                const nuevoCodigoVendedor = generarCodigoVendedor();
+                                console.log('🔐 [Login] Usuario NO existe en Firestore. Generando código:', nuevoCodigoVendedor);
+                                
                                 firebase.firestore().collection('usuarios').doc(userCredential.user.uid).set({
                                     uid: userCredential.user.uid,
                                     email: userCredential.user.email,
                                     nombre: userCredential.user.email.split('@')[0],
-                                    codigoVendedor: generarCodigoVendedor(),
+                                    codigoVendedor: nuevoCodigoVendedor,
                                     creado: new Date()
-                                }).catch(err => console.warn('Error guardando usuario en Firestore:', err.message));
+                                }).catch(err => console.warn('❌ [Login] Error guardando usuario en Firestore:', err.message));
                             } else {
                                 // Usuario ya existe: NO modificar su código
-                                console.log('Usuario existe en Firestore, código no se regenera');
+                                const docData = doc.data();
+                                console.log('✅ [Login] Usuario EXISTE en Firestore');
+                                console.log('🔑 [Login] Código vendedor existente:', docData?.codigoVendedor || 'NO TIENE CÓDIGO');
                             }
                         })
-                        .catch(err => console.warn('Error verificando usuario en Firestore:', err.message));
+                        .catch(err => console.warn('❌ [Login] Error verificando usuario en Firestore:', err.message));
                 }
                 
             } catch (error) {
@@ -4404,8 +4417,6 @@
             console.log('🔧 [Session] === INICIANDO initializeUserSession ===');
             console.log('🔧 [Session] authUser.uid:', authUser.uid);
             console.log('🔧 [Session] authUser.email:', authUser.email);
-            console.log('🔧 [Session] userData recibido:', userData ? JSON.stringify(userData, null, 2) : 'NULL');
-
             // Si no hay datos de Firestore, crear objeto mínimo
             const safeUserData = userData || {
                 nombre: authUser.email.split('@')[0],
@@ -4413,8 +4424,10 @@
                 creado: new Date()
             };
 
-            console.log('🔧 [Session] safeUserData (final):', JSON.stringify(safeUserData, null, 2));
-            console.log('🔧 [Session] codigoVendedor en safeUserData:', safeUserData?.codigoVendedor || 'UNDEFINED');
+            console.log('🔧 [Session] userData recibido de Firestore:', userData ? JSON.stringify(userData, null, 2) : 'NULL');
+            console.log('🔧 [Session] codigoVendedor en userData:', userData?.codigoVendedor || 'NO ENVIADO POR FIRESTORE');
+            console.log('🔧 [Session] safeUserData (lo que se asignará a currentUser):', JSON.stringify(safeUserData, null, 2));
+            console.log('🔧 [Session] codigoVendedor en safeUserData:', safeUserData?.codigoVendedor || 'ESTÁ VACÍO');
 
             // Guardar datos en variables globales para acceso rápido
             console.log('🔧 [Session] === ASIGNANDO window.currentUser ===');
@@ -4429,7 +4442,7 @@
             };
             
             console.log('DESPUÉS DE ASIGNAR [initializeUserSession]:', JSON.parse(JSON.stringify(window.currentUser)));
-            console.log('🔧 [Session] ✅ window.currentUser.codigoVendedor FINAL:', window.currentUser?.codigoVendedor || 'VACÍO');
+            console.log('🔧 [Session] ✅ window.currentUser.codigoVendedor FINAL:', window.currentUser?.codigoVendedor || 'VACÍO ⚠️');
             
             // Verificar inmediatamente que se asignó correctamente
             setTimeout(() => {
@@ -4507,6 +4520,8 @@
                     if (userDoc.exists) {
                         const data = userDoc.data();
                         console.log('✅ [Firestore] Documento EXISTE en intento', attempt);
+                        console.log('📦 [Firestore] Datos completos del documento:', data);
+                        console.log('🔑 [Firestore] codigoVendedor en documento:', data?.codigoVendedor || 'NO EXISTE EN DOCUMENTO');
                         return data;
                     }
                     console.log('⚠️ [Firestore] Usuario NO EXISTE en intento', attempt);
@@ -4518,6 +4533,7 @@
                     }
                 }
             }
+            console.log('❌ [Firestore] Falló después de', maxRetries, 'intentos');
             return null;
         }
 
@@ -4525,6 +4541,7 @@
         firebase.auth().onAuthStateChanged(async (user) => {
             console.log('════════════════════════════════════════════════════════════════');
             console.log('👤 [Auth] onAuthStateChanged disparado');
+            console.log('════════════════════════════════════════════════════════════════');
             
             if (user) {
                 console.log('👤 [Auth] ✅ Usuario autenticado detectado');
@@ -4532,8 +4549,11 @@
                 console.log('👤 [Auth] UID:', user.uid);
                 
                 // Intentar cargar datos de Firestore CON REINTENTOS
+                console.log('🔄 [Auth] Llamando a loadUserDataFromFirestoreWithRetry...');
                 const userData = await loadUserDataFromFirestoreWithRetry(user.uid);
-                console.log('📦 [Auth] ✅ Datos retornados:', userData ? 'CON DATOS' : 'NULL');
+                console.log('📦 [Auth] ✅ Datos retornados por loadUserDataFromFirestoreWithRetry:');
+                console.log('   → userData:', userData ? JSON.stringify(userData, null, 2) : 'NULL');
+                console.log('   → userData?.codigoVendedor:', userData?.codigoVendedor || 'NO PRESENTE EN DATOS');
                 
                 // Inicializar sesión con datos de Firestore o datos mínimos
                 initializeUserSession(userData, user);
