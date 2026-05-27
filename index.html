@@ -1416,11 +1416,17 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: color 0.2s;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
         }
 
         .modal-close:hover {
             color: var(--text);
+            transform: scale(1.15);
+        }
+
+        .modal-close:active {
+            transform: scale(1.05);
         }
 
         .modal-section {
@@ -1528,10 +1534,25 @@
             cursor: pointer;
             font-weight: 600;
             text-decoration: none;
+            border: none;
+            background: none;
+            padding: 0;
+            font-family: var(--font-body);
+            font-size: 13px;
+            transition: all 0.2s ease;
         }
 
         .modal-cta-link:hover {
             text-decoration: underline;
+            transform: scale(0.99);
+        }
+
+        .modal-cta-link:active {
+            transform: scale(0.97);
+        }
+
+        .product-option:active {
+            transform: scale(0.97);
         }
 
         .checkout-container {
@@ -2399,15 +2420,15 @@
 
             <div class="product-options">
                 <div class="product-option" onclick="selectProduct('Hogar')">
-                    <div class="product-option-icon">🏠</div>
+                    <div class="product-option-icon" style="font-size: 32px; margin-bottom: 12px;">⌂</div>
                     <div class="product-option-name">Hogar</div>
                 </div>
                 <div class="product-option" onclick="selectProduct('Maquillajes')">
-                    <div class="product-option-icon">💄</div>
+                    <div class="product-option-icon" style="font-size: 32px; margin-bottom: 12px;">◆</div>
                     <div class="product-option-name">Maquillajes</div>
                 </div>
                 <div class="product-option" onclick="selectProduct('Peluches')">
-                    <div class="product-option-icon">🧸</div>
+                    <div class="product-option-icon" style="font-size: 32px; margin-bottom: 12px;">●</div>
                     <div class="product-option-name">Peluches</div>
                 </div>
             </div>
@@ -3464,9 +3485,9 @@
             const codigo = window.currentCodigoVendedor;
             const nombre = window.currentUserName || 'Usuario';
             
-            // Mensaje para WhatsApp
+            // Mensaje para WhatsApp con formato profesional
             const mensaje = encodeURIComponent(
-                `Hola! Cómo estás? Me acabo de registrar en Revende Ways. Mi código de revendedor es ${codigo}. ¿Cómo seguimos?`
+                `Hola, ¿cómo están?\n\nMe acabo de registrar en Revende Ways.\n\nMi código de revendedor es:\n${codigo}\n\n¿Cómo seguimos?`
             );
             
             // Número de WhatsApp configurado
@@ -3494,38 +3515,75 @@
                 });
             }
             document.getElementById('profileModal').classList.add('active');
+            preventBodyScroll(true);
         }
 
         function closeProfileModal(e) {
             if (!e || e.target.id === 'profileModal') {
                 document.getElementById('profileModal').classList.remove('active');
+                preventBodyScroll(false);
             }
         }
 
         function openGuideModal() {
             document.getElementById('guideModal').classList.add('active');
+            preventBodyScroll(true);
         }
 
         function closeGuideModal(e) {
             if (!e || e.target.id === 'guideModal') {
                 document.getElementById('guideModal').classList.remove('active');
+                preventBodyScroll(false);
             }
         }
 
         function openProductsModal() {
-            document.getElementById('productsModal').classList.add('active');
+            // Cerrar guía primero con transición suave
+            document.getElementById('guideModal').classList.remove('active');
+            
+            // Pequeño delay para evitar solapamiento visual
+            setTimeout(() => {
+                document.getElementById('productsModal').classList.add('active');
+                preventBodyScroll(true);
+            }, 150);
         }
 
         function closeProductsModal(e) {
             if (!e || e.target.id === 'productsModal') {
                 document.getElementById('productsModal').classList.remove('active');
+                preventBodyScroll(false);
             }
         }
 
         function selectProduct(category) {
             console.log("Producto seleccionado:", category);
-            // Aquí se puede agregar lógica futura
+            
+            // Guardar selección en localStorage
+            localStorage.setItem('selectedProductCategory', category);
+            
+            // Guardar en Firestore si usuario está autenticado
+            const user = firebase.auth().currentUser;
+            if (user) {
+                firebase.firestore().collection('usuarios').doc(user.uid).update({
+                    categoriaProductos: category,
+                    fechaSeleccion: new Date()
+                }).catch(err => {
+                    console.error('Error guardando categoría:', err);
+                });
+            }
+            
+            // Cerrar modal
             closeProductsModal();
+            console.log('✅ Categoría guardada:', category);
+        }
+
+        // PREVENIR/PERMITIR SCROLL DEL BODY CUANDO HAY MODALES ABIERTOS
+        function preventBodyScroll(prevent) {
+            if (prevent) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
         }
 
         // MOSTRAR/OCULTAR CINTA SUPERIOR DESPUÉS DEL LOGIN
