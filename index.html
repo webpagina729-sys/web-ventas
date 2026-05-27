@@ -2426,14 +2426,6 @@
         // 🔐 AUTENTICACIÓN CON FIREBASE
         // ═══════════════════════════════════════════════════════════════════════════
 
-        // Importar Firebase
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
-
-        // Inicializar Firebase
-        firebase.initializeApp(firebaseConfig);
-
         // GENERAR CÓDIGO VENDEDOR ÚNICO
         function generarCodigoVendedor() {
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
