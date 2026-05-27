@@ -983,6 +983,287 @@
             text-decoration: underline;
         }
 
+        /* MODAL CONFIRMACIÓN REGISTRO */
+        #registration-confirmation-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1003;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        #registration-confirmation-modal.active {
+            display: flex;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .registration-confirmation-content {
+            background: white;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 480px;
+            padding: 40px 32px;
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            animation: slideUp 0.4s ease-out;
+        }
+        
+        .confirmation-icon {
+            font-size: 56px;
+            margin-bottom: 16px;
+            display: block;
+        }
+        
+        .registration-confirmation-content h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 0 0 8px 0;
+            font-family: var(--font-display);
+        }
+        
+        .registration-confirmation-content p {
+            color: var(--text-light);
+            margin: 0 0 28px 0;
+            line-height: 1.5;
+            font-size: 15px;
+        }
+        
+        .codigo-vendedor-box {
+            background: linear-gradient(135deg, #f0f4ff 0%, #f9fafb 100%);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 24px 0 28px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        
+        .codigo-label {
+            text-align: left;
+            flex: 1;
+        }
+        
+        .codigo-label-title {
+            font-size: 12px;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+        
+        .codigo-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+        }
+        
+        .copy-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .copy-btn:hover {
+            background: #0052cc;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
+        }
+        
+        .copy-btn.copied {
+            background: #00a650;
+        }
+        
+        .copy-feedback {
+            font-size: 12px;
+            color: #00a650;
+            margin-top: 8px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .copy-feedback.show {
+            opacity: 1;
+        }
+        
+        .importante-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin: 16px 0 24px 0;
+            text-align: left;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #856404;
+        }
+        
+        .confirmation-buttons {
+            display: flex;
+            gap: 12px;
+            flex-direction: column;
+        }
+        
+        .confirmation-button {
+            padding: 12px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: var(--font-body);
+        }
+        
+        .confirmation-button-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .confirmation-button-primary:hover {
+            background: #0052cc;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
+        }
+        
+        .confirmation-button-secondary {
+            background: #f3f4f6;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        
+        .confirmation-button-secondary:hover {
+            background: #e5e7eb;
+        }
+        
+        .whatsapp-button {
+            background: #25d366;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .whatsapp-button:hover {
+            background: #1fad56;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+        }
+        
+        /* MODAL ERROR REGISTRO */
+        #registration-error-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1003;
+        }
+        
+        #registration-error-modal.active {
+            display: flex;
+        }
+        
+        .registration-error-content {
+            background: white;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 420px;
+            padding: 40px 32px;
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            animation: slideUp 0.4s ease-out;
+        }
+        
+        .error-icon {
+            font-size: 56px;
+            margin-bottom: 16px;
+            display: block;
+        }
+        
+        .registration-error-content h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #dc2626;
+            margin: 0 0 12px 0;
+        }
+        
+        .registration-error-content p {
+            color: var(--text-light);
+            margin: 0 0 24px 0;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+        
+        .error-messages {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 24px;
+            text-align: left;
+            font-size: 13px;
+            color: #7f1d1d;
+            line-height: 1.5;
+        }
+        
+        .close-error-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .close-error-btn:hover {
+            background: #0052cc;
+        }
+
         .checkout-container {
             background: white;
             border-radius: 12px;
@@ -1718,6 +1999,48 @@
                     ¿Ya tienes cuenta? <a href="javascript:void(0)" onclick="switchToLogin()">Inicia sesión aquí</a>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIRMACIÓN REGISTRO -->
+    <div id="registration-confirmation-modal" onclick="closeConfirmationIfClickBackground(event)">
+        <div class="registration-confirmation-content">
+            <span class="confirmation-icon">✅</span>
+            <h2>¡Ya estás registrado en Revende Ways!</h2>
+            <p>Tu cuenta fue creada correctamente.</p>
+            
+            <div class="codigo-vendedor-box">
+                <div class="codigo-label">
+                    <div class="codigo-label-title">Tu código de revendedor</div>
+                    <div class="codigo-value" id="codigo-display">RW-00000</div>
+                </div>
+                <button type="button" class="copy-btn" onclick="copyCodigoVendedor()" title="Copiar código">📋</button>
+            </div>
+            <div class="copy-feedback" id="copy-feedback">✓ ¡Código copiado!</div>
+            
+            <div class="importante-box">
+                <strong>⚠️ IMPORTANTE:</strong> Guardá este código. Lo vas a necesitar para realizar pedidos y gestionar tu cuenta de vendedor.
+            </div>
+            
+            <div class="confirmation-buttons">
+                <button type="button" class="confirmation-button confirmation-button-primary" onclick="closeConfirmationAndContinue()">Continuar</button>
+                <button type="button" class="confirmation-button whatsapp-button" onclick="notifyWhatsApp()">
+                    <span>💬</span> Notificar a nuestro equipo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ERROR REGISTRO -->
+    <div id="registration-error-modal" onclick="closeErrorIfClickBackground(event)">
+        <div class="registration-error-content">
+            <span class="error-icon">⚠️</span>
+            <h2>Oops, algo salió mal</h2>
+            <p>No pudimos completar tu registro. Por favor, intenta de nuevo.</p>
+            
+            <div class="error-messages" id="error-message">Error desconocido</div>
+            
+            <button type="button" class="close-error-btn" onclick="closeErrorModal()">Intentar de nuevo</button>
         </div>
     </div>
 
@@ -2487,11 +2810,11 @@
                     creado: new Date()
                 });
 
-                alert(`✅ Cuenta creada exitosamente!\n\nTu código de vendedor es: ${codigoVendedor}`);
-                closeAuthModal();
+                // Mostrar modal de confirmación con el código vendedor
+                showRegistrationConfirmation(codigoVendedor, nombre);
                 
             } catch (error) {
-                alert(`❌ Error al registrar: ${error.message}`);
+                showRegistrationError(error);
             }
         }
 
@@ -2511,18 +2834,128 @@
                 
                 if (!snapshot.empty) {
                     const userData = snapshot.docs[0].data();
-                    alert(`✅ ¡Bienvenido ${userData.nombre}!\n\nCódigo vendedor: ${userData.codigoVendedor}`);
+                    closeAuthModal();
+                    // Bienvenida silenciosa, el usuario ya está logueado
                 } else {
-                    alert(`✅ ¡Sesión iniciada!`);
+                    closeAuthModal();
                 }
                 
-                closeAuthModal();
-                
             } catch (error) {
-                alert(`❌ Error al iniciar sesión: ${error.message}`);
+                showLoginError(error);
             }
         }
 
+        // FUNCIONES PARA MODALES DE CONFIRMACIÓN Y ERROR
+        
+        function showRegistrationConfirmation(codigoVendedor, nombre) {
+            // Guardar código en variable global para uso en otras funciones
+            window.currentCodigoVendedor = codigoVendedor;
+            window.currentUserName = nombre;
+            
+            // Mostrar código en el modal
+            document.getElementById('codigo-display').textContent = codigoVendedor;
+            
+            // Mostrar modal
+            document.getElementById('registration-confirmation-modal').classList.add('active');
+            
+            // Cerrar modal de login
+            closeAuthModal();
+        }
+        
+        function showRegistrationError(error) {
+            let errorMessage = 'Algo salió mal durante el registro. Intenta de nuevo.';
+            
+            // Mensajes de error específicos
+            if (error.code === 'auth/email-already-in-use') {
+                errorMessage = 'Este correo electrónico ya está registrado. ¿Olvidaste tu contraseña? Intenta iniciar sesión.';
+            } else if (error.code === 'auth/weak-password') {
+                errorMessage = 'La contraseña debe tener al menos 6 caracteres.';
+            } else if (error.code === 'auth/invalid-email') {
+                errorMessage = 'El correo electrónico no es válido. Revisa e intenta de nuevo.';
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+            
+            document.getElementById('error-message').textContent = errorMessage;
+            document.getElementById('registration-error-modal').classList.add('active');
+        }
+        
+        function showLoginError(error) {
+            let errorMessage = 'No pudimos iniciar sesión. Intenta de nuevo.';
+            
+            if (error.code === 'auth/user-not-found') {
+                errorMessage = 'No encontramos una cuenta con este correo.';
+            } else if (error.code === 'auth/wrong-password') {
+                errorMessage = 'Contraseña incorrecta. Intenta de nuevo.';
+            } else if (error.code === 'auth/invalid-email') {
+                errorMessage = 'El correo electrónico no es válido.';
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+            
+            document.getElementById('error-message').textContent = errorMessage;
+            document.getElementById('registration-error-modal').classList.add('active');
+        }
+        
+        function closeConfirmationIfClickBackground(e) {
+            if (e.target.id === 'registration-confirmation-modal') {
+                closeConfirmationAndContinue();
+            }
+        }
+        
+        function closeErrorIfClickBackground(e) {
+            if (e.target.id === 'registration-error-modal') {
+                closeErrorModal();
+            }
+        }
+        
+        function closeErrorModal() {
+            document.getElementById('registration-error-modal').classList.remove('active');
+        }
+        
+        function closeConfirmationAndContinue() {
+            document.getElementById('registration-confirmation-modal').classList.remove('active');
+            // El usuario ya está autenticado por Firebase, simplemente cerramos el modal
+            console.log('✅ Usuario registrado y autenticado exitosamente');
+        }
+        
+        function copyCodigoVendedor() {
+            const codigo = window.currentCodigoVendedor;
+            const btn = event.target;
+            
+            navigator.clipboard.writeText(codigo).then(() => {
+                // Mostrar feedback
+                btn.classList.add('copied');
+                const feedback = document.getElementById('copy-feedback');
+                feedback.classList.add('show');
+                
+                // Resetear después de 2 segundos
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    feedback.classList.remove('show');
+                }, 2000);
+            }).catch(err => {
+                console.error('Error al copiar:', err);
+            });
+        }
+        
+        function notifyWhatsApp() {
+            const codigo = window.currentCodigoVendedor;
+            const nombre = window.currentUserName || 'Usuario';
+            
+            // Mensaje para WhatsApp
+            const mensaje = encodeURIComponent(
+                `Hola! Cómo estás? Me acabo de registrar en Revende Ways. Mi código de revendedor es ${codigo}. ¿Cómo seguimos?`
+            );
+            
+            // Número de WhatsApp configurado
+            const numeroWhatsApp = '5491176277337';
+            
+            const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${mensaje}`;
+            
+            window.open(urlWhatsApp, '_blank');
+        }
+        
         // VERIFICAR ESTADO DE AUTENTICACIÓN
         if (typeof firebase !== 'undefined') {
             firebase.auth().onAuthStateChanged((user) => {
