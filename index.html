@@ -4384,7 +4384,15 @@
 
         // Reconstruye la interfaz completa del usuario desde los datos cargados
         function initializeUserSession(userData, authUser) {
-            if (!authUser) return;
+            if (!authUser) {
+                console.error('❌ [Session] initializeUserSession llamado SIN authUser');
+                return;
+            }
+
+            console.log('🔧 [Session] === INICIANDO initializeUserSession ===');
+            console.log('🔧 [Session] authUser.uid:', authUser.uid);
+            console.log('🔧 [Session] authUser.email:', authUser.email);
+            console.log('🔧 [Session] userData recibido:', userData ? JSON.stringify(userData, null, 2) : 'NULL');
 
             // Si no hay datos de Firestore, crear objeto mínimo
             const safeUserData = userData || {
@@ -4393,11 +4401,12 @@
                 creado: new Date()
             };
 
-            console.log('🔧 [Session] Inicializando sesión con datos:', safeUserData);
-            console.log('🔧 [Session] codigoVendedor antes de guardar:', safeUserData.codigoVendedor);
+            console.log('🔧 [Session] safeUserData (final):', JSON.stringify(safeUserData, null, 2));
+            console.log('🔧 [Session] codigoVendedor en safeUserData:', safeUserData?.codigoVendedor || 'UNDEFINED');
 
             // Guardar datos en variables globales para acceso rápido
-            console.log('ANTES DE ASIGNAR currentUser [initializeUserSession]:', JSON.parse(JSON.stringify(window.currentUser)));
+            console.log('🔧 [Session] === ASIGNANDO window.currentUser ===');
+            console.log('ANTES DE ASIGNAR [initializeUserSession]:', JSON.parse(JSON.stringify(window.currentUser || {})));
             
             window.currentUser = {
                 uid: authUser.uid,
@@ -4407,10 +4416,16 @@
                 creado: safeUserData.creado || new Date()
             };
             
-            console.log('DESPUÉS DE ASIGNAR currentUser [initializeUserSession]:', JSON.parse(JSON.stringify(window.currentUser)));
-            console.log('codigoVendedor final [initializeUserSession]:', window.currentUser?.codigoVendedor);
-            console.log('🔧 [Session] window.currentUser guardado:', window.currentUser);
-            console.log('🔧 [Session] window.currentUser.codigoVendedor:', window.currentUser.codigoVendedor);
+            console.log('DESPUÉS DE ASIGNAR [initializeUserSession]:', JSON.parse(JSON.stringify(window.currentUser)));
+            console.log('🔧 [Session] ✅ window.currentUser.codigoVendedor FINAL:', window.currentUser?.codigoVendedor || 'VACÍO');
+            
+            // Verificar inmediatamente que se asignó correctamente
+            setTimeout(() => {
+                console.log('🔧 [Session] ✅ VERIFICACIÓN 100ms después:', {
+                    codigoVendedor: window.currentUser?.codigoVendedor,
+                    fullUser: JSON.parse(JSON.stringify(window.currentUser || {}))
+                });
+            }, 100);
 
             // Cargar carrito desde Firebase
             loadCartFromFirebase().then(cartItems => {
@@ -4422,6 +4437,38 @@
 
             // Actualizar interfaz
             updateUIForAuthentication(true);
+            
+            // ⚠️ VERIFICACIÓN CRÍTICA: Si codigoVendedor está vacío, intentar cargar de nuevo
+            if (!window.currentUser?.codigoVendedor || window.currentUser.codigoVendedor === '') {
+                console.warn('⚠️ [Session] codigoVendedor está VACÍO. Intentando recovery...');
+                console.warn('⚠️ [Session] userData original era:', userData ? 'OBJETO' : 'NULL');
+                
+                // Si userData era null, intentar cargar de Firestore AHORA
+                if (!userData) {
+                    console.warn('⚠️ [Session] userData era NULL. Intentando cargar desde Firestore...');
+                    firebase.firestore().collection('usuarios').doc(authUser.uid).get()
+                        .then(doc => {
+                            if (doc.exists) {
+                                const fullData = doc.data();
+                                console.warn('⚠️ [Session] ✅ Documento encontrado en RECOVERY:', fullData);
+                                
+                                if (fullData.codigoVendedor) {
+                                    console.warn('⚠️ [Session] ✅✅ Actualizando window.currentUser con codigoVendedor:', fullData.codigoVendedor);
+                                    
+                                    window.currentUser = {
+                                        ...window.currentUser,
+                                        ...fullData
+                                    };
+                                    
+                                    console.warn('⚠️ [Session] ✅✅✅ window.currentUser ACTUALIZADO:', JSON.stringify(window.currentUser));
+                                }
+                            } else {
+                                console.warn('⚠️ [Session] ❌ Documento NO EXISTE en recovery');
+                            }
+                        })
+                        .catch(err => console.error('⚠️ [Session] ❌ Error en recovery:', err));
+                }
+            }
             
             // Mostrar botón "Cerrar sesión" en lugar de "Iniciar sesión"
             const loginBtn = document.querySelector('.login-btn');
@@ -4447,33 +4494,51 @@
         // SISTEMA DE REINTENTOS PARA FIRESTORE
         async function loadUserDataFromFirestoreWithRetry(uid, maxRetries = 3, delayMs = 500) {
             console.log('🔍 [Firestore] Intentando cargar usuario con UID:', uid);
+            console.log('🔍 [Firestore] window.currentUser ANTES de cargar Firestore:', JSON.parse(JSON.stringify(window.currentUser || {})));
             
             for (let attempt = 1; attempt <= maxRetries; attempt++) {
                 try {
                     const userDoc = await firebase.firestore().collection('usuarios').doc(uid).get();
                     if (userDoc.exists) {
                         const data = userDoc.data();
-                        console.log('✅ [Firestore] Datos cargados completos:', data);
-                        console.log('✅ [Firestore] Campo codigoVendedor:', data.codigoVendedor);
+                        console.log('✅ [Firestore] Documento EXISTE');
+                        console.log('✅ [Firestore] Datos COMPLETOS desde Firestore:', JSON.stringify(data, null, 2));
+                        console.log('✅ [Firestore] codigoVendedor VALOR:', data?.codigoVendedor || 'UNDEFINED');
+                        console.log('✅ [Firestore] TODAS las keys:', Object.keys(data || {}));
                         return data;
                     }
-                    console.log('⚠️ [Firestore] Usuario no encontrado en Firestore en intento', attempt);
+                    console.log('⚠️ [Firestore] Usuario NO EXISTE en Firestore en intento', attempt);
                     return null;
                 } catch (error) {
-                    console.warn(`❌ Intento ${attempt}/${maxRetries} fallido:`, error.message);
-                    
-                    if (attempt === maxRetries) {
-                        console.warn('❌ [Firestore] No disponible después de ' + maxRetries + ' intentos. Continuando con datos mínimos.');
-                        return null;
-                    }
-                    
-                    await new Promise(resolve => setTimeout(resolve, delayMs * attempt));
+            console.log('════════════════════════════════════════════════════════════════');
+            console.log('👤 [Auth] onAuthStateChanged disparado');
+            
+            if (user) {
+                console.log('👤 [Auth] ✅ Usuario autenticado detectado');
+                console.log('👤 [Auth] Email:', user.email);
+                console.log('👤 [Auth] UID:', user.uid);
+                console.log('════════════════════════════════════════════════════════════════');
+                
+                // Intentar cargar datos de Firestore CON REINTENTOS
+                console.log('📦 [Auth] Llamando loadUserDataFromFirestoreWithRetry...');
+                const userData = await loadUserDataFromFirestoreWithRetry(user.uid);
+                console.log('📦 [Auth] ✅ Datos retornados:', userData ? JSON.stringify(userData, null, 2) : 'NULL');
+                
+                if (userData && userData.codigoVendedor) {
+                    console.log('📦 [Auth] ✅✅ codigoVendedor EXISTE:', userData.codigoVendedor);
+                } else {
+                    console.warn('📦 [Auth] ⚠️ codigoVendedor NO EXISTE O NULL');
                 }
-            }
-        }
-        
-        // LISTENER DE AUTENTICACIÓN - RECONSTRUIR SESIÓN AUTOMÁTICAMENTE
-        firebase.auth().onAuthStateChanged(async (user) => {
+                
+                // Inicializar sesión con datos de Firestore o datos mínimos
+                console.log('📦 [Auth] Llamando initializeUserSession...');
+                initializeUserSession(userData, user);
+                console.log('════════════════════════════════════════════════════════════════');
+                
+            } else {
+                // Usuario no autenticado: limpiar interfaz
+                console.log('🔓 [Auth] ❌ No hay usuario autenticado');
+                console.log('ANTES DE ASIGNAR currentUser a null:', JSON.parse(JSON.stringify(window.currentUser || {}
             if (user) {
                 console.log('👤 [Auth] Usuario autenticado detectado:', user.email);
                 console.log('👤 [Auth] UID actual:', user.uid);
