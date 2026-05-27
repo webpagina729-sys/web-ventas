@@ -2045,6 +2045,16 @@
     </div>
 
     <script>
+        console.log("🚀 Script iniciado - Verificando DOM...");
+        
+        // Verificar que los elementos críticos existan en el DOM
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("📋 DOM completamente cargado");
+            console.log("✅ Modal confirmación existe:", !!document.getElementById('registration-confirmation-modal'));
+            console.log("✅ Elemento codigo-display existe:", !!document.getElementById('codigo-display'));
+            console.log("✅ Modal error existe:", !!document.getElementById('registration-error-modal'));
+        });
+        
         // ═══════════════════════════════════════════════════════════════════════════
         // 🔧 CONFIGURACIÓN - FIREBASE AUTHENTICATION
         // ═══════════════════════════════════════════════════════════════════════════
@@ -2766,9 +2776,20 @@
 
         // CERRAR MODAL LOGIN
         function closeAuthModal() {
-            document.getElementById('auth-modal').classList.remove('active');
-            document.getElementById('login-form-container').style.display = 'block';
-            document.getElementById('register-form-container').style.display = 'none';
+            console.log("📢 Cerrando modal de autenticación...");
+            const authModal = document.getElementById('auth-modal');
+            if (authModal) {
+                authModal.classList.remove('active');
+                console.log("✅ Clase 'active' removida del auth-modal");
+            } else {
+                console.error("❌ ERROR: auth-modal no encontrado");
+            }
+            
+            const loginForm = document.getElementById('login-form-container');
+            const registerForm = document.getElementById('register-form-container');
+            if (loginForm) loginForm.style.display = 'block';
+            if (registerForm) registerForm.style.display = 'none';
+            console.log("✅ Formularios reseteados");
         }
 
         function closeAuthIfClickBackground(e) {
@@ -2791,16 +2812,27 @@
         async function registerUser(e) {
             e.preventDefault();
             
+            console.log("🔄 Iniciando registro...");
+            
             const nombre = document.getElementById('register-nombre').value;
             const email = document.getElementById('register-email').value;
             const password = document.getElementById('register-password').value;
             const codigoVendedor = generarCodigoVendedor();
 
+            console.log("✅ Datos del formulario obtenidos");
+            console.log("📝 Nombre:", nombre);
+            console.log("📧 Email:", email);
+            console.log("🔐 Contraseña:", password ? "***" : "vacía");
+            console.log("🎟️ Código vendedor:", codigoVendedor);
+
             try {
+                console.log("🔐 Creando usuario en Firebase Auth...");
                 // Crear usuario en Firebase Auth
                 const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
                 const user = userCredential.user;
+                console.log("✅ Usuario creado en Firebase Auth:", user.uid);
 
+                console.log("💾 Guardando datos en Firestore...");
                 // Guardar datos en Firestore
                 await firebase.firestore().collection('usuarios').add({
                     uid: user.uid,
@@ -2809,11 +2841,33 @@
                     codigoVendedor: codigoVendedor,
                     creado: new Date()
                 });
+                console.log("✅ Datos guardados en Firestore");
 
+                console.log("🎯 Buscando modal con ID 'registration-confirmation-modal'...");
+                const modal = document.getElementById('registration-confirmation-modal');
+                if (!modal) {
+                    console.error("❌ ERROR: Modal 'registration-confirmation-modal' no encontrado en el DOM");
+                } else {
+                    console.log("✅ Modal encontrado:", modal);
+                }
+
+                console.log("🎯 Buscando elemento 'codigo-display'...");
+                const codigoDisplay = document.getElementById('codigo-display');
+                if (!codigoDisplay) {
+                    console.error("❌ ERROR: Elemento 'codigo-display' no encontrado en el DOM");
+                } else {
+                    console.log("✅ Elemento codigo-display encontrado:", codigoDisplay);
+                }
+
+                console.log("📢 Llamando a showRegistrationConfirmation()...");
                 // Mostrar modal de confirmación con el código vendedor
                 showRegistrationConfirmation(codigoVendedor, nombre);
+                console.log("✅ showRegistrationConfirmation() ejecutada correctamente");
                 
             } catch (error) {
+                console.error("❌ ERROR en el try-catch:", error);
+                console.error("Código de error:", error.code);
+                console.error("Mensaje:", error.message);
                 showRegistrationError(error);
             }
         }
@@ -2848,18 +2902,42 @@
         // FUNCIONES PARA MODALES DE CONFIRMACIÓN Y ERROR
         
         function showRegistrationConfirmation(codigoVendedor, nombre) {
+            console.log("📢 Función showRegistrationConfirmation() iniciada");
+            console.log("   Código:", codigoVendedor);
+            console.log("   Nombre:", nombre);
+            
             // Guardar código en variable global para uso en otras funciones
             window.currentCodigoVendedor = codigoVendedor;
             window.currentUserName = nombre;
+            console.log("✅ Variables globales establecidas");
             
             // Mostrar código en el modal
-            document.getElementById('codigo-display').textContent = codigoVendedor;
+            const codigoDisplay = document.getElementById('codigo-display');
+            console.log("🎯 Elemento codigo-display:", codigoDisplay);
+            if (codigoDisplay) {
+                codigoDisplay.textContent = codigoVendedor;
+                console.log("✅ Código mostrado en el modal");
+            } else {
+                console.error("❌ ERROR: No se encontró elemento 'codigo-display'");
+            }
             
             // Mostrar modal
-            document.getElementById('registration-confirmation-modal').classList.add('active');
+            const modal = document.getElementById('registration-confirmation-modal');
+            console.log("🎯 Modal encontrado:", modal);
+            if (modal) {
+                modal.classList.add('active');
+                console.log("✅ Clase 'active' agregada al modal");
+                console.log("   Display del modal:", window.getComputedStyle(modal).display);
+                console.log("   Visibility del modal:", window.getComputedStyle(modal).visibility);
+                console.log("   Z-index del modal:", window.getComputedStyle(modal).zIndex);
+            } else {
+                console.error("❌ ERROR: No se encontró elemento 'registration-confirmation-modal'");
+            }
             
             // Cerrar modal de login
+            console.log("📢 Cerrando modal de auth...");
             closeAuthModal();
+            console.log("✅ showRegistrationConfirmation() completada");
         }
         
         function showRegistrationError(error) {
