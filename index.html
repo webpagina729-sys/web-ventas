@@ -2394,6 +2394,10 @@
                     <label for="checkout-observaciones">Observaciones</label>
                     <textarea id="checkout-observaciones" placeholder="Notas adicionales (opcional)"></textarea>
                 </div>
+                <div class="form-group full">
+                    <label for="checkout-codigo-revendedor">Código de Revendedor *</label>
+                    <input type="text" id="checkout-codigo-revendedor" placeholder="Ej: RW-XXXXX" required>
+                </div>
             </form>
             <div class="checkout-footer">
                 <button class="btn-checkout-cancel" onclick="closeCheckout()">Cancelar</button>
@@ -3414,6 +3418,23 @@
             document.getElementById('modal-checkout').classList.add('active');
         }
 
+        // Validar que el código de revendedor existe en Firebase
+        async function validarCodigoRevendedor(codigo) {
+            try {
+                // Buscar en la colección usuarios si existe un documento con este codigoVendedor
+                const snapshot = await firebase.firestore()
+                    .collection('usuarios')
+                    .where('codigoVendedor', '==', codigo)
+                    .get();
+                
+                // Si encuentra al menos un documento, el código es válido
+                return !snapshot.empty;
+            } catch (error) {
+                console.error('Error validando código de revendedor:', error);
+                return false;
+            }
+        }
+
         // Procesar pago una vez rellenado el formulario
         async function submitCheckoutAndPay() {
             const total = cart.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
@@ -3428,7 +3449,8 @@
                 ciudad: document.getElementById('checkout-ciudad').value.trim(),
                 cp: document.getElementById('checkout-cp').value.trim(),
                 direccion: document.getElementById('checkout-direccion').value.trim(),
-                observaciones: document.getElementById('checkout-observaciones').value.trim()
+                observaciones: document.getElementById('checkout-observaciones').value.trim(),
+                codigoRevendedor: document.getElementById('checkout-codigo-revendedor').value.trim()
             };
 
             // VALIDACIONES
@@ -3440,6 +3462,14 @@
             if (!checkout.ciudad) { alert('❌ Ciudad requerida'); return; }
             if (!checkout.cp) { alert('❌ Código postal requerido'); return; }
             if (!checkout.direccion) { alert('❌ Dirección requerida'); return; }
+            if (!checkout.codigoRevendedor) { alert('❌ Código de Revendedor requerido'); return; }
+
+            // Validar que el código de revendedor existe en Firebase
+            const codigoValido = await validarCodigoRevendedor(checkout.codigoRevendedor);
+            if (!codigoValido) { 
+                alert('❌ El código ingresado no es de un revendedor'); 
+                return; 
+            }
 
             // Calcular totales y ganancias ANTES de enviar a pago
             const totales = calculateOrderTotals(cart);
@@ -3677,6 +3707,16 @@
 
                 // Mostrar modal de confirmación con el código vendedor
                 showRegistrationConfirmation(codigoVendedor, nombre);
+                
+                // Pequeño delay para permitir que Firebase sincronice la sesión
+                setTimeout(() => {
+                    // El listener de onAuthStateChanged() debería haberse disparado
+                    // Si no, forzar la actualización
+                    const currentUser = firebase.auth().currentUser;
+                    if (currentUser) {
+                        loadUserSessionOnPageLoad(currentUser);
+                    }
+                }, 500);
                 
             } catch (error) {
                 console.error("Error en registro:", error?.message);
