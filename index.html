@@ -869,6 +869,120 @@
         #modal-checkout.active {
             display: flex;
         }
+
+        /* MODAL AUTENTICACIÓN */
+        #auth-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1002;
+        }
+        #auth-modal.active {
+            display: flex;
+        }
+
+        .auth-modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 420px;
+            padding: 32px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .auth-modal-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+
+        .auth-modal-close:hover {
+            background: #f0f0f0;
+        }
+
+        .auth-form-container h2 {
+            margin-top: 0;
+            margin-bottom: 24px;
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .auth-form-container form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .auth-form-container input {
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: var(--font-body);
+            transition: border-color 0.2s;
+        }
+
+        .auth-form-container input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+        }
+
+        .auth-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .auth-btn:hover {
+            background: #0052cc;
+        }
+
+        .auth-switch {
+            text-align: center;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .auth-switch a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .auth-switch a:hover {
+            text-decoration: underline;
+        }
+
         .checkout-container {
             background: white;
             border-radius: 12px;
@@ -1363,7 +1477,7 @@
                 <span class="search-icon">🔍</span>
             </div>
             <div class="header-actions">
-                <button class="login-btn" onclick="alert('Login funcionalidad - próximamente')">Iniciar sesión</button>
+                <button class="login-btn" onclick="abrirLogin()">Iniciar sesión</button>
                 <button class="cart-btn" onclick="toggleCart()">
                     🛒
                     <span class="cart-count" id="cart-count">0</span>
@@ -1573,7 +1687,53 @@
         </div>
     </div>
 
+    <!-- MODAL AUTENTICACIÓN - LOGIN/REGISTRO CON FIREBASE -->
+    <div class="auth-modal" id="auth-modal" onclick="closeAuthIfClickBackground(event)">
+        <div class="auth-modal-content">
+            <button class="auth-modal-close" onclick="closeAuthModal()">✕</button>
+            
+            <!-- FORMULARIO LOGIN -->
+            <div id="login-form-container" class="auth-form-container" style="display: block;">
+                <h2>Iniciar Sesión</h2>
+                <form onsubmit="loginUser(event)">
+                    <input type="email" id="login-email" placeholder="Correo electrónico" required>
+                    <input type="password" id="login-password" placeholder="Contraseña" required>
+                    <button type="submit" class="auth-btn">Ingresar</button>
+                </form>
+                <div class="auth-switch">
+                    ¿No tienes cuenta? <a href="javascript:void(0)" onclick="switchToRegister()">Registrarse aquí</a>
+                </div>
+            </div>
+            
+            <!-- FORMULARIO REGISTRO -->
+            <div id="register-form-container" class="auth-form-container" style="display: none;">
+                <h2>Crear Cuenta</h2>
+                <form onsubmit="registerUser(event)">
+                    <input type="text" id="register-nombre" placeholder="Nombre completo" required>
+                    <input type="email" id="register-email" placeholder="Correo electrónico" required>
+                    <input type="password" id="register-password" placeholder="Contraseña (mín. 6 caracteres)" required minlength="6">
+                    <button type="submit" class="auth-btn">Crear Cuenta</button>
+                </form>
+                <div class="auth-switch">
+                    ¿Ya tienes cuenta? <a href="javascript:void(0)" onclick="switchToLogin()">Inicia sesión aquí</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // ═══════════════════════════════════════════════════════════════════════════
+        // 🔧 CONFIGURACIÓN - FIREBASE AUTHENTICATION
+        // ═══════════════════════════════════════════════════════════════════════════
+        const firebaseConfig = {
+            apiKey: "AIzaSyBRzd3HXbY6xIBIBNkzATo70kredodhKwc",
+            authDomain: "revendeways-auth.firebaseapp.com",
+            projectId: "revendeways-auth",
+            storageBucket: "revendeways-auth.appspot.com",
+            messagingSenderId: "157263733033",
+            appId: "1:157263733033:web:a2b8c3d4e5f6g7h8i9j0k1l"
+        };
+
         // ═══════════════════════════════════════════════════════════════════════════
         // 🔧 CONFIGURACIÓN - MERCADO PAGO INTEGRATION
         // ═══════════════════════════════════════════════════════════════════════════
@@ -2261,6 +2421,149 @@
         // INIT
         setupSearch();
         renderProducts();
+
+        // ═══════════════════════════════════════════════════════════════════════════
+        // 🔐 AUTENTICACIÓN CON FIREBASE
+        // ═══════════════════════════════════════════════════════════════════════════
+
+        // Importar Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // GENERAR CÓDIGO VENDEDOR ÚNICO
+        function generarCodigoVendedor() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let codigo = 'RW-';
+            for (let i = 0; i < 5; i++) {
+                codigo += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return codigo;
+        }
+
+        // ABRIR MODAL LOGIN
+        function abrirLogin() {
+            document.getElementById('auth-modal').classList.add('active');
+        }
+
+        // CERRAR MODAL LOGIN
+        function closeAuthModal() {
+            document.getElementById('auth-modal').classList.remove('active');
+            document.getElementById('login-form-container').style.display = 'block';
+            document.getElementById('register-form-container').style.display = 'none';
+        }
+
+        function closeAuthIfClickBackground(e) {
+            if (e.target.id === 'auth-modal') closeAuthModal();
+        }
+
+        // CAMBIAR A REGISTRO
+        function switchToRegister() {
+            document.getElementById('login-form-container').style.display = 'none';
+            document.getElementById('register-form-container').style.display = 'block';
+        }
+
+        // CAMBIAR A LOGIN
+        function switchToLogin() {
+            document.getElementById('login-form-container').style.display = 'block';
+            document.getElementById('register-form-container').style.display = 'none';
+        }
+
+        // REGISTRO CON FIREBASE
+        async function registerUser(e) {
+            e.preventDefault();
+            
+            const nombre = document.getElementById('register-nombre').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const codigoVendedor = generarCodigoVendedor();
+
+            try {
+                // Crear usuario en Firebase Auth
+                const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+
+                // Guardar datos en Firestore
+                await firebase.firestore().collection('usuarios').add({
+                    uid: user.uid,
+                    nombre: nombre,
+                    email: email,
+                    codigoVendedor: codigoVendedor,
+                    creado: new Date()
+                });
+
+                alert(`✅ Cuenta creada exitosamente!\n\nTu código de vendedor es: ${codigoVendedor}`);
+                closeAuthModal();
+                
+            } catch (error) {
+                alert(`❌ Error al registrar: ${error.message}`);
+            }
+        }
+
+        // LOGIN CON FIREBASE
+        async function loginUser(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+                
+                // Obtener datos del usuario desde Firestore
+                const snapshot = await firebase.firestore().collection('usuarios').where('uid', '==', user.uid).get();
+                
+                if (!snapshot.empty) {
+                    const userData = snapshot.docs[0].data();
+                    alert(`✅ ¡Bienvenido ${userData.nombre}!\n\nCódigo vendedor: ${userData.codigoVendedor}`);
+                } else {
+                    alert(`✅ ¡Sesión iniciada!`);
+                }
+                
+                closeAuthModal();
+                
+            } catch (error) {
+                alert(`❌ Error al iniciar sesión: ${error.message}`);
+            }
+        }
+
+        // VERIFICAR ESTADO DE AUTENTICACIÓN
+        if (typeof firebase !== 'undefined') {
+            firebase.auth().onAuthStateChanged((user) => {
+                if (user) {
+                    console.log('✅ Usuario autenticado:', user.email);
+                    document.querySelector('.login-btn').textContent = 'Cerrar sesión';
+                    document.querySelector('.login-btn').onclick = logoutUser;
+                } else {
+                    console.log('❌ Usuario no autenticado');
+                    document.querySelector('.login-btn').textContent = 'Iniciar sesión';
+                    document.querySelector('.login-btn').onclick = abrirLogin;
+                }
+            });
+        }
+
+        // LOGOUT
+        async function logoutUser() {
+            try {
+                await firebase.auth().signOut();
+                alert('✅ Sesión cerrada');
+            } catch (error) {
+                alert(`❌ Error al cerrar sesión: ${error.message}`);
+            }
+        }
+    </script>
+
+    <!-- FIREBASE SCRIPTS -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+    <script>
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
     </script>
 </body>
 </html>
