@@ -2323,10 +2323,10 @@
             background: var(--surface);
             padding: 60px 16px;
             border-bottom: 1px solid var(--border);
-            display: none;
-        }
-        .nichos-section.show {
             display: block;
+        }
+        .nichos-section.hide {
+            display: none;
         }
         .nichos-section-inner {
             max-width: 100%;
@@ -2716,6 +2716,8 @@
     <!-- CINTA NEGRA SUPERIOR - SOLO VISIBLE DESPUÉS DEL LOGIN -->
     <div class="top-ribbon" id="topRibbon">
         <div class="ribbon-content">
+            <button class="ribbon-option" onclick="mostrarInicio()">Inicio</button>
+            <span class="ribbon-divider">•</span>
             <button class="ribbon-option" onclick="openStatisticsModal()">Estadísticas</button>
             <span class="ribbon-divider">•</span>
             <button class="ribbon-option" onclick="openProfileModal()">Perfil</button>
@@ -2748,8 +2750,8 @@
                 <!-- CARRUSEL ANCHO -->
                 <div class="carrusel-container" id="carrusel-container">
                     <div class="carrusel-wrapper" id="carrusel-wrapper"></div>
-                    <button class="carrusel-nav carrusel-prev" onclick="carruselAnterior()">❮</button>
-                    <button class="carrusel-nav carrusel-next" onclick="carruselSiguiente()">❯</button>
+                    <button class="carrusel-nav carrusel-prev" onclick="carruselAnterior()">‹</button>
+                    <button class="carrusel-nav carrusel-next" onclick="carruselSiguiente()">›</button>
                     <div class="carrusel-dots" id="carrusel-dots"></div>
                 </div>
                 
@@ -5177,8 +5179,10 @@
 
         // INICIALIZAR CARRUSEL CON IMÁGENES DE PRODUCTOS
         function inicializarCarrusel() {
-            // Tomar primeros 8 productos árabes del catálogo
-            const productosArabes = window.products.filter(p => p.categoria && p.imagen).slice(0, 8);
+            // Filtrar productos con precio entre 5000 y 30000
+            const productosArabes = window.products.filter(p => 
+                p.precio >= 5000 && p.precio <= 30000 && p.imagen && p.categoria
+            );
             productosCarrusel = productosArabes;
 
             if (productosCarrusel.length === 0) return;
@@ -5245,24 +5249,24 @@
             const nichosSection = document.getElementById('nichos-section');
             
             if (window.currentUser) {
-                // Usuario logueado: mostrar sección de nichos
-                if (nichosSection) {
-                    nichosSection.classList.add('show');
-                }
-                
-                // Inicializar carrusel
-                setTimeout(inicializarCarrusel, 100);
-                
                 // Verificar si ya validó el código (localStorage)
                 const codigoEnSesion = localStorage.getItem('codigoRevendedorValidado');
                 if (codigoEnSesion) {
+                    // Usuario logueado y código validado: mostrar catálogo
                     window.codigoValidado = true;
                     mostrarCatalogo();
+                } else {
+                    // Usuario logueado pero sin código validado: mostrar nichos
+                    if (nichosSection) {
+                        nichosSection.classList.remove('hide');
+                    }
+                    // Inicializar carrusel
+                    setTimeout(inicializarCarrusel, 100);
                 }
             } else {
-                // Usuario NO logueado: ocultar sección de nichos
+                // Usuario NO logueado: mostrar nichos
                 if (nichosSection) {
-                    nichosSection.classList.remove('show');
+                    nichosSection.classList.remove('hide');
                 }
             }
         }
@@ -5361,7 +5365,7 @@
             const portadaDosSection = document.getElementById('portada-dos-section');
             const revendSection = document.querySelector('.revend-section');
 
-            if (nichosSection) nichosSection.classList.remove('show');
+            if (nichosSection) nichosSection.classList.add('hide');
             if (filtersContainer) filtersContainer.classList.remove('hidden');
             if (productsContainer) productsContainer.classList.remove('hidden');
             if (paginationSection) paginationSection.classList.remove('hidden');
@@ -5403,6 +5407,23 @@
             }
         }
 
+        // Mostrar sección de nichos (Inicio)
+        function mostrarInicio() {
+            const nichosSection = document.getElementById('nichos-section');
+            const filtersContainer = document.getElementById('filters-container');
+            const productsContainer = document.getElementById('products-container');
+            const paginationSection = document.getElementById('pagination-section');
+            const portadaDosSection = document.getElementById('portada-dos-section');
+            const revendSection = document.querySelector('.revend-section');
+
+            if (nichosSection) nichosSection.classList.remove('hide');
+            if (filtersContainer) filtersContainer.classList.add('hidden');
+            if (productsContainer) productsContainer.classList.add('hidden');
+            if (paginationSection) paginationSection.classList.add('hidden');
+            if (portadaDosSection) portadaDosSection.style.display = 'none';
+            if (revendSection) revendSection.style.display = 'none';
+        }
+
         // Ocultar catálogo y mostrar nichos
         function ocultarCatalogo() {
             const nichosSection = document.getElementById('nichos-section');
@@ -5412,7 +5433,7 @@
             const portadaDosSection = document.getElementById('portada-dos-section');
             const revendSection = document.querySelector('.revend-section');
 
-            if (nichosSection) nichosSection.classList.add('show');
+            if (nichosSection) nichosSection.classList.remove('hide');
             if (filtersContainer) filtersContainer.classList.add('hidden');
             if (productsContainer) productsContainer.classList.add('hidden');
             if (paginationSection) paginationSection.classList.add('hidden');
