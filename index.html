@@ -1511,10 +1511,11 @@
 
         .ribbon-content {
             max-width: 100%;
-            margin: 0 40px;
+            margin: 0 auto;
+            padding: 0 40px;
             display: flex;
             align-items: center;
-            justify-content: flex-end;
+            justify-content: center;
             gap: 12px;
         }
 
@@ -1995,7 +1996,7 @@
             .revend-section-inner img { max-width: 100%; height: auto; margin-bottom: 8px !important; }
             .revend-title { font-size: 13px; }
             .revend-subtitle { font-size: 13px; margin-bottom: 16px; }
-            .revend-btn { font-size: 11px; padding: 10px 6px; letter-spacing: 0px; line-height: 1.2; white-space: nowrap; text-align: center; }
+            .revend-btn { font-size: 12px; padding: 10px 16px; letter-spacing: 0px; line-height: 1.2; white-space: nowrap; text-align: center; }\n            .nicho-footer { flex-direction: column; gap: 12px; }\n            .nicho-badge { min-width: auto; width: 100%; }\n            .nicho-button { width: 100%; }\n            .carrusel-container { height: 100px; }\n            .revend-section-inner { gap: 16px; }
             .final-footer { padding: 30px 8px; }
             .final-footer-inner { margin: 0 8px; }
             .final-footer-title { line-height: 1.3; font-size: 11px; word-break: break-word; text-align: left !important; max-width: 340px; }
@@ -2237,27 +2238,28 @@
             line-height: 1.6;
         }
         .revend-btn {
-            background: white;
-            color: #1B7F3D;
+            background: var(--primary);
+            color: white;
             border: none;
-            padding: 18px 52px;
-            font-size: 17px;
-            font-weight: 700;
-            border-radius: var(--radius);
+            padding: 12px 32px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 6px;
             cursor: pointer;
-            transition: all .3s ease;
+            transition: all 0.2s ease;
             font-family: var(--font-body);
-            box-shadow: 0 8px 24px rgba(0,0,0,.25);
-            letter-spacing: 0.3px;
+            white-space: nowrap;
             display: inline-block;
         }
         .revend-btn:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 32px rgba(0,0,0,.35);
-            background: #f5f5f5;
+            background: var(--primary-light);
+            transform: scale(0.98);
         }
         .revend-btn:active {
-            transform: translateY(-1px);
+            transform: scale(0.96);
+        }
+        .revend-btn.hidden-btn {
+            display: none;
         }
 
         /* FINAL FOOTER */
@@ -2315,6 +2317,385 @@
                 grid-template-columns: repeat(2, 1fr);
             }
         }
+
+        /* NUEVA SECCIÓN: ELEGÍ TU NICHO IDEAL */
+        .nichos-section {
+            background: var(--surface);
+            padding: 60px 16px;
+            border-bottom: 1px solid var(--border);
+            display: none;
+        }
+        .nichos-section.show {
+            display: block;
+        }
+        .nichos-section-inner {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0 40px;
+        }
+        @media (max-width: 768px) {
+            .nichos-section {
+                padding: 40px 8px;
+            }
+            .nichos-section-inner {
+                padding: 0 8px;
+            }
+            .nichos-title {
+                font-size: 18px;
+                margin-bottom: 32px;
+            }
+            .nicho-item {
+                margin-bottom: 32px;
+            }
+            .nicho-title {
+                font-size: 18px;
+            }
+            .nicho-subtitle {
+                font-size: 13px;
+            }
+            .carrusel-container {
+                height: 100px;
+                margin-bottom: 16px;
+            }
+            .nicho-footer {
+                flex-direction: column;
+                gap: 12px;
+            }
+            .nicho-badge {
+                min-width: auto;
+                width: 100%;
+            }
+            .nicho-button {
+                width: 100%;
+                padding: 12px 16px;
+                font-size: 14px;
+            }
+        }
+        .nichos-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text);
+            text-align: center;
+            margin-bottom: 48px;
+            font-family: var(--font-display);
+            white-space: nowrap;
+        }
+        .nichos-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        .nicho-item {
+            margin-bottom: 40px;
+        }
+        .nicho-info {
+            margin-bottom: 24px;
+        }
+        .nicho-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+        .nicho-subtitle {
+            font-size: 15px;
+            color: var(--text-light);
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        /* CARRUSEL */
+        .carrusel-container {
+            position: relative;
+            width: 100%;
+            height: 120px;
+            margin-bottom: 24px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: var(--gray-light);
+        }
+        .carrusel-wrapper {
+            display: flex;
+            height: 100%;
+            transition: transform 0.5s ease;
+        }
+        .carrusel-slide {
+            min-width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .carrusel-slide img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+        .carrusel-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 102, 255, 0.8);
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+        .carrusel-nav:hover {
+            background: var(--primary);
+        }
+        .carrusel-prev {
+            left: 8px;
+        }
+        .carrusel-next {
+            right: 8px;
+        }
+        .carrusel-dots {
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 4px;
+            z-index: 10;
+        }
+        .carrusel-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+        .carrusel-dot.active {
+            background: white;
+            width: 20px;
+            border-radius: 3px;
+        }
+        /* BADGE Y BOTÓN CONTAINER */
+        .nicho-footer {
+            display: flex;
+            gap: 16px;
+            align-items: stretch;
+        }
+        .nicho-badge {
+            flex: 0 0 auto;
+            background: var(--primary);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 200px;
+            white-space: nowrap;
+        }
+        .nicho-button {
+            flex: 1;
+            background: #22a34a;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .nicho-button:hover {
+            background: #1a8539;
+            transform: scale(0.98);
+        }
+
+        /* MODAL: VALIDACIÓN CÓDIGO */
+        .codigo-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .codigo-modal.active {
+            display: flex;
+        }
+        .codigo-modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 40px 32px;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.3s ease-out;
+        }
+        .codigo-modal-header {
+            margin-bottom: 32px;
+        }
+        .codigo-modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+        .codigo-modal-subtitle {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+        .codigo-modal-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: var(--font-body);
+            margin-bottom: 20px;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .codigo-modal-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+        }
+        .codigo-modal-button {
+            width: 100%;
+            padding: 14px 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 12px;
+        }
+        .codigo-modal-button:hover {
+            background: var(--primary-light);
+            transform: scale(0.98);
+        }
+        .codigo-modal-close {
+            width: 100%;
+            padding: 12px 20px;
+            background: transparent;
+            color: var(--text-light);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .codigo-modal-close:hover {
+            background: var(--gray-light);
+            color: var(--text);
+        }
+        .codigo-error {
+            display: none;
+            background: #fee;
+            color: #c33;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-bottom: 16px;
+            border-left: 4px solid #c33;
+        }
+        .codigo-error.show {
+            display: block;
+        }
+
+        /* MODAL: PRÓXIMAMENTE */
+        .proximamente-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .proximamente-modal.active {
+            display: flex;
+        }
+        .proximamente-modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 60px 40px;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            animation: slideUp 0.3s ease-out;
+        }
+        .proximamente-icon {
+            font-size: 72px;
+            margin-bottom: 24px;
+            display: block;
+        }
+        .proximamente-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 16px;
+        }
+        .proximamente-subtitle {
+            font-size: 15px;
+            color: var(--text-light);
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+        .proximamente-btn {
+            padding: 12px 32px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .proximamente-btn:hover {
+            background: var(--primary-light);
+        }
+
+        /* OCULTADOR UNIVERSAL */
+        .hidden {
+            display: none !important;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 <body>
@@ -2352,8 +2733,65 @@
         </div>
     </section>
 
+    <!-- NUEVA SECCIÓN: ELEGÍ TU NICHO IDEAL -->
+    <section class="nichos-section" id="nichos-section">
+        <div class="nichos-section-inner">
+            <h2 class="nichos-title">Elegí tu tienda ideal</h2>
+            
+            <!-- NICHO 1: PERFUMES ÁRABES -->
+            <div class="nicho-item">
+                <div class="nicho-info">
+                    <h3 class="nicho-title">Perfumes árabes</h3>
+                    <p class="nicho-subtitle">Fragancias premium de inspiración árabe para tu catálogo</p>
+                </div>
+                
+                <!-- CARRUSEL ANCHO -->
+                <div class="carrusel-container" id="carrusel-container">
+                    <div class="carrusel-wrapper" id="carrusel-wrapper"></div>
+                    <button class="carrusel-nav carrusel-prev" onclick="carruselAnterior()">❮</button>
+                    <button class="carrusel-nav carrusel-next" onclick="carruselSiguiente()">❯</button>
+                    <div class="carrusel-dots" id="carrusel-dots"></div>
+                </div>
+                
+                <!-- BADGE + BOTÓN -->
+                <div class="nicho-footer">
+                    <div class="nicho-badge">💰 Monto mínimo: $150.000</div>
+                    <button class="nicho-button" onclick="abrirModalCodigo()">Comenzar próximo pedido en este nicho</button>
+                </div>
+            </div>
+
+            <!-- NICHO 2: OTROS NICHOS -->
+            <div class="nicho-item">
+                <div class="nicho-info">
+                    <h3 class="nicho-title">Otros nichos</h3>
+                    <p class="nicho-subtitle">Bazar • Perfumería • Belleza • Herramientas. Accede a múltiples categorías de productos en una sola opción. Expande tu catálogo con variedad.</p>
+                </div>
+                
+                <!-- BADGE + BOTÓN -->
+                <div class="nicho-footer">
+                    <div class="nicho-badge">💰 Monto mínimo: $200.000</div>
+                    <button class="nicho-button" onclick="abrirModalProximamente('Otros nichos')">Comenzar próximo pedido en este nicho</button>
+                </div>
+            </div>
+
+            <!-- NICHO 3: CALZADOS -->
+            <div class="nicho-item">
+                <div class="nicho-info">
+                    <h3 class="nicho-title">Calzados</h3>
+                    <p class="nicho-subtitle">Los calzados son importados, calidad premium de Brasil. Zapatillas deportivas urbanas.</p>
+                </div>
+                
+                <!-- BADGE + BOTÓN -->
+                <div class="nicho-footer">
+                    <div class="nicho-badge">💰 Disponible próximamente</div>
+                    <button class="nicho-button" onclick="abrirModalProximamente('Calzados')">Comenzar próximo pedido en este nicho</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- BÚSQUEDA Y FILTROS INTEGRADOS -->
-    <div class="filters-container">
+    <div class="filters-container hidden" id="filters-container">
         <!-- Buscador -->
         <div class="search-box-wrapper">
             <div class="search-box">
@@ -2391,12 +2829,12 @@
     </div>
 
     <!-- PRODUCTOS -->
-    <div class="products-container">
+    <div class="products-container hidden" id="products-container">
         <div class="products-grid" id="products-grid"></div>
     </div>
 
     <!-- PAGINATION -->
-    <div class="pagination-section" id="pagination-section" style="display: none;">
+    <div class="pagination-section hidden" id="pagination-section">
         <button class="view-more-btn" onclick="loadMoreProducts()">Ver más productos</button>
     </div>
 
@@ -2407,12 +2845,13 @@
     </div>
 
     <!-- REVEND SECTION -->
-    <div class="revend-section">
+    <div class="revend-section" id="revend-section-container">
         <div class="revend-section-inner">
-            <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
-                <img src="portadauno.png" alt="Portada Revende" class="portada-image">
+            <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 30px; margin-top: 10px;">
+                <img src="portadauno.png" alt="Portada Revende" class="portada-image" style="width: 90%; max-width: 100%;">
             </div>
-            <button class="revend-btn" onclick="alert('Redirigiendo a formulario de registro... próximamente')">Quiero mi tienda</button>
+            <div style="text-align: center; font-size: 16px; font-weight: 600; color: white; margin-bottom: 20px;">Recibir todas las semanas ideas para vender más</div>
+            <button class="revend-btn" id="revend-btn-main" onclick="handleRevendClick()" style="margin-bottom: 30px;">Quiero mi tienda</button>
         </div>
     </div>
 
@@ -2703,6 +3142,29 @@
         </div>
     </div>
 
+    <!-- MODAL CONFIRMACIÓN DE EMAIL -->
+    <div class="modal-overlay" id="emailConfirmationModal" onclick="closeEmailConfirmationModal(event)">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Importante</h2>
+                <button class="modal-close" onclick="closeEmailConfirmationModal()">×</button>
+            </div>
+
+            <div style="text-align: center; padding: 20px 0;">
+                <div style="font-size: 48px; color: #22a34a; margin-bottom: 20px;">✓</div>
+                <h3 style="color: var(--text); font-size: 18px; margin-bottom: 10px; font-weight: 600;">Confirma tu correo electrónico</h3>
+                <p style="color: #666; font-size: 14px; line-height: 1.5; margin-bottom: 20px;">
+                    Para completar tu registro y acceder a todas las funcionalidades, necesitamos que confirmes tu correo electrónico.
+                </p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr; gap: 10px; width: 100%;">
+                <button type="button" class="confirmation-button confirmation-button-primary" onclick="confirmEmailPrompt()">Confirmar correo electrónico</button>
+                <button type="button" class="confirmation-button" style="background: #f5f5f5; color: var(--text);" onclick="closeEmailConfirmationModal()">Más tarde</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL GUÍA RÁPIDA -->
     <div class="modal-overlay" id="guideModal" onclick="closeGuideModal(event)">
         <div class="modal-content">
@@ -2713,7 +3175,7 @@
 
             <div class="guide-item">
                 <span class="guide-number">1</span>
-                <span class="guide-text">Te damos tu tienda lista para comenzar a revender.</span>
+                <span class="guide-text">Te damos tu tienda lista para comenzar a revender. Elegí tu tienda ideal con los productos que más te veas vendiendo y completá el mínimo de encargue.</span>
             </div>
 
             <div class="guide-item">
@@ -3979,6 +4441,9 @@
                         .catch(err => console.warn('❌ [Register] Firestore Error: ' + err.message));
                 }
 
+                // Guardar código en localStorage como fallback
+                localStorage.setItem('codigoVendedorLocal', codigoVendedor);
+                
                 // Mostrar modal de confirmación con el código vendedor
                 showRegistrationConfirmation(codigoVendedor, nombre);
                 
@@ -4151,17 +4616,22 @@
         }
         
         function copyCodigoVendedor() {
-            // Copiar el código que se ve actualmente en el perfil (desde Firestore)
-            const codigoElement = document.getElementById('profileCode');
-            const codigo = codigoElement ? codigoElement.textContent : '';
+            // Copiar el código directamente desde window.currentUser
+            let codigo = window.currentUser?.codigoVendedor || '';
             
-            // No copiar si dice "no disponible"
-            if (!codigo || codigo === 'Código no disponible' || codigo === 'Cargando...') {
+            // Si no está disponible, intentar desde localStorage (fallback)
+            if (!codigo) {
+                codigo = localStorage.getItem('codigoVendedorLocal') || '';
+            }
+            
+            // No copiar si está vacío
+            if (!codigo || codigo.trim() === '') {
                 console.warn('Código no disponible para copiar');
+                alert('Tu código de revendedor aún no está disponible. Por favor intenta más tarde.');
                 return;
             }
             
-            const btn = event.target;
+            const btn = event.target.closest('button');
             
             navigator.clipboard.writeText(codigo).then(() => {
                 // Mostrar feedback
@@ -4176,11 +4646,30 @@
                         feedback.classList.remove('show');
                     }, 2000);
                 }
+                console.log('✅ Código de revendedor copiado:', codigo);
             }).catch(err => {
                 console.error('Error al copiar código:', err);
+                alert('No se pudo copiar el código. Intenta de nuevo.');
             });
         }
         
+        function closeEmailConfirmationModal(e) {
+            if (e && e.target.id !== 'emailConfirmationModal') return;
+            const modal = document.getElementById('emailConfirmationModal');
+            if (modal) {
+                modal.classList.remove('active');
+                preventBodyScroll(false);
+            }
+        }
+
+        function confirmEmailPrompt() {
+            // Marcar email como confirmado
+            localStorage.setItem('emailConfirmado', 'true');
+            // Abrir el formulario de confirmación
+            window.open('https://confirmaciondecorreo.tuweb.workers.dev/', '_blank');
+            closeEmailConfirmationModal();
+        }
+
         function notifyWhatsApp() {
             const codigo = window.currentCodigoVendedor;
             const nombre = window.currentUserName || 'Usuario';
@@ -4213,15 +4702,16 @@
             // Mostrar email
             document.getElementById('profileEmail').textContent = user.email;
 
+            // Mostrar nombre
+            document.getElementById('profileName').textContent = 
+                window.currentUser?.nombre || user.email.split('@')[0];
+
             // PRIORIDAD ABSOLUTA: usar datos reconstruidos en sesión
             if (
                 window.currentUser &&
                 window.currentUser.codigoVendedor &&
                 window.currentUser.codigoVendedor.trim() !== ''
             ) {
-                document.getElementById('profileName').textContent =
-                    window.currentUser.nombre || user.email.split('@')[0];
-
                 document.getElementById('profileCode').textContent =
                     window.currentUser.codigoVendedor;
 
@@ -4250,7 +4740,7 @@
                             userData.nombre || user.email.split('@')[0];
 
                         document.getElementById('profileCode').textContent =
-                            userData.codigoVendedor || 'Código no disponible';
+                            userData.codigoVendedor || localStorage.getItem('codigoVendedorLocal') || 'Código no disponible';
 
                         // reconstruir memoria global
                         console.log('ANTES DE ASIGNAR currentUser [Profile Modal]:', JSON.parse(JSON.stringify(window.currentUser)));
@@ -4269,7 +4759,7 @@
                             user.email.split('@')[0];
 
                         document.getElementById('profileCode').textContent =
-                            'Código no disponible';
+                            localStorage.getItem('codigoVendedorLocal') || 'Código no disponible';
                     }
 
                 } catch (error) {
@@ -4279,7 +4769,7 @@
                         user.email.split('@')[0];
 
                     document.getElementById('profileCode').textContent =
-                        'Código no disponible';
+                        localStorage.getItem('codigoVendedorLocal') || 'Código no disponible';
                 }
             }
 
@@ -4513,6 +5003,19 @@
             // Actualizar interfaz
             updateUIForAuthentication(true);
             
+            // Mostrar modal de confirmación de email después de 5 segundos (solo si no está confirmado)
+            setTimeout(() => {
+                const emailConfirmado = localStorage.getItem('emailConfirmado');
+                if (firebase.auth().currentUser && !emailConfirmado) {
+                    const modal = document.getElementById('emailConfirmationModal');
+                    if (modal && !modal.classList.contains('active')) {
+                        modal.classList.add('active');
+                        preventBodyScroll(true);
+                        console.log('📧 [Session] Modal de confirmación de email mostrado');
+                    }
+                }
+            }, 5000);
+            
             // ⚠️ VERIFICACIÓN CRÍTICA: Si codigoVendedor está vacío, intentar cargar de nuevo
             if (!window.currentUser?.codigoVendedor || window.currentUser.codigoVendedor === '') {
                 console.warn('⚠️ [Session] codigoVendedor está VACÍO. Intentando recovery...');
@@ -4633,6 +5136,355 @@
                 }
             }
         });
+    </script>
+
+    <!-- MODAL: VALIDACIÓN CÓDIGO REVENDEDOR -->
+    <div class="codigo-modal" id="codigo-modal">
+        <div class="codigo-modal-content">
+            <div class="codigo-modal-header">
+                <h2 class="codigo-modal-title">Ingresá tu código</h2>
+                <p class="codigo-modal-subtitle">Validaremos tu código de revendedor para acceder al catálogo completo</p>
+            </div>
+            <div class="codigo-error" id="codigo-error"></div>
+            <input 
+                type="text" 
+                id="codigo-input" 
+                class="codigo-modal-input" 
+                placeholder="Código de revendedor" 
+                onkeyup="if(event.key === 'Enter') validarCodigoRevendedor()"
+            >
+            <button class="codigo-modal-button" onclick="validarCodigoRevendedor()">Ingresar</button>
+            <button class="codigo-modal-close" onclick="cerrarModalCodigo()">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- MODAL: PRÓXIMAMENTE DISPONIBLE -->
+    <div class="proximamente-modal" id="proximamente-modal">
+        <div class="proximamente-modal-content">
+            <span class="proximamente-icon">🚀</span>
+            <h2 class="proximamente-title">Próximamente</h2>
+            <p class="proximamente-subtitle" id="proximamente-titulo">Esta sección estará disponible muy pronto. Gracias por tu interés.</p>
+            <button class="proximamente-btn" onclick="cerrarModalProximamente()">Entendido</button>
+        </div>
+    </div>
+
+    <!-- SCRIPT: LÓGICA DE NICHOS Y MODALES -->
+    <script>
+        // Variables globales para nichos
+        window.codigoValidado = false;
+        let carruselActual = 0;
+        let productosCarrusel = [];
+
+        // INICIALIZAR CARRUSEL CON IMÁGENES DE PRODUCTOS
+        function inicializarCarrusel() {
+            // Tomar primeros 8 productos árabes del catálogo
+            const productosArabes = window.products.filter(p => p.categoria && p.imagen).slice(0, 8);
+            productosCarrusel = productosArabes;
+
+            if (productosCarrusel.length === 0) return;
+
+            const wrapper = document.getElementById('carrusel-wrapper');
+            const dotsContainer = document.getElementById('carrusel-dots');
+
+            if (!wrapper || !dotsContainer) return;
+
+            // Limpiar
+            wrapper.innerHTML = '';
+            dotsContainer.innerHTML = '';
+
+            // Generar slides
+            productosCarrusel.forEach((producto, index) => {
+                const slide = document.createElement('div');
+                slide.className = 'carrusel-slide';
+                slide.innerHTML = `<img src="${producto.imagen}" alt="${producto.nombre}" onerror="this.src='portadauno.png'">`;
+                wrapper.appendChild(slide);
+
+                // Generar dots
+                const dot = document.createElement('button');
+                dot.className = `carrusel-dot ${index === 0 ? 'active' : ''}`;
+                dot.onclick = () => irASlide(index);
+                dotsContainer.appendChild(dot);
+            });
+
+            carruselActual = 0;
+            actualizarCarrusel();
+        }
+
+        function actualizarCarrusel() {
+            const wrapper = document.getElementById('carrusel-wrapper');
+            if (wrapper) {
+                const offset = carruselActual * -100;
+                wrapper.style.transform = `translateX(${offset}%)`;
+            }
+
+            // Actualizar dots
+            document.querySelectorAll('.carrusel-dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index === carruselActual);
+            });
+        }
+
+        function carruselAnterior() {
+            if (productosCarrusel.length === 0) return;
+            carruselActual = (carruselActual - 1 + productosCarrusel.length) % productosCarrusel.length;
+            actualizarCarrusel();
+        }
+
+        function carruselSiguiente() {
+            if (productosCarrusel.length === 0) return;
+            carruselActual = (carruselActual + 1) % productosCarrusel.length;
+            actualizarCarrusel();
+        }
+
+        function irASlide(index) {
+            carruselActual = index;
+            actualizarCarrusel();
+        }
+
+        // Verificar si ya está logueado y mostrar sección de nichos
+        function actualizarVistaNichos() {
+            const nichosSection = document.getElementById('nichos-section');
+            
+            if (window.currentUser) {
+                // Usuario logueado: mostrar sección de nichos
+                if (nichosSection) {
+                    nichosSection.classList.add('show');
+                }
+                
+                // Inicializar carrusel
+                setTimeout(inicializarCarrusel, 100);
+                
+                // Verificar si ya validó el código (localStorage)
+                const codigoEnSesion = localStorage.getItem('codigoRevendedorValidado');
+                if (codigoEnSesion) {
+                    window.codigoValidado = true;
+                    mostrarCatalogo();
+                }
+            } else {
+                // Usuario NO logueado: ocultar sección de nichos
+                if (nichosSection) {
+                    nichosSection.classList.remove('show');
+                }
+            }
+        }
+
+        // Abrir modal de validación de código
+        function abrirModalCodigo() {
+            // Si ya validó, mostrar catálogo directamente
+            if (window.codigoValidado) {
+                mostrarCatalogo();
+                return;
+            }
+            
+            const modal = document.getElementById('codigo-modal');
+            const input = document.getElementById('codigo-input');
+            const error = document.getElementById('codigo-error');
+            
+            if (modal) {
+                modal.classList.add('active');
+                input.focus();
+                input.value = '';
+                error.classList.remove('show');
+                error.textContent = '';
+            }
+        }
+
+        // Cerrar modal de validación
+        function cerrarModalCodigo() {
+            const modal = document.getElementById('codigo-modal');
+            if (modal) {
+                modal.classList.remove('active');
+            }
+        }
+
+        // Validar código de revendedor
+        async function validarCodigoRevendedor() {
+            const codigoInput = document.getElementById('codigo-input');
+            const error = document.getElementById('codigo-error');
+            const codigo = codigoInput.value.trim().toUpperCase();
+
+            // Validar que no esté vacío
+            if (!codigo) {
+                error.textContent = 'Por favor, ingresa tu código de revendedor';
+                error.classList.add('show');
+                return;
+            }
+
+            // Mostrar carga
+            const btnValidar = event.target;
+            const textOriginal = btnValidar.textContent;
+            btnValidar.textContent = 'Validando...';
+            btnValidar.disabled = true;
+
+            try {
+                // Buscar en Firestore si existe un usuario con este codigoVendedor
+                const resultado = await firebase.firestore()
+                    .collection('usuarios')
+                    .where('codigoVendedor', '==', codigo)
+                    .get();
+
+                if (resultado.empty) {
+                    // Código NO válido
+                    error.textContent = 'Código de revendedor inválido. Verifica y intenta de nuevo.';
+                    error.classList.add('show');
+                } else {
+                    // Código VÁLIDO
+                    error.classList.remove('show');
+                    
+                    // Guardar en localStorage por 30 días
+                    localStorage.setItem('codigoRevendedorValidado', codigo);
+                    localStorage.setItem('codigoRevendedorValidadoFecha', new Date().getTime());
+                    
+                    window.codigoValidado = true;
+                    
+                    // Cerrar modal
+                    cerrarModalCodigo();
+                    
+                    // Mostrar catálogo
+                    mostrarCatalogo();
+                }
+            } catch (error) {
+                console.error('Error validando código:', error);
+                error.classList.add('show');
+                error.textContent = 'Error al validar. Intenta de nuevo.';
+            } finally {
+                btnValidar.textContent = textOriginal;
+                btnValidar.disabled = false;
+            }
+        }
+
+        // Mostrar catálogo y ocultar nichos
+        function mostrarCatalogo() {
+            const nichosSection = document.getElementById('nichos-section');
+            const filtersContainer = document.getElementById('filters-container');
+            const productsContainer = document.getElementById('products-container');
+            const paginationSection = document.getElementById('pagination-section');
+            const portadaDosSection = document.getElementById('portada-dos-section');
+            const revendSection = document.querySelector('.revend-section');
+
+            if (nichosSection) nichosSection.classList.remove('show');
+            if (filtersContainer) filtersContainer.classList.remove('hidden');
+            if (productsContainer) productsContainer.classList.remove('hidden');
+            if (paginationSection) paginationSection.classList.remove('hidden');
+            if (portadaDosSection) portadaDosSection.style.display = 'block';
+            if (revendSection) revendSection.style.display = 'block';
+
+            // Renderizar productos si no está hecho
+            renderProducts();
+            updateCartCount();
+        }
+
+        // Manejar click del botón "Quiero mi tienda" / "Recibir ideas"
+        function handleRevendClick() {
+            if (window.currentUser) {
+                // Usuario logueado: marcar email como confirmado y abrir formulario
+                localStorage.setItem('emailConfirmado', 'true');
+                window.open('https://confirmaciondecorreo.tuweb.workers.dev/', '_blank');
+            } else {
+                // Usuario no logueado: ir a registro
+                alert('Redirigiendo a formulario de registro... próximamente');
+            }
+        }
+
+        // Actualizar botón "Quiero mi tienda" según estado de login
+        function actualizarBotonesRevend() {
+            const revendBtn = document.getElementById('revend-btn-main');
+            const revendSection = document.getElementById('revend-section-container');
+            
+            if (!revendBtn || !revendSection) return;
+            
+            if (window.currentUser) {
+                // Usuario logueado: cambiar texto y estilo
+                revendBtn.textContent = 'Recibir ideas de combos y promociones';
+                revendSection.style.display = 'block';
+            } else {
+                // Usuario no logueado: mostrar texto original
+                revendBtn.textContent = 'Quiero mi tienda';
+                revendSection.style.display = 'block';
+            }
+        }
+
+        // Ocultar catálogo y mostrar nichos
+        function ocultarCatalogo() {
+            const nichosSection = document.getElementById('nichos-section');
+            const filtersContainer = document.getElementById('filters-container');
+            const productsContainer = document.getElementById('products-container');
+            const paginationSection = document.getElementById('pagination-section');
+            const portadaDosSection = document.getElementById('portada-dos-section');
+            const revendSection = document.querySelector('.revend-section');
+
+            if (nichosSection) nichosSection.classList.add('show');
+            if (filtersContainer) filtersContainer.classList.add('hidden');
+            if (productsContainer) productsContainer.classList.add('hidden');
+            if (paginationSection) paginationSection.classList.add('hidden');
+            if (portadaDosSection) portadaDosSection.style.display = 'none';
+            if (revendSection) revendSection.style.display = 'none';
+        }
+
+        // Abrir modal "Próximamente"
+        function abrirModalProximamente(nicho) {
+            const modal = document.getElementById('proximamente-modal');
+            const titulo = document.getElementById('proximamente-titulo');
+            
+            if (modal) {
+                titulo.textContent = `La sección de ${nicho} estará disponible muy pronto. Gracias por tu interés.`;
+                modal.classList.add('active');
+            }
+        }
+
+        // Cerrar modal "Próximamente"
+        function cerrarModalProximamente() {
+            const modal = document.getElementById('proximamente-modal');
+            if (modal) {
+                modal.classList.remove('active');
+            }
+        }
+
+        // Verificar sesión al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Esperar a que Firebase esté listo
+            setTimeout(() => {
+                actualizarVistaNichos();
+                actualizarBotonesRevend();
+            }, 500);
+        });
+
+        // También actualizar cuando el usuario se loguea/desloguea
+        // Interceptar el initializeUserSession existente
+        const originalInitializeUserSession = window.initializeUserSession || function() {};
+        window.initializeUserSession = function(userData, user) {
+            originalInitializeUserSession(userData, user);
+            actualizarVistaNichos();
+            actualizarBotonesRevend();
+        };
+
+        // Interceptar logoutUser
+        const originalLogoutUser = window.logoutUser || function() {};
+        window.logoutUser = function() {
+            originalLogoutUser();
+            window.codigoValidado = false;
+            localStorage.removeItem('codigoRevendedorValidado');
+            localStorage.removeItem('codigoRevendedorValidadoFecha');
+            ocultarCatalogo();
+            actualizarBotonesRevend();
+        };
+
+        // Limpiar código validado si expira (30 días)
+        function verificarExpiracionCodigo() {
+            const fechaValidacion = localStorage.getItem('codigoRevendedorValidadoFecha');
+            if (fechaValidacion) {
+                const ahora = new Date().getTime();
+                const dias = (ahora - parseInt(fechaValidacion)) / (1000 * 60 * 60 * 24);
+                if (dias > 30) {
+                    localStorage.removeItem('codigoRevendedorValidado');
+                    localStorage.removeItem('codigoRevendedorValidadoFecha');
+                    window.codigoValidado = false;
+                    ocultarCatalogo();
+                }
+            }
+        }
+
+        // Verificar expiración cada 5 minutos
+        setInterval(verificarExpiracionCodigo, 5 * 60 * 1000);
     </script>
 </body>
 </html>
