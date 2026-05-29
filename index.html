@@ -4756,28 +4756,33 @@
             document.getElementById('profileName').textContent = 
                 window.currentUser?.nombre || user.email.split('@')[0];
 
-            // Intentar mostrar código en este orden: window.currentUser → localStorage → Firestore
+            // Intentar mostrar código en este orden: localStorage → window.currentUser → Firestore
             let codigoEncontrado = false;
             
-            // 1. Intenta desde window.currentUser
-            if (window.currentUser?.codigoVendedor && window.currentUser.codigoVendedor.trim() !== '') {
-                document.getElementById('profileCode').textContent = window.currentUser.codigoVendedor;
-                console.log('✅ [Profile] Código desde window.currentUser:', window.currentUser.codigoVendedor);
+            // 1. PRIMER INTENTO: localStorage (más rápido y más confiable)
+            console.log('🔍 [Profile] Intentando obtener código de localStorage...');
+            const codigoLocal = localStorage.getItem('codigoVendedorLocal');
+            if (codigoLocal && codigoLocal.trim() !== '') {
+                document.getElementById('profileCode').textContent = codigoLocal;
+                console.log('✅ [Profile] Código desde localStorage:', codigoLocal);
                 codigoEncontrado = true;
             }
             
-            // 2. Si no, intenta desde localStorage
+            // 2. SEGUNDO INTENTO: window.currentUser
             if (!codigoEncontrado) {
-                const codigoLocal = localStorage.getItem('codigoVendedorLocal');
-                if (codigoLocal) {
-                    document.getElementById('profileCode').textContent = codigoLocal;
-                    console.log('✅ [Profile] Código desde localStorage:', codigoLocal);
+                console.log('🔍 [Profile] Intentando obtener código de window.currentUser...');
+                if (window.currentUser?.codigoVendedor && window.currentUser.codigoVendedor.trim() !== '') {
+                    document.getElementById('profileCode').textContent = window.currentUser.codigoVendedor;
+                    console.log('✅ [Profile] Código desde window.currentUser:', window.currentUser.codigoVendedor);
+                    // Guardar en localStorage también para futuras consultas
+                    localStorage.setItem('codigoVendedorLocal', window.currentUser.codigoVendedor);
                     codigoEncontrado = true;
                 }
             }
             
-            // 3. Si aún no tiene código, carga desde Firestore
+            // 3. TERCER INTENTO: Firestore
             if (!codigoEncontrado) {
+                console.log('🔍 [Profile] Intentando obtener código de Firestore...');
                 document.getElementById('profileCode').textContent = 'Cargando...';
                 try {
                     const doc = await firebase.firestore().collection('usuarios').doc(user.uid).get();
@@ -4785,26 +4790,42 @@
                     if (doc.exists) {
                         const userData = doc.data();
                         console.log('📋 [Profile] Datos desde Firestore:', userData);
+                        console.log('🔑 [Profile] codigoVendedor en Firestore:', userData?.codigoVendedor);
                         
-                        if (userData.codigoVendedor) {
+                        if (userData.codigoVendedor && userData.codigoVendedor.trim() !== '') {
                             document.getElementById('profileCode').textContent = userData.codigoVendedor;
                             console.log('✅ [Profile] Código desde Firestore:', userData.codigoVendedor);
+                            // Guardar en localStorage para futuras consultas
+                            localStorage.setItem('codigoVendedorLocal', userData.codigoVendedor);
+                            codigoEncontrado = true;
                         } else {
+                            console.warn('⚠️ [Profile] Firestore no tiene codigoVendedor');
                             document.getElementById('profileCode').textContent = 'Código no disponible';
                         }
                         
-                        // Actualizar window.currentUser
-                        window.currentUser = {
-                            uid: user.uid,
-                            email: user.email,
-                            ...userData
-                        };
+                        // Actualizar window.currentUser con datos frescos
+                        if (!window.currentUser || !window.currentUser.codigoVendedor) {
+                            window.currentUser = {
+                                uid: user.uid,
+                                email: user.email,
+                                ...userData
+                            };
+                            console.log('✅ [Profile] window.currentUser actualizado desde Firestore');
+                        }
                     } else {
+                        console.warn('⚠️ [Profile] Documento NO existe en Firestore');
                         document.getElementById('profileCode').textContent = 'Código no disponible';
                     }
                 } catch (error) {
                     console.error('❌ Error cargando desde Firestore:', error);
-                    document.getElementById('profileCode').textContent = 'Código no disponible';
+                    // Si Firestore falla, intentar mostrar lo que haya en localStorage
+                    const fallbackCode = localStorage.getItem('codigoVendedorLocal');
+                    if (fallbackCode) {
+                        document.getElementById('profileCode').textContent = fallbackCode;
+                        console.log('✅ [Profile] Usando fallback de localStorage:', fallbackCode);
+                    } else {
+                        document.getElementById('profileCode').textContent = 'Código no disponible';
+                    }
                 }
             }
 
