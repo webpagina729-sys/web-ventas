@@ -4473,6 +4473,10 @@
                     creado: new Date()
                 };
 
+                // ✅ Guardar código en localStorage PRIMERO (antes de Firestore)
+                localStorage.setItem('codigoVendedorLocal', codigoVendedor);
+                console.log('💾 [Register] ✅ Código guardado en localStorage:', codigoVendedor);
+
                 if (!firebase.firestore) {
                     console.warn("Firebase Firestore no disponible");
                 } else {
@@ -4491,14 +4495,8 @@
                         .catch(err => console.warn('❌ [Register] Firestore Error: ' + err.message));
                 }
 
-                // Guardar código en localStorage como fallback
-                localStorage.setItem('codigoVendedorLocal', codigoVendedor);
-                
                 // Mostrar modal de confirmación con el código vendedor
                 showRegistrationConfirmation(codigoVendedor, nombre);
-                
-                // El listener de onAuthStateChanged() se ejecutará automáticamente
-                // y mantendrá la sesión abierta después de que el usuario cierre el modal
                 
             } catch (error) {
                 console.error("Error en registro:", error?.message);
@@ -5016,6 +5014,10 @@
             console.log('🔧 [Session] userData recibido:', userData);
             console.log('⚠️⚠️⚠️ CRÍTICO - userData?.codigoVendedor QUE SE RECIBE:', userData?.codigoVendedor || '❌ NO ESTÁ EN userData');
             
+            // Verificar si hay código en localStorage
+            const codigoLocalStorage = localStorage.getItem('codigoVendedorLocal');
+            console.log('🔍 [Session] Código en localStorage:', codigoLocalStorage || 'NO ENCONTRADO');
+            
             // Si no hay datos de Firestore, crear objeto mínimo
             const safeUserData = userData || {
                 nombre: authUser.email.split('@')[0],
@@ -5029,13 +5031,24 @@
             // Guardar datos en variables globales para acceso rápido
             console.log('🔧 [Session] === ASIGNANDO window.currentUser ===');
             
+            // ✅ PRIORIDAD: Si hay código en localStorage, úsalo; si no, usa el de Firestore
+            const codigoFinal = codigoLocalStorage && codigoLocalStorage.trim() !== '' 
+                ? codigoLocalStorage 
+                : (safeUserData.codigoVendedor || '');
+            
             window.currentUser = {
                 uid: authUser.uid,
                 email: authUser.email,
                 nombre: safeUserData.nombre || authUser.email.split('@')[0],
-                codigoVendedor: safeUserData.codigoVendedor || '',
+                codigoVendedor: codigoFinal,
                 creado: safeUserData.creado || new Date()
             };
+            
+            // ✅ CRÍTICO: Guardar codigoVendedor en localStorage siempre que esté disponible
+            if (window.currentUser.codigoVendedor && window.currentUser.codigoVendedor.trim() !== '') {
+                localStorage.setItem('codigoVendedorLocal', window.currentUser.codigoVendedor);
+                console.log('💾 [Session] ✅ Código guardado en localStorage:', window.currentUser.codigoVendedor);
+            }
             
             console.log('⚠️⚠️⚠️ CRÍTICO - window.currentUser.codigoVendedor DESPUÉS de asignar:', window.currentUser?.codigoVendedor || '❌ SE PERDIÓ');
             console.log('🔧 [Session] ✅ window.currentUser COMPLETO:', JSON.stringify(window.currentUser, null, 2));
