@@ -2205,8 +2205,8 @@
             pointer-events: none;
         }
         .revend-section-inner {
-            max-width: 1200px;
-            width: 90%;
+            max-width: 100%;
+            width: 100%;
             margin: 0 auto;
             position: relative;
             z-index: 1;
@@ -2214,11 +2214,12 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            padding: 0;
         }
         .revend-section-inner img {
             width: 100%;
             height: auto;
-            max-width: 1200px;
+            max-width: none;
             margin: 0 auto 20px auto;
             display: block;
         }
@@ -2436,28 +2437,77 @@
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            background: rgba(0, 102, 255, 0.8);
-            color: white;
-            border: none;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 20px;
+            font-weight: 300;
+            color: #666;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s;
+            padding: 2px 4px;
+            transition: color 0.2s;
             z-index: 10;
+            background: none !important;
+            border: none !important;
+            outline: 0 !important;
+            box-shadow: none !important;
+            outline-width: 0 !important;
+            outline-offset: 0 !important;
+            -webkit-appearance: none !important;
+            -webkit-tap-highlight-color: transparent !important;
+            -webkit-box-shadow: none !important;
+            -webkit-focus-ring-color: transparent !important;
+            -moz-appearance: none !important;
+            appearance: none !important;
         }
         .carrusel-nav:hover {
-            background: var(--primary);
+            color: #333;
+            background: none !important;
+            outline: 0 !important;
+            box-shadow: none !important;
+        }
+        .carrusel-nav:focus {
+            outline: 0 !important;
+            box-shadow: none !important;
+            background: none !important;
+            outline-width: 0 !important;
+            outline-offset: 0 !important;
+        }
+        .carrusel-nav:focus-visible {
+            outline: 0 !important;
+            box-shadow: none !important;
+            background: none !important;
+            outline-width: 0 !important;
+            outline-offset: 0 !important;
+        }
+        .carrusel-nav:focus-within {
+            outline: 0 !important;
+            box-shadow: none !important;
+            background: none !important;
+            outline-width: 0 !important;
+            outline-offset: 0 !important;
+        }
+        .carrusel-nav:active {
+            outline: 0 !important;
+            box-shadow: none !important;
+            background: none !important;
+            outline-width: 0 !important;
+            outline-offset: 0 !important;
+        }
+        .carrusel-nav::before {
+            display: none !important;
+        }
+        .carrusel-nav::after {
+            display: none !important;
+        }
+        .carrusel-nav::-webkit-focus-ring-color {
+            outline: 0 !important;
         }
         .carrusel-prev {
-            left: 8px;
+            left: 12px;
         }
         .carrusel-next {
-            right: 8px;
+            right: 12px;
         }
         .carrusel-dots {
             position: absolute;
@@ -2750,8 +2800,8 @@
                 <!-- CARRUSEL ANCHO -->
                 <div class="carrusel-container" id="carrusel-container">
                     <div class="carrusel-wrapper" id="carrusel-wrapper"></div>
-                    <button class="carrusel-nav carrusel-prev" onclick="carruselAnterior()">‹</button>
-                    <button class="carrusel-nav carrusel-next" onclick="carruselSiguiente()">›</button>
+                    <button class="carrusel-nav carrusel-prev" onclick="carruselAnterior()" title="Anterior">‹</button>
+                    <button class="carrusel-nav carrusel-next" onclick="carruselSiguiente()" title="Siguiente">›</button>
                     <div class="carrusel-dots" id="carrusel-dots"></div>
                 </div>
                 
@@ -2762,17 +2812,17 @@
                 </div>
             </div>
 
-            <!-- NICHO 2: OTROS NICHOS -->
+            <!-- NICHO 2: DE TODO -->
             <div class="nicho-item">
                 <div class="nicho-info">
-                    <h3 class="nicho-title">Otros nichos</h3>
+                    <h3 class="nicho-title">De Todo</h3>
                     <p class="nicho-subtitle">Bazar • Perfumería • Belleza • Herramientas. Accede a múltiples categorías de productos en una sola opción. Expande tu catálogo con variedad.</p>
                 </div>
                 
                 <!-- BADGE + BOTÓN -->
                 <div class="nicho-footer">
                     <div class="nicho-badge">💰 Monto mínimo: $200.000</div>
-                    <button class="nicho-button" onclick="abrirModalProximamente('Otros nichos')">Comenzar próximo pedido en este nicho</button>
+                    <button class="nicho-button" onclick="abrirModalProximamente('De Todo')">Comenzar próximo pedido en este nicho</button>
                 </div>
             </div>
 
@@ -2849,12 +2899,10 @@
     <!-- REVEND SECTION -->
     <div class="revend-section" id="revend-section-container">
         <div class="revend-section-inner">
-            <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 30px; margin-top: 10px;">
-                <img src="portadauno.png" alt="Portada Revende" class="portada-image" style="width: 90%; max-width: 100%;">
-            </div>
+            <img src="portadauno.png" alt="Portada Revende" class="portada-image" style="width: 100%; max-width: 100%; display: block; margin: 0 auto 20px auto;">
             <div style="text-align: center; font-size: 16px; font-weight: 600; color: white; margin-bottom: 20px;">Recibir todas las semanas ideas para vender más</div>
             <button class="revend-btn" id="revend-btn-main" onclick="handleRevendClick()" style="margin-bottom: 30px;">Quiero mi tienda</button>
-        </div>
+        </img>
     </div>
 
     <!-- FINAL FOOTER BANNER -->
@@ -4667,8 +4715,8 @@
         function confirmEmailPrompt() {
             // Marcar email como confirmado
             localStorage.setItem('emailConfirmado', 'true');
-            // Abrir el formulario de confirmación
-            window.open('https://confirmaciondecorreo.tuweb.workers.dev/', '_blank');
+            // Abrir el formulario de Brevo
+            window.open('https://8cc1455f.sibforms.com/serve/MUIFAOe2caIUk_JszJEAGAXuWMAooq9jBLGOvdN8R2ecTP9XnIzhvmcJIr6sHXcB-ap4DPs38CfVHsbJyu1Nc6djziTbM7FfS-bGHzYXXhYj1V_wcohxKLoFy4sbfPH_xNmDgwVR4xVaaf4dyK_QlVjLzdj4E012J39XFQGdXYOvmNEzae4U9jt0_pRuCZHcElDfRt6XW7T4QwrXbA==', '_blank');
             closeEmailConfirmationModal();
         }
 
@@ -4708,70 +4756,55 @@
             document.getElementById('profileName').textContent = 
                 window.currentUser?.nombre || user.email.split('@')[0];
 
-            // PRIORIDAD ABSOLUTA: usar datos reconstruidos en sesión
-            if (
-                window.currentUser &&
-                window.currentUser.codigoVendedor &&
-                window.currentUser.codigoVendedor.trim() !== ''
-            ) {
-                document.getElementById('profileCode').textContent =
-                    window.currentUser.codigoVendedor;
-
-                console.log(
-                    '✅ [Profile] Código cargado desde window.currentUser:',
-                    window.currentUser.codigoVendedor
-                );
-
-            } else {
-                console.warn('⚠️ window.currentUser no tiene codigoVendedor');
-
-                // FALLBACK FIRESTORE
+            // Intentar mostrar código en este orden: window.currentUser → localStorage → Firestore
+            let codigoEncontrado = false;
+            
+            // 1. Intenta desde window.currentUser
+            if (window.currentUser?.codigoVendedor && window.currentUser.codigoVendedor.trim() !== '') {
+                document.getElementById('profileCode').textContent = window.currentUser.codigoVendedor;
+                console.log('✅ [Profile] Código desde window.currentUser:', window.currentUser.codigoVendedor);
+                codigoEncontrado = true;
+            }
+            
+            // 2. Si no, intenta desde localStorage
+            if (!codigoEncontrado) {
+                const codigoLocal = localStorage.getItem('codigoVendedorLocal');
+                if (codigoLocal) {
+                    document.getElementById('profileCode').textContent = codigoLocal;
+                    console.log('✅ [Profile] Código desde localStorage:', codigoLocal);
+                    codigoEncontrado = true;
+                }
+            }
+            
+            // 3. Si aún no tiene código, carga desde Firestore
+            if (!codigoEncontrado) {
+                document.getElementById('profileCode').textContent = 'Cargando...';
                 try {
-                    const doc = await firebase
-                        .firestore()
-                        .collection('usuarios')
-                        .doc(user.uid)
-                        .get();
-
+                    const doc = await firebase.firestore().collection('usuarios').doc(user.uid).get();
+                    
                     if (doc.exists) {
                         const userData = doc.data();
-
                         console.log('📋 [Profile] Datos desde Firestore:', userData);
-
-                        document.getElementById('profileName').textContent =
-                            userData.nombre || user.email.split('@')[0];
-
-                        document.getElementById('profileCode').textContent =
-                            userData.codigoVendedor || localStorage.getItem('codigoVendedorLocal') || 'Código no disponible';
-
-                        // reconstruir memoria global
-                        console.log('ANTES DE ASIGNAR currentUser [Profile Modal]:', JSON.parse(JSON.stringify(window.currentUser)));
                         
+                        if (userData.codigoVendedor) {
+                            document.getElementById('profileCode').textContent = userData.codigoVendedor;
+                            console.log('✅ [Profile] Código desde Firestore:', userData.codigoVendedor);
+                        } else {
+                            document.getElementById('profileCode').textContent = 'Código no disponible';
+                        }
+                        
+                        // Actualizar window.currentUser
                         window.currentUser = {
                             uid: user.uid,
                             email: user.email,
                             ...userData
                         };
-                        
-                        console.log('DESPUÉS DE ASIGNAR currentUser [Profile Modal]:', JSON.parse(JSON.stringify(window.currentUser)));
-                        console.log('codigoVendedor final [Profile Modal]:', window.currentUser?.codigoVendedor);
-
                     } else {
-                        document.getElementById('profileName').textContent =
-                            user.email.split('@')[0];
-
-                        document.getElementById('profileCode').textContent =
-                            localStorage.getItem('codigoVendedorLocal') || 'Código no disponible';
+                        document.getElementById('profileCode').textContent = 'Código no disponible';
                     }
-
                 } catch (error) {
-                    console.error('❌ Error cargando perfil:', error);
-
-                    document.getElementById('profileName').textContent =
-                        user.email.split('@')[0];
-
-                    document.getElementById('profileCode').textContent =
-                        localStorage.getItem('codigoVendedorLocal') || 'Código no disponible';
+                    console.error('❌ Error cargando desde Firestore:', error);
+                    document.getElementById('profileCode').textContent = 'Código no disponible';
                 }
             }
 
@@ -5244,6 +5277,32 @@
             actualizarCarrusel();
         }
 
+        // Auto-deslizar carrusel cada 5 segundos
+        let carruselInterval = null;
+        function iniciarAutoDesliz() {
+            if (carruselInterval) clearInterval(carruselInterval);
+            carruselInterval = setInterval(() => {
+                if (productosCarrusel.length > 1) {
+                    carruselSiguiente();
+                }
+            }, 5000);
+        }
+        function detenerAutoDesliz() {
+            if (carruselInterval) clearInterval(carruselInterval);
+        }
+
+        // Agregar listeners para pausar en hover
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                const container = document.getElementById('carrusel-container');
+                if (container) {
+                    container.addEventListener('mouseenter', detenerAutoDesliz);
+                    container.addEventListener('mouseleave', iniciarAutoDesliz);
+                    iniciarAutoDesliz();
+                }
+            }, 100);
+        });
+
         // Verificar si ya está logueado y mostrar sección de nichos
         function actualizarVistaNichos() {
             const nichosSection = document.getElementById('nichos-section');
@@ -5380,9 +5439,9 @@
         // Manejar click del botón "Quiero mi tienda" / "Recibir ideas"
         function handleRevendClick() {
             if (window.currentUser) {
-                // Usuario logueado: marcar email como confirmado y abrir formulario
+                // Usuario logueado: marcar email como confirmado y abrir formulario Brevo
                 localStorage.setItem('emailConfirmado', 'true');
-                window.open('https://confirmaciondecorreo.tuweb.workers.dev/', '_blank');
+                window.open('https://8cc1455f.sibforms.com/serve/MUIFAOe2caIUk_JszJEAGAXuWMAooq9jBLGOvdN8R2ecTP9XnIzhvmcJIr6sHXcB-ap4DPs38CfVHsbJyu1Nc6djziTbM7FfS-bGHzYXXhYj1V_wcohxKLoFy4sbfPH_xNmDgwVR4xVaaf4dyK_QlVjLzdj4E012J39XFQGdXYOvmNEzae4U9jt0_pRuCZHcElDfRt6XW7T4QwrXbA==', '_blank');
             } else {
                 // Usuario no logueado: ir a registro
                 alert('Redirigiendo a formulario de registro... próximamente');
@@ -5506,6 +5565,75 @@
 
         // Verificar expiración cada 5 minutos
         setInterval(verificarExpiracionCodigo, 5 * 60 * 1000);
+
+        // ════════════════════════════════════════════════
+        // SCRIPT DE VERIFICACIÓN PARA USUARIO
+        // ════════════════════════════════════════════════
+        window.verificarPlataforma = function() {
+            console.clear();
+            console.log('%c═════ VERIFICACIÓN DE PLATAFORMA ═════', 'color: #0066ff; font-weight: bold; font-size: 14px;');
+            
+            // 1. FLECHAS DEL CARRUSEL
+            console.log('\n%c✓ FLECHAS DEL CARRUSEL', 'color: #2BA84F; font-weight: bold;');
+            const flechas = document.querySelectorAll('.carrusel-nav');
+            console.log(`  Cantidad: ${flechas.length} (debe ser 2)`);
+            if (flechas.length > 0) {
+                const styles = window.getComputedStyle(flechas[0]);
+                console.log(`  Color: ${styles.color}`);
+                console.log(`  Background: ${styles.background}`);
+                console.log(`  Box-shadow: ${styles.boxShadow}`);
+                console.log(`  Outline: ${styles.outline}`);
+            }
+            
+            // 2. AUTOPLAY
+            console.log('\n%c✓ AUTOPLAY DEL CARRUSEL', 'color: #2BA84F; font-weight: bold;');
+            console.log(`  Intervalo activo: ${carruselInterval ? '✅ SÍ' : '❌ NO'}`);
+            console.log(`  Productos en carrusel: ${productosCarrusel.length}`);
+            console.log(`  Slide actual: ${carruselActual}`);
+            
+            // 3. PORTADA
+            console.log('\n%c✓ PORTADA DEL BANNER VERDE', 'color: #2BA84F; font-weight: bold;');
+            const portada = document.querySelector('.revend-section-inner img');
+            if (portada) {
+                const portadaStyles = window.getComputedStyle(portada);
+                console.log(`  Ancho: ${portadaStyles.width}`);
+                console.log(`  Max-width: ${portadaStyles.maxWidth}`);
+                console.log(`  Origen: ${portada.src}`);
+            }
+            
+            // 4. EMAIL CONFIRMATION
+            console.log('\n%c✓ CONFIRMACIÓN POR EMAIL', 'color: #2BA84F; font-weight: bold;');
+            const emailConfirmado = localStorage.getItem('emailConfirmado');
+            console.log(`  Estado: ${emailConfirmado ? '✅ Confirmado' : '⏳ Pendiente'}`);
+            
+            // 5. CÓDIGO DE REVENDEDOR
+            console.log('\n%c✓ CÓDIGO DE REVENDEDOR', 'color: #2BA84F; font-weight: bold;');
+            console.log(`  window.currentUser: ${window.currentUser ? '✅ Cargado' : '❌ No cargado'}`);
+            if (window.currentUser?.codigoVendedor) {
+                console.log(`    Código: ${window.currentUser.codigoVendedor}`);
+            }
+            const codigoLocal = localStorage.getItem('codigoVendedorLocal');
+            if (codigoLocal) {
+                console.log(`  localStorage: ✅ ${codigoLocal}`);
+            }
+            
+            // 6. PRODUCTOS
+            console.log('\n%c✓ PRODUCTOS', 'color: #2BA84F; font-weight: bold;');
+            console.log(`  Total en catálogo: ${window.products ? window.products.length : 0}`);
+            console.log(`  En carrusel (5000-30000): ${productosCarrusel.length}`);
+            
+            // 7. USUARIO AUTENTICADO
+            console.log('\n%c✓ AUTENTICACIÓN', 'color: #2BA84F; font-weight: bold;');
+            const user = firebase.auth().currentUser;
+            console.log(`  Usuario: ${user ? user.email : 'NO LOGUEADO'}`);
+            console.log(`  UID: ${user ? user.uid : '-'}`);
+            
+            console.log('\n%c═════════════════════════════════════════════', 'color: #0066ff; font-weight: bold;');
+            console.log('%cAbre la consola (F12) y ejecuta: verificarPlataforma()', 'color: #666; font-size: 12px;');
+        };
+        
+        // Ejecutar verificación automáticamente en carga
+        setTimeout(window.verificarPlataforma, 2000);
     </script>
 </body>
 </html>
