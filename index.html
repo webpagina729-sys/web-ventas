@@ -4754,8 +4754,9 @@
             document.getElementById('profileName').textContent = 
                 window.currentUser?.nombre || user.email.split('@')[0];
 
-            // Intentar mostrar código en este orden: localStorage → window.currentUser → Firestore
+            // Intentar mostrar código en este orden: localStorage → window.currentUser → Firestore → Generar nuevo
             let codigoEncontrado = false;
+            let codigoFinal = '';
             
             // 1. PRIMER INTENTO: localStorage (más rápido y más confiable)
             console.log('🔍 [Profile] Intentando obtener código de localStorage...');
@@ -4763,6 +4764,7 @@
             if (codigoLocal && codigoLocal.trim() !== '') {
                 document.getElementById('profileCode').textContent = codigoLocal;
                 console.log('✅ [Profile] Código desde localStorage:', codigoLocal);
+                codigoFinal = codigoLocal;
                 codigoEncontrado = true;
             }
             
@@ -4772,6 +4774,7 @@
                 if (window.currentUser?.codigoVendedor && window.currentUser.codigoVendedor.trim() !== '') {
                     document.getElementById('profileCode').textContent = window.currentUser.codigoVendedor;
                     console.log('✅ [Profile] Código desde window.currentUser:', window.currentUser.codigoVendedor);
+                    codigoFinal = window.currentUser.codigoVendedor;
                     // Guardar en localStorage también para futuras consultas
                     localStorage.setItem('codigoVendedorLocal', window.currentUser.codigoVendedor);
                     codigoEncontrado = true;
@@ -4793,12 +4796,14 @@
                         if (userData.codigoVendedor && userData.codigoVendedor.trim() !== '') {
                             document.getElementById('profileCode').textContent = userData.codigoVendedor;
                             console.log('✅ [Profile] Código desde Firestore:', userData.codigoVendedor);
+                            codigoFinal = userData.codigoVendedor;
                             // Guardar en localStorage para futuras consultas
                             localStorage.setItem('codigoVendedorLocal', userData.codigoVendedor);
+                            // Actualizar window.currentUser
+                            if (window.currentUser) {
+                                window.currentUser.codigoVendedor = userData.codigoVendedor;
+                            }
                             codigoEncontrado = true;
-                        } else {
-                            console.warn('⚠️ [Profile] Firestore no tiene codigoVendedor');
-                            document.getElementById('profileCode').textContent = 'Código no disponible';
                         }
                         
                         // Actualizar window.currentUser con datos frescos
@@ -4810,21 +4815,43 @@
                             };
                             console.log('✅ [Profile] window.currentUser actualizado desde Firestore');
                         }
-                    } else {
-                        console.warn('⚠️ [Profile] Documento NO existe en Firestore');
-                        document.getElementById('profileCode').textContent = 'Código no disponible';
                     }
                 } catch (error) {
                     console.error('❌ Error cargando desde Firestore:', error);
-                    // Si Firestore falla, intentar mostrar lo que haya en localStorage
-                    const fallbackCode = localStorage.getItem('codigoVendedorLocal');
-                    if (fallbackCode) {
-                        document.getElementById('profileCode').textContent = fallbackCode;
-                        console.log('✅ [Profile] Usando fallback de localStorage:', fallbackCode);
-                    } else {
-                        document.getElementById('profileCode').textContent = 'Código no disponible';
-                    }
                 }
+            }
+            
+            // 4. ÚLTIMO RECURSO: Si aún no hay código, generar uno
+            if (!codigoEncontrado || !codigoFinal || codigoFinal.trim() === '') {
+                console.warn('⚠️ [Profile] No se encontró código en ningún lado. Generando nuevo...');
+                codigoFinal = generarCodigoVendedor();
+                document.getElementById('profileCode').textContent = codigoFinal;
+                
+                // Guardar en localStorage
+                localStorage.setItem('codigoVendedorLocal', codigoFinal);
+                
+                // Guardar en window.currentUser
+                if (window.currentUser) {
+                    window.currentUser.codigoVendedor = codigoFinal;
+                }
+                
+                // Guardar en Firestore en background
+                firebase.firestore().collection('usuarios').doc(user.uid).update({
+                    codigoVendedor: codigoFinal
+                }).then(() => {
+                    console.log('✅ [Profile] Código nuevo guardado en Firestore:', codigoFinal);
+                }).catch(err => {
+                    // Si falla update, intentar set (por si el documento no existe)
+                    firebase.firestore().collection('usuarios').doc(user.uid).set({
+                        uid: user.uid,
+                        email: user.email,
+                        nombre: window.currentUser?.nombre || user.email.split('@')[0],
+                        codigoVendedor: codigoFinal,
+                        creado: window.currentUser?.creado || new Date()
+                    }).catch(err2 => console.warn('⚠️ Error guardando en Firestore:', err2.message));
+                });
+                
+                console.log('✅ [Profile] ✅ Código generado y guardado:', codigoFinal);
             }
 
             document.getElementById('profileModal').classList.add('active');
@@ -5031,10 +5058,19 @@
             // Guardar datos en variables globales para acceso rápido
             console.log('🔧 [Session] === ASIGNANDO window.currentUser ===');
             
-            // ✅ PRIORIDAD: Si hay código en localStorage, úsalo; si no, usa el de Firestore
-            const codigoFinal = codigoLocalStorage && codigoLocalStorage.trim() !== '' 
-                ? codigoLocalStorage 
-                : (safeUserData.codigoVendedor || '');
+            // ✅ PRIORIDAD: localStorage > Firestore > generar nuevo
+            let codigoFinal = '';
+            if (codigoLocalStorage && codigoLocalStorage.trim() !== '') {
+                codigoFinal = codigoLocalStorage;
+                console.log('📍 Usando código de localStorage:', codigoFinal);
+            } else if (safeUserData.codigoVendedor && safeUserData.codigoVendedor.trim() !== '') {
+                codigoFinal = safeUserData.codigoVendedor;
+                console.log('📍 Usando código de Firestore:', codigoFinal);
+            } else {
+                // ✅ FALLBACK: Generar código si no existe
+                codigoFinal = generarCodigoVendedor();
+                console.log('⚠️ Código no encontrado. Generado nuevo:', codigoFinal);
+            }
             
             window.currentUser = {
                 uid: authUser.uid,
@@ -5044,10 +5080,22 @@
                 creado: safeUserData.creado || new Date()
             };
             
-            // ✅ CRÍTICO: Guardar codigoVendedor en localStorage siempre que esté disponible
-            if (window.currentUser.codigoVendedor && window.currentUser.codigoVendedor.trim() !== '') {
-                localStorage.setItem('codigoVendedorLocal', window.currentUser.codigoVendedor);
-                console.log('💾 [Session] ✅ Código guardado en localStorage:', window.currentUser.codigoVendedor);
+            // ✅ CRÍTICO: Guardar codigoVendedor en localStorage SIEMPRE
+            localStorage.setItem('codigoVendedorLocal', window.currentUser.codigoVendedor);
+            console.log('💾 [Session] ✅ Código guardado en localStorage:', window.currentUser.codigoVendedor);
+            
+            // ✅ CRÍTICO: Si se generó código nuevo, actualizar Firestore en background
+            if (!safeUserData.codigoVendedor || safeUserData.codigoVendedor.trim() === '') {
+                if (codigoFinal && codigoFinal.trim() !== '') {
+                    // Actualizar en Firestore sin bloquear
+                    firebase.firestore().collection('usuarios').doc(authUser.uid).update({
+                        codigoVendedor: codigoFinal
+                    }).then(() => {
+                        console.log('✅ [Session] Código nuevo guardado en Firestore:', codigoFinal);
+                    }).catch(err => {
+                        console.warn('⚠️ [Session] Error actualizando Firestore:', err.message);
+                    });
+                }
             }
             
             console.log('⚠️⚠️⚠️ CRÍTICO - window.currentUser.codigoVendedor DESPUÉS de asignar:', window.currentUser?.codigoVendedor || '❌ SE PERDIÓ');
