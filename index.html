@@ -4201,12 +4201,15 @@
         }
 
         // Validar que el código de revendedor existe en Firebase
-        async function validarCodigoRevendedor(codigo) {
+        async function validarCodigoRevendedorEnFirestore(codigo) {
             try {
+                // Normalizar el código como se hace en la validación
+                const codigoNormalizado = codigo.trim().replace(/\s+/g, '').toUpperCase();
+                
                 // Buscar en la colección usuarios si existe un documento con este codigoVendedor
                 const snapshot = await firebase.firestore()
                     .collection('usuarios')
-                    .where('codigoVendedor', '==', codigo)
+                    .where('codigoVendedor', '==', codigoNormalizado)
                     .get();
                 
                 // Si encuentra al menos un documento, el código es válido
@@ -4232,7 +4235,7 @@
                 cp: document.getElementById('checkout-cp').value.trim(),
                 direccion: document.getElementById('checkout-direccion').value.trim(),
                 observaciones: document.getElementById('checkout-observaciones').value.trim(),
-                codigoRevendedor: document.getElementById('checkout-codigo-revendedor').value.trim()
+                codigoRevendedor: document.getElementById('checkout-codigo-revendedor').value.trim().replace(/\s+/g, '').toUpperCase()
             };
 
             // VALIDACIONES
@@ -4247,7 +4250,7 @@
             if (!checkout.codigoRevendedor) { alert('❌ Código de Revendedor requerido'); return; }
 
             // Validar que el código de revendedor existe en Firebase
-            const codigoValido = await validarCodigoRevendedor(checkout.codigoRevendedor);
+            const codigoValido = await validarCodigoRevendedorEnFirestore(checkout.codigoRevendedor);
             if (!codigoValido) { 
                 alert('❌ El código ingresado no es de un revendedor'); 
                 return; 
@@ -5493,7 +5496,8 @@
         async function validarCodigoRevendedor() {
             const codigoInput = document.getElementById('codigo-input');
             const error = document.getElementById('codigo-error');
-            let codigo = codigoInput.value.trim().toUpperCase();
+            // Normalizar: eliminar TODOS los espacios y convertir a MAYÚSCULAS
+            let codigo = codigoInput.value.trim().replace(/\s+/g, '').toUpperCase();
 
             console.log('🔍 [Validación] Código ingresado (raw):', codigoInput.value);
             console.log('🔍 [Validación] Código ingresado (limpio):', codigo);
@@ -5519,7 +5523,8 @@
                 const usuarioActual = firebase.auth().currentUser;
                 if (usuarioActual && window.currentUser?.codigoVendedor) {
                     console.log('🔍 [Validación] Usuario logueado. Verificando su código...');
-                    const codigoDelUsuario = window.currentUser.codigoVendedor.trim().toUpperCase();
+                    // Normalizar igual: eliminar espacios y MAYÚSCULAS
+                    const codigoDelUsuario = window.currentUser.codigoVendedor.trim().replace(/\s+/g, '').toUpperCase();
                     console.log('🔍 [Validación] Código del usuario:', codigoDelUsuario);
                     
                     if (codigo === codigoDelUsuario) {
