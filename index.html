@@ -5434,10 +5434,37 @@
 
         // Abrir modal de validación de código
         function abrirModalCodigo() {
+            console.log('🔓 [AbrirModalCodigo] Iniciando...');
+            console.log('🔓 [AbrirModalCodigo] Usuario logueado:', !!firebase.auth().currentUser);
+            console.log('🔓 [AbrirModalCodigo] window.codigoValidado:', window.codigoValidado);
+            console.log('🔓 [AbrirModalCodigo] window.currentUser:', window.currentUser);
+            
             // Si ya validó, mostrar catálogo directamente
             if (window.codigoValidado) {
+                console.log('✅ [AbrirModalCodigo] Código ya validado. Mostrando catálogo...');
                 mostrarCatalogo();
                 return;
+            }
+            
+            // Si NO está logueado, abrir login
+            if (!firebase.auth().currentUser) {
+                console.warn('⚠️ [AbrirModalCodigo] Usuario NO logueado. Abriendo login...');
+                alert('Debes iniciar sesión primero para acceder al catálogo de revendedor.');
+                abrirLogin();
+                return;
+            }
+            
+            // Si está logueado pero no tiene código, generar uno
+            if (!window.currentUser?.codigoVendedor) {
+                console.warn('⚠️ [AbrirModalCodigo] Usuario logueado pero sin código. Generando...');
+                const nuevoCodigoVendedor = generarCodigoVendedor();
+                window.currentUser.codigoVendedor = nuevoCodigoVendedor;
+                localStorage.setItem('codigoVendedorLocal', nuevoCodigoVendedor);
+                
+                // Actualizar en Firestore en background
+                firebase.firestore().collection('usuarios').doc(firebase.auth().currentUser.uid).update({
+                    codigoVendedor: nuevoCodigoVendedor
+                }).catch(err => console.warn('⚠️ Error actualizando Firestore:', err.message));
             }
             
             const modal = document.getElementById('codigo-modal');
@@ -5450,6 +5477,7 @@
                 input.value = '';
                 error.classList.remove('show');
                 error.textContent = '';
+                console.log('✅ [AbrirModalCodigo] Modal abierto. Código del usuario:', window.currentUser?.codigoVendedor);
             }
         }
 
@@ -5465,7 +5493,13 @@
         async function validarCodigoRevendedor() {
             const codigoInput = document.getElementById('codigo-input');
             const error = document.getElementById('codigo-error');
-            const codigo = codigoInput.value.trim().toUpperCase();
+            let codigo = codigoInput.value.trim().toUpperCase();
+
+            console.log('🔍 [Validación] Código ingresado (raw):', codigoInput.value);
+            console.log('🔍 [Validación] Código ingresado (limpio):', codigo);
+            console.log('🔍 [Validación] Longitud:', codigo.length);
+            console.log('🔍 [Validación] Usuario actual logueado:', !!firebase.auth().currentUser);
+            console.log('🔍 [Validación] window.currentUser:', window.currentUser);
 
             // Validar que no esté vacío
             if (!codigo) {
@@ -5481,17 +5515,88 @@
             btnValidar.disabled = true;
 
             try {
-                // Buscar en Firestore si existe un usuario con este codigoVendedor
-                const resultado = await firebase.firestore()
+                // ESTRATEGIA 1: Si el usuario está logueado, verificar su código directo
+                const usuarioActual = firebase.auth().currentUser;
+                if (usuarioActual && window.currentUser?.codigoVendedor) {
+                    console.log('🔍 [Validación] Usuario logueado. Verificando su código...');
+                    const codigoDelUsuario = window.currentUser.codigoVendedor.trim().toUpperCase();
+                    console.log('🔍 [Validación] Código del usuario:', codigoDelUsuario);
+                    
+                    if (codigo === codigoDelUsuario) {
+                        console.log('✅ [Validación] Código VÁLIDO (match directo con usuario logueado)');
+                        error.classList.remove('show');
+                        
+                        // Guardar en localStorage
+                        localStorage.setItem('codigoRevendedorValidado', codigo);
+                        localStorage.setItem('codigoRevendedorValidadoFecha', new Date().getTime());
+                        
+                        window.codigoValidado = true;
+                        
+                        cerrarModalCodigo();
+                        mostrarCatalogo();
+                        return;
+                    }
+                }
+
+                console.log('🔍 [Validación] Buscando en Firestore...');
+                
+                // ESTRATEGIA 2: Buscar en Firestore (para usuarios no logueados o código no coincide)
+                let resultado = await firebase.firestore()
                     .collection('usuarios')
                     .where('codigoVendedor', '==', codigo)
                     .get();
 
+                console.log('🔍 [Validación] Resultados encontrados (búsqueda exacta):', resultado.size);
+                if (resultado.size > 0) {
+                    console.log('✅ [Validación] ENCONTRADO:', resultado.docs[0].data());
+                }
+
+                // Si no encuentra, intentar búsquedas alternativas
                 if (resultado.empty) {
+                    console.warn('⚠️ [Validación] No encontrado con búsqueda exacta. Intentando variantes...');
+                    
+                    // Intentar búsqueda 2: convertir a minúsculas
+                    resultado = await firebase.firestore()
+                        .collection('usuarios')
+                        .where('codigoVendedor', '==', codigo.toLowerCase())
+                        .get();
+                    
+                    console.log('🔍 [Validación] Resultados con minúsculas:', resultado.size);
+                    if (resultado.size > 0) {
+                        console.log('✅ [Validación] ENCONTRADO (minúsculas):', resultado.docs[0].data());
+                    }
+                }
+
+                // Intentar búsqueda 3: sin el prefijo "RW-" por si acaso
+                if (resultado.empty && codigo.startsWith('RW-')) {
+                    const codigoSinPrefijo = codigo.substring(3);
+                    console.log('🔍 [Validación] Intentando sin prefijo RW-:', codigoSinPrefijo);
+                    
+                    resultado = await firebase.firestore()
+                        .collection('usuarios')
+                        .where('codigoVendedor', '==', codigoSinPrefijo)
+                        .get();
+                    
+                    console.log('🔍 [Validación] Resultados sin prefijo:', resultado.size);
+                    if (resultado.size > 0) {
+                        console.log('✅ [Validación] ENCONTRADO (sin prefijo):', resultado.docs[0].data());
+                    }
+                }
+
+                if (resultado.empty) {
+                    console.error('❌ [Validación] Código NO encontrado en Firestore');
+                    console.warn('⚠️ [Validación] Nota: Si el código es incorrecto, verifica que sea exacto.');
+                    console.warn('⚠️ [Validación] Los códigos son sensibles a mayúsculas/minúsculas y espacios en blanco.');
+                    
                     // Código NO válido
-                    error.textContent = 'Código de revendedor inválido. Verifica y intenta de nuevo.';
+                    error.textContent = 'Código de revendedor inválido. Verifica que sea exacto (sin espacios extras) e intenta de nuevo.';
                     error.classList.add('show');
                 } else {
+                    console.log('✅ [Validación] Código VÁLIDO encontrado');
+                    const usuarioDoc = resultado.docs[0];
+                    console.log('✅ [Validación] Usuario encontrado (UID):', usuarioDoc.id);
+                    console.log('✅ [Validación] Datos del usuario:', usuarioDoc.data());
+                    
                     // Código VÁLIDO
                     error.classList.remove('show');
                     
@@ -5501,6 +5606,8 @@
                     
                     window.codigoValidado = true;
                     
+                    console.log('💾 [Validación] Código guardado en localStorage');
+                    
                     // Cerrar modal
                     cerrarModalCodigo();
                     
@@ -5508,9 +5615,18 @@
                     mostrarCatalogo();
                 }
             } catch (error) {
-                console.error('Error validando código:', error);
-                error.classList.add('show');
-                error.textContent = 'Error al validar. Intenta de nuevo.';
+                console.error('❌ [Validación] Error validando código:', error);
+                console.error('❌ [Validación] Mensaje de error:', error.message);
+                console.error('❌ [Validación] Code:', error.code);
+                
+                // Mostrar error específico de Firestore si existe
+                if (error.code === 'permission-denied') {
+                    error.classList.add('show');
+                    error.textContent = 'Error de permisos. Por favor, intenta de nuevo en unos segundos.';
+                } else {
+                    error.classList.add('show');
+                    error.textContent = 'Error al validar. Intenta de nuevo.';
+                }
             } finally {
                 btnValidar.textContent = textOriginal;
                 btnValidar.disabled = false;
