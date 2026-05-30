@@ -5294,18 +5294,34 @@
 
         // INICIALIZAR CARRUSEL CON IMÁGENES DE PRODUCTOS
         function inicializarCarrusel() {
+            console.log('🎬 [Carrusel] Iniciando inicializarCarrusel()');
+            console.log('🎬 [Carrusel] window.products existe:', !!window.products);
+            console.log('🎬 [Carrusel] window.products.length:', window.products ? window.products.length : 0);
+            
             // Filtrar productos con precio entre 5000 y 30000
             const productosArabes = window.products.filter(p => 
                 p.precio >= 5000 && p.precio <= 30000 && p.imagen && p.categoria
             );
+            console.log('🎬 [Carrusel] Productos filtrados (5000-30000):', productosArabes.length);
+            console.log('🎬 [Carrusel] Primeros productos filtrados:', productosArabes.slice(0, 3));
+            
             productosCarrusel = productosArabes;
 
-            if (productosCarrusel.length === 0) return;
+            if (productosCarrusel.length === 0) {
+                console.warn('⚠️ [Carrusel] NO HAY PRODUCTOS para mostrar en carrusel');
+                return;
+            }
 
             const wrapper = document.getElementById('carrusel-wrapper');
             const dotsContainer = document.getElementById('carrusel-dots');
 
-            if (!wrapper || !dotsContainer) return;
+            console.log('🎬 [Carrusel] wrapper existe:', !!wrapper);
+            console.log('🎬 [Carrusel] dotsContainer existe:', !!dotsContainer);
+
+            if (!wrapper || !dotsContainer) {
+                console.error('❌ [Carrusel] wrapper o dotsContainer NO EXISTEN');
+                return;
+            }
 
             // Limpiar
             wrapper.innerHTML = '';
@@ -5325,6 +5341,8 @@
                 dotsContainer.appendChild(dot);
             });
 
+            console.log('✅ [Carrusel] Carrusel inicializado con', productosCarrusel.length, 'productos');
+            
             carruselActual = 0;
             actualizarCarrusel();
         }
@@ -5409,6 +5427,8 @@
                 if (nichosSection) {
                     nichosSection.classList.remove('hide');
                 }
+                // IMPORTANTE: Inicializar carrusel también cuando no hay usuario logueado
+                setTimeout(inicializarCarrusel, 100);
             }
         }
 
