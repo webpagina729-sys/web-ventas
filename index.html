@@ -2852,7 +2852,7 @@
                 <!-- BADGE + BOTÓN -->
                 <div class="nicho-footer">
                     <div class="nicho-badge">💰 Monto mínimo: $200.000</div>
-                    <button class="nicho-button" onclick="abrirModalProximamente('De Todo')">Comenzar próximo pedido en este nicho</button>
+                    <button class="nicho-button" onclick="abrirModalCodigo()">Comenzar próximo pedido en este nicho</button>
                 </div>
             </div>
 
@@ -4851,6 +4851,8 @@
                 }
 
                 // Mostrar modal de confirmación con el código vendedor
+                // También guardar en localStorage para acceso sin login
+                localStorage.setItem('codigoVendedorLocal', codigoVendedor);
                 showRegistrationConfirmation(codigoVendedor, nombre);
                 
             } catch (error) {
@@ -5762,29 +5764,21 @@
         function actualizarVistaNichos() {
             const nichosSection = document.getElementById('nichos-section');
             
-            if (window.currentUser) {
-                // Verificar si ya validó el código (localStorage)
-                const codigoEnSesion = localStorage.getItem('codigoRevendedorValidado');
-                if (codigoEnSesion) {
-                    // Usuario logueado y código validado: mostrar catálogo
-                    window.codigoValidado = true;
-                    mostrarCatalogo();
-                } else {
-                    // Usuario logueado pero sin código validado: mostrar nichos
-                    if (nichosSection) {
-                        nichosSection.classList.remove('hide');
-                    }
-                    // Inicializar carrusel
-                    setTimeout(inicializarCarrusel, 100);
-                }
-            } else {
-                // Usuario NO logueado: mostrar nichos
-                if (nichosSection) {
-                    nichosSection.classList.remove('hide');
-                }
-                // IMPORTANTE: Inicializar carrusel también cuando no hay usuario logueado
-                setTimeout(inicializarCarrusel, 100);
+            // Primero verificar si hay código validado en localStorage (sin requerir login)
+            const codigoEnSesion = localStorage.getItem('codigoRevendedorValidado');
+            if (codigoEnSesion) {
+                // Código validado (puede ser con o sin usuario logueado): mostrar catálogo
+                window.codigoValidado = true;
+                mostrarCatalogo();
+                return;
             }
+            
+            // No hay código validado: mostrar nichos
+            if (nichosSection) {
+                nichosSection.classList.remove('hide');
+            }
+            // IMPORTANTE: Inicializar carrusel también cuando no hay código validado
+            setTimeout(inicializarCarrusel, 100);
         }
 
         // Abrir modal de validación de código
@@ -5801,27 +5795,7 @@
                 return;
             }
             
-            // Si NO está logueado, abrir login
-            if (!firebase.auth().currentUser) {
-                console.warn('⚠️ [AbrirModalCodigo] Usuario NO logueado. Abriendo login...');
-                alert('Debes iniciar sesión primero para acceder al catálogo de revendedor.');
-                abrirLogin();
-                return;
-            }
-            
-            // Si está logueado pero no tiene código, generar uno
-            if (!window.currentUser?.codigoVendedor) {
-                console.warn('⚠️ [AbrirModalCodigo] Usuario logueado pero sin código. Generando...');
-                const nuevoCodigoVendedor = generarCodigoVendedor();
-                window.currentUser.codigoVendedor = nuevoCodigoVendedor;
-                localStorage.setItem('codigoVendedorLocal', nuevoCodigoVendedor);
-                
-                // Actualizar en Firestore en background
-                firebase.firestore().collection('usuarios').doc(firebase.auth().currentUser.uid).update({
-                    codigoVendedor: nuevoCodigoVendedor
-                }).catch(err => console.warn('⚠️ Error actualizando Firestore:', err.message));
-            }
-            
+            // ABRIR MODAL DIRECTAMENTE (sin requerir login)
             const modal = document.getElementById('codigo-modal');
             const input = document.getElementById('codigo-input');
             const error = document.getElementById('codigo-error');
@@ -5832,7 +5806,7 @@
                 input.value = '';
                 error.classList.remove('show');
                 error.textContent = '';
-                console.log('✅ [AbrirModalCodigo] Modal abierto. Código del usuario:', window.currentUser?.codigoVendedor);
+                console.log('✅ [AbrirModalCodigo] Modal de código abierto');
             }
         }
 
@@ -5978,6 +5952,15 @@
             renderProducts();
             updateCartCount();
         }
+        
+        // Mostrar catálogo combinado (perfumes y/o calzados)
+        function mostrarCatalogoCombinado(tipo) {
+            console.log('📦 [mostrarCatalogoCombinado] Tipo:', tipo);
+            
+            // Por ahora, mostrar el catálogo de perfumes (mismo flujo)
+            // En el futuro se puede expandir para mostrar calzados también
+            mostrarCatalogo();
+        }
 
         // Manejar click del botón "Quiero mi tienda" / "Recibir ideas"
         function handleRevendClick() {
@@ -6068,21 +6051,16 @@
         function abrirCalzados() {
             console.log('👟 [abrirCalzados] Abriendo catálogo de calzados...');
             
-            // Validar que el usuario tenga código validado
-            if (!window.codigoValidado) {
-                alert('Debes validar tu código de revendedor primero.');
-                abrirModalCodigo();
+            // Si código ya está validado, mostrar catálogo directo
+            if (window.codigoValidado) {
+                console.log('✅ [abrirCalzados] Código ya validado. Abriendo catálogo...');
+                mostrarCatalogoCombinado('calzados');
                 return;
             }
             
-            // El carrusel ya está visible en la pantalla de inicio
-            // Scroll al carrusel de calzados
-            setTimeout(() => {
-                const carruselSection = document.getElementById('carrusel-calzados-inicio-container');
-                if (carruselSection) {
-                    carruselSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            }, 100);
+            // Si no, pedir código de revendedor
+            console.log('🔓 [abrirCalzados] Código no validado. Pidiendo código...');
+            abrirModalCodigo();
         }
         
         // Filtrar Calzados por categoría (Adultos o Niños)
