@@ -2945,8 +2945,8 @@
     <div class="revend-section" id="revend-section-container">
         <div class="revend-section-inner">
             <img src="portadauno.png" alt="Portada Revende" class="portada-image" style="width: 100%; max-width: 100%; display: block; margin: 0 auto 20px auto;">
-            <div style="text-align: center; font-size: 16px; font-weight: 600; color: white; margin-bottom: 20px;">Recibir todas las semanas ideas para vender más</div>
-            <button class="revend-btn" id="revend-btn-main" onclick="handleRevendClick()" style="margin-bottom: 30px;">Quiero mi tienda</button>
+            <div style="text-align: center; font-size: 16px; font-weight: 600; color: white; margin-bottom: 20px;">Obtené ideas todas las semanas para llevar adelante tu negocio con Revende Ways</div>
+            <button class="revend-btn" id="revend-btn-main" onclick="abrirLogin()" style="margin-bottom: 30px;">Quiero mi tienda</button>
         </img>
     </div>
 
@@ -5607,7 +5607,7 @@
             productosCarrusel.forEach((producto, index) => {
                 const slide = document.createElement('div');
                 slide.className = 'carrusel-slide';
-                slide.innerHTML = `<img src="${BASE_IMAGE_URL}${producto.imagen}" alt="${producto.nombre}" onerror="this.src='portadauno.png'" style="width: 100%; height: 300px; object-fit: cover;">`;
+                slide.innerHTML = `<img src="${BASE_IMAGE_URL}${producto.imagen}" alt="${producto.nombre}" onerror="this.src='portadauno.png'" style="width: 100%; height: auto; max-height: 350px; object-fit: contain; display: block; margin: 0 auto;">`;
                 wrapper.appendChild(slide);
 
                 const dot = document.createElement('button');
