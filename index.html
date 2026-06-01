@@ -2838,7 +2838,7 @@
                 <!-- BADGE + BOTÓN -->
                 <div class="nicho-footer">
                     <div class="nicho-badge">💰 Monto mínimo: $150.000</div>
-                    <button class="nicho-button" onclick="abrirModalCodigo()">Comenzar próximo pedido en este nicho</button>
+                    <button class="nicho-button" onclick="abrirModalCodigo('perfumes')">Comenzar próximo pedido en este nicho</button>
                 </div>
             </div>
 
@@ -3854,6 +3854,8 @@
 
         // ✅ Variables GLOBALES para que no se pierdan
         window.cart = [];
+        window.currentCatalog = 'perfumes';  // 'perfumes' o 'calzados'
+        window.currentProducts = window.products;  // Inicializar con perfumes
         window.currentFilter = 'todos';
         window.currentSort = 'default';
         window.currentSearch = '';
@@ -3879,6 +3881,8 @@
         
         // ✅ Referencia corta para compatibilidad
         let cart = window.cart;
+        let currentCatalog = window.currentCatalog;
+        let currentProducts = window.currentProducts;
         let currentFilter = window.currentFilter;
         let currentSort = window.currentSort;
         let currentSearch = window.currentSearch;
@@ -3886,30 +3890,31 @@
         let itemsDisplayed = window.itemsDisplayed;
 
         function filterProducts(categoria) {
-            currentFilter = categoria;
-            itemsDisplayed = 6;
+            window.currentFilter = categoria;
+            window.itemsDisplayed = 6;
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
             renderProducts();
         }
 
         function searchProducts(searchTerm) {
-            currentSearch = searchTerm;
-            itemsDisplayed = 6;
+            window.currentSearch = searchTerm;
+            window.itemsDisplayed = 6;
             renderProducts();
         }
 
         function changeSort(sortValue) {
-            currentSort = sortValue;
-            itemsDisplayed = 6;
+            window.currentSort = sortValue;
+            window.itemsDisplayed = 6;
             renderProducts();
         }
 
         function renderProducts() {
             console.log('🎨 [RENDER] ========== INICIANDO renderProducts() ==========');
-            console.log('📦 [RENDER] products.length:', products?.length || 'UNDEFINED');
-            console.log('🎯 [RENDER] currentFilter:', currentFilter);
-            console.log('🔍 [RENDER] currentSearch:', currentSearch);
+            console.log('📦 [RENDER] currentCatalog:', window.currentCatalog);
+            console.log('📦 [RENDER] currentProducts.length:', window.currentProducts?.length || 'UNDEFINED');
+            console.log('🎯 [RENDER] currentFilter:', window.currentFilter);
+            console.log('🔍 [RENDER] currentSearch:', window.currentSearch);
             
             const grid = document.getElementById('products-grid');
             console.log('🎯 [RENDER] Grid DOM encontrado?', !!grid);
@@ -3918,12 +3923,13 @@
                 return;
             }
             
-            let filtered = currentFilter === 'todos' ? products : products.filter(p => p.categoria === currentFilter);
+            // Usar window.currentProducts para filtrar
+            let filtered = window.currentFilter === 'todos' ? window.currentProducts : window.currentProducts.filter(p => p.categoria === window.currentFilter);
             console.log('📊 [RENDER] Productos después de filtro:', filtered?.length || 0);
             
             // Aplicar búsqueda
-            if (currentSearch.trim() !== '') {
-                const searchTerm = currentSearch.toLowerCase().trim();
+            if (window.currentSearch.trim() !== '') {
+                const searchTerm = window.currentSearch.toLowerCase().trim();
                 filtered = filtered.filter(p => 
                     p.nombre.toLowerCase().includes(searchTerm) ||
                     p.caracteristicas.some(c => c.toLowerCase().includes(searchTerm)) ||
@@ -3932,15 +3938,15 @@
             }
             
             // Aplicar ordenamiento
-            if (currentSort === 'price-asc') {
+            if (window.currentSort === 'price-asc') {
                 filtered = [...filtered].sort((a, b) => a.precio - b.precio);
-            } else if (currentSort === 'price-desc') {
+            } else if (window.currentSort === 'price-desc') {
                 filtered = [...filtered].sort((a, b) => b.precio - a.precio);
             }
             
             let html = '';
             
-            for (let i = 0; i < itemsDisplayed && i < filtered.length; i++) {
+            for (let i = 0; i < window.itemsDisplayed && i < filtered.length; i++) {
                 const p = filtered[i];
                 html += `
                 <div class="product-card">
@@ -3964,7 +3970,7 @@
             
             // Mostrar u ocultar botón de "Ver más"
             const paginationSection = document.getElementById('pagination-section');
-            if (itemsDisplayed < filtered.length) {
+            if (window.itemsDisplayed < filtered.length) {
                 paginationSection.style.display = 'flex';
             } else {
                 paginationSection.style.display = 'none';
@@ -3972,7 +3978,7 @@
         }
 
         function loadMoreProducts() {
-            itemsDisplayed += 6;
+            window.itemsDisplayed += 6;
             renderProducts();
             // Scroll suave a los nuevos productos
             setTimeout(() => {
@@ -4005,14 +4011,14 @@
         }
 
         function openDetails(id) {
-            currentProduct = products.find(p => p.id === id);
-            document.getElementById('modal-details-image').src = currentProduct.imagen;
-            document.getElementById('modal-details-name').textContent = currentProduct.nombre;
-            document.getElementById('modal-details-price').textContent = `$${currentProduct.precio.toLocaleString()}`;
-            document.getElementById('modal-details-price-original').textContent = `$${currentProduct.precioOriginal.toLocaleString()}`;
-            document.getElementById('modal-details-characteristics').innerHTML = currentProduct.caracteristicas.map(c => `<li>${c}</li>`).join('');
-            document.getElementById('modal-details-info').textContent = currentProduct.info;
-            document.getElementById('modal-details-moment').textContent = currentProduct.momento;
+            window.currentProduct = window.currentProducts.find(p => p.id === id);
+            document.getElementById('modal-details-image').src = window.currentProduct.imagen;
+            document.getElementById('modal-details-name').textContent = window.currentProduct.nombre;
+            document.getElementById('modal-details-price').textContent = `$${window.currentProduct.precio.toLocaleString()}`;
+            document.getElementById('modal-details-price-original').textContent = `$${window.currentProduct.precioOriginal.toLocaleString()}`;
+            document.getElementById('modal-details-characteristics').innerHTML = window.currentProduct.caracteristicas.map(c => `<li>${c}</li>`).join('');
+            document.getElementById('modal-details-info').textContent = window.currentProduct.info;
+            document.getElementById('modal-details-moment').textContent = window.currentProduct.momento;
             document.getElementById('modal-details').classList.add('active');
         }
 
@@ -4024,22 +4030,22 @@
             if (e.target === document.getElementById('modal-details')) closeDetails();
         }
 
-        let currentQty = 1;
+        window.currentQty = 1;
 
         function openZoomFromDetails() {
             closeDetails();
-            openZoom(currentProduct.imagen);
+            openZoom(window.currentProduct.imagen);
         }
 
         function increaseQty() {
-            currentQty++;
-            document.getElementById('qty-display').textContent = currentQty;
+            window.currentQty++;
+            document.getElementById('qty-display').textContent = window.currentQty;
         }
 
         function decreaseQty() {
-            if (currentQty > 1) {
-                currentQty--;
-                document.getElementById('qty-display').textContent = currentQty;
+            if (window.currentQty > 1) {
+                window.currentQty--;
+                document.getElementById('qty-display').textContent = window.currentQty;
             }
         }
 
@@ -5646,6 +5652,7 @@
     <script>
         // Variables globales para nichos
         window.codigoValidado = false;
+        window.categoriaSeleccionada = 'perfumes';  // ✅ TRACKEAR CATEGORÍA SELECCIONADA
         let carruselActual = 0;
         let productosCarrusel = [];
 
@@ -5782,16 +5789,23 @@
         }
 
         // Abrir modal de validación de código
-        function abrirModalCodigo() {
-            console.log('🔓 [AbrirModalCodigo] Iniciando...');
+        function abrirModalCodigo(categoria = 'perfumes') {
+            console.log('🔓 [AbrirModalCodigo] Iniciando para categoría:', categoria);
             console.log('🔓 [AbrirModalCodigo] Usuario logueado:', !!firebase.auth().currentUser);
             console.log('🔓 [AbrirModalCodigo] window.codigoValidado:', window.codigoValidado);
-            console.log('🔓 [AbrirModalCodigo] window.currentUser:', window.currentUser);
+            
+            // ✅ GUARDAR CATEGORÍA SELECCIONADA
+            window.categoriaSeleccionada = categoria;
+            console.log('✅ [AbrirModalCodigo] Categoría guardada:', window.categoriaSeleccionada);
             
             // Si ya validó, mostrar catálogo directamente
             if (window.codigoValidado) {
-                console.log('✅ [AbrirModalCodigo] Código ya validado. Mostrando catálogo...');
-                mostrarCatalogo();
+                console.log('✅ [AbrirModalCodigo] Código ya validado. Mostrando catálogo:', categoria);
+                if (categoria === 'calzados') {
+                    mostrarCatalogoCombinado('calzados');
+                } else {
+                    mostrarCatalogo();
+                }
                 return;
             }
             
@@ -5806,7 +5820,7 @@
                 input.value = '';
                 error.classList.remove('show');
                 error.textContent = '';
-                console.log('✅ [AbrirModalCodigo] Modal de código abierto');
+                console.log('✅ [AbrirModalCodigo] Modal de código abierto para:', categoria);
             }
         }
 
@@ -5906,12 +5920,19 @@
                     window.codigoValidado = true;
                     
                     console.log('💾 [Validación] Código guardado en localStorage');
+                    console.log('📍 [Validación] Categoría seleccionada:', window.categoriaSeleccionada);
                     
                     // Cerrar modal
                     cerrarModalCodigo();
                     
-                    // Mostrar catálogo
-                    mostrarCatalogo();
+                    // ✅ MOSTRAR CATÁLOGO SEGÚN CATEGORÍA SELECCIONADA
+                    if (window.categoriaSeleccionada === 'calzados') {
+                        console.log('👟 [Validación] Mostrando catálogo de CALZADOS');
+                        mostrarCatalogoCombinado('calzados');
+                    } else {
+                        console.log('💐 [Validación] Mostrando catálogo de PERFUMES');
+                        mostrarCatalogo();
+                    }
                 }
             } catch (error) {
                 console.error('❌ [Validación] Error validando código:', error);
@@ -5932,8 +5953,20 @@
             }
         }
 
-        // Mostrar catálogo y ocultar nichos
+        // Mostrar catálogo de PERFUMES árabes
         function mostrarCatalogo() {
+            console.log('💐 [mostrarCatalogo] Abriendo catálogo de PERFUMES');
+            
+            // Cambiar a catálogo de perfumes
+            window.currentCatalog = 'perfumes';
+            window.currentProducts = window.products;
+            
+            // Resetear filtros
+            window.currentFilter = 'todos';
+            window.currentSort = 'default';
+            window.currentSearch = '';
+            window.itemsDisplayed = 6;
+            
             const nichosSection = document.getElementById('nichos-section');
             const filtersContainer = document.getElementById('filters-container');
             const productsContainer = document.getElementById('products-container');
@@ -5948,18 +5981,42 @@
             if (portadaDosSection) portadaDosSection.style.display = 'block';
             if (revendSection) revendSection.style.display = 'block';
 
-            // Renderizar productos si no está hecho
+            // Renderizar productos
             renderProducts();
             updateCartCount();
         }
         
-        // Mostrar catálogo combinado (perfumes y/o calzados)
+        // Mostrar catálogo de CALZADOS
         function mostrarCatalogoCombinado(tipo) {
-            console.log('📦 [mostrarCatalogoCombinado] Tipo:', tipo);
+            console.log('👟 [mostrarCatalogoCombinado] Abriendo catálogo de CALZADOS');
             
-            // Por ahora, mostrar el catálogo de perfumes (mismo flujo)
-            // En el futuro se puede expandir para mostrar calzados también
-            mostrarCatalogo();
+            // Cambiar a catálogo de calzados
+            window.currentCatalog = 'calzados';
+            window.currentProducts = window.productsCalzados;
+            
+            // Resetear filtros
+            window.currentFilter = 'todos';
+            window.currentSort = 'default';
+            window.currentSearch = '';
+            window.itemsDisplayed = 6;
+            
+            const nichosSection = document.getElementById('nichos-section');
+            const filtersContainer = document.getElementById('filters-container');
+            const productsContainer = document.getElementById('products-container');
+            const paginationSection = document.getElementById('pagination-section');
+            const portadaDosSection = document.getElementById('portada-dos-section');
+            const revendSection = document.querySelector('.revend-section');
+
+            if (nichosSection) nichosSection.classList.add('hide');
+            if (filtersContainer) filtersContainer.classList.remove('hidden');
+            if (productsContainer) productsContainer.classList.remove('hidden');
+            if (paginationSection) paginationSection.classList.remove('hidden');
+            if (portadaDosSection) portadaDosSection.style.display = 'block';
+            if (revendSection) revendSection.style.display = 'block';
+
+            // Renderizar productos
+            renderProducts();
+            updateCartCount();
         }
 
         // Manejar click del botón "Quiero mi tienda" / "Recibir ideas"
@@ -6058,9 +6115,9 @@
                 return;
             }
             
-            // Si no, pedir código de revendedor
+            // Si no, pedir código de revendedor (PASAR 'calzados' COMO PARÁMETRO)
             console.log('🔓 [abrirCalzados] Código no validado. Pidiendo código...');
-            abrirModalCodigo();
+            abrirModalCodigo('calzados');
         }
         
         // Filtrar Calzados por categoría (Adultos o Niños)
