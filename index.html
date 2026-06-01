@@ -2863,18 +2863,12 @@
                     <p class="nicho-subtitle">Los calzados son importados, calidad premium de Brasil. Zapatillas deportivas urbanas.</p>
                 </div>
 
-                <!-- SELECTOR DE CATEGORÍAS CALZADOS -->
-                <div class="categoria-selector" id="calzados-categoria-selector" style="display: none; margin: 15px 0; text-align: center; gap: 10px;">
-                    <button class="categoria-btn activa" onclick="filtrarCalzadosPorCategoria('adultos')" data-categoria="adultos">👟 Adultos</button>
-                    <button class="categoria-btn" onclick="mostrarModalNinosProximamente()" data-categoria="niños">🧒 Niños (Próximamente)</button>
-                </div>
-                
-                <!-- CARRUSEL CALZADOS -->
-                <div class="carrusel-container" id="carrusel-calzados-container" style="display: none;">
-                    <div class="carrusel-wrapper" id="carrusel-calzados-wrapper"></div>
-                    <button class="carrusel-nav carrusel-prev" onclick="carruselCalzadosAnterior()" title="Anterior">‹</button>
-                    <button class="carrusel-nav carrusel-next" onclick="carruselCalzadosSiguiente()" title="Siguiente">›</button>
-                    <div class="carrusel-dots" id="carrusel-calzados-dots"></div>
+                <!-- CARRUSEL CALZADOS - PANTALLA INICIO -->
+                <div class="carrusel-container" id="carrusel-calzados-inicio-container">
+                    <div class="carrusel-wrapper" id="carrusel-calzados-inicio-wrapper"></div>
+                    <button class="carrusel-nav carrusel-prev" onclick="carruselCalzadosInicioAnterior()" title="Anterior">‹</button>
+                    <button class="carrusel-nav carrusel-next" onclick="carruselCalzadosInicioSiguiente()" title="Siguiente">›</button>
+                    <div class="carrusel-dots" id="carrusel-calzados-inicio-dots"></div>
                 </div>
                 
                 <!-- BADGE + BOTÓN -->
@@ -3358,9 +3352,91 @@
     </div>
 
     <script>
+        // 👟 CARRUSEL DE CALZADOS EN PANTALLA DE INICIO
+        let carruselCalzadosInicioIndex = 0;
+        let productosCarruselCalzados = [];
+        
+        function inicializarCarruselCalzadosInicio() {
+            // Obtener productos de calzados con precio entre 5000-45000
+            productosCarruselCalzados = (window.productsCalzados || [])
+                .filter(p => p.tipo === 'adulto' && p.imagen)
+                .sort(() => Math.random() - 0.5) // Aleatorios
+                .slice(0, 8); // Máximo 8 productos
+            
+            if (productosCarruselCalzados.length === 0) {
+                console.warn('⚠️ No hay productos de calzados disponibles para el carrusel');
+                return;
+            }
+            
+            renderizarCarruselCalzadosInicio();
+        }
+        
+        function renderizarCarruselCalzadosInicio() {
+            const wrapper = document.getElementById('carrusel-calzados-inicio-wrapper');
+            if (!wrapper) return;
+            
+            wrapper.innerHTML = '';
+            carruselCalzadosInicioIndex = 0;
+            
+            productosCarruselCalzados.forEach((producto, index) => {
+                const slide = document.createElement('div');
+                slide.className = 'carrusel-slide';
+                slide.style.display = index === 0 ? 'flex' : 'none';
+                slide.innerHTML = `<img src="${producto.imagen}" alt="${producto.nombre}">`;
+                wrapper.appendChild(slide);
+            });
+            
+            actualizarDotsCalzadosInicio();
+        }
+        
+        function actualizarDotsCalzadosInicio() {
+            const dotsContainer = document.getElementById('carrusel-calzados-inicio-dots');
+            if (!dotsContainer) return;
+            
+            dotsContainer.innerHTML = '';
+            productosCarruselCalzados.forEach((_, index) => {
+                const dot = document.createElement('button');
+                dot.className = `carrusel-dot ${index === carruselCalzadosInicioIndex ? 'active' : ''}`;
+                dot.onclick = () => mostrarSlideCalzadosInicio(index);
+                dotsContainer.appendChild(dot);
+            });
+        }
+        
+        function mostrarSlideCalzadosInicio(index) {
+            const slides = document.querySelectorAll('#carrusel-calzados-inicio-wrapper .carrusel-slide');
+            const dots = document.querySelectorAll('#carrusel-calzados-inicio-dots .carrusel-dot');
+            
+            slides.forEach(slide => slide.style.display = 'none');
+            dots.forEach(dot => dot.classList.remove('active'));
+            
+            if (slides[index]) {
+                slides[index].style.display = 'flex';
+            }
+            if (dots[index]) {
+                dots[index].classList.add('active');
+            }
+            
+            carruselCalzadosInicioIndex = index;
+        }
+        
+        function carruselCalzadosInicioAnterior() {
+            let newIndex = carruselCalzadosInicioIndex - 1;
+            if (newIndex < 0) newIndex = productosCarruselCalzados.length - 1;
+            mostrarSlideCalzadosInicio(newIndex);
+        }
+        
+        function carruselCalzadosInicioSiguiente() {
+            let newIndex = carruselCalzadosInicioIndex + 1;
+            if (newIndex >= productosCarruselCalzados.length) newIndex = 0;
+            mostrarSlideCalzadosInicio(newIndex);
+        }
+
         // Verificar que los elementos críticos existan en el DOM
         document.addEventListener('DOMContentLoaded', () => {
-            // DOM cargado
+            // Inicializar carrusel de Calzados en pantalla de inicio
+            setTimeout(() => {
+                inicializarCarruselCalzadosInicio();
+            }, 500);
         });
         
         // ═══════════════════════════════════════════════════════════════════════════
@@ -5990,7 +6066,7 @@
         
         // Abrir catálogo de Calzados
         function abrirCalzados() {
-            console.log('👟 [abrirCalzados] Abriendo calzados...');
+            console.log('👟 [abrirCalzados] Abriendo catálogo de calzados...');
             
             // Validar que el usuario tenga código validado
             if (!window.codigoValidado) {
@@ -5999,32 +6075,12 @@
                 return;
             }
             
-            // Mostrar selector de categorías
-            const categoriaSelector = document.querySelector('.categoria-selector');
-            const carruselContainer = document.getElementById('carrusel-calzados-container');
-            
-            if (categoriaSelector) {
-                categoriaSelector.style.display = 'flex';
-            }
-            
-            if (carruselContainer) {
-                carruselContainer.style.display = 'block';
-            }
-            
-            // Filtrar por defecto a Adultos
-            filtrarCalzadosPorCategoria('adultos');
-            
-            // Ocultar catálogo de perfumes
-            const perfumesContainer = document.getElementById('carrusel-container');
-            if (perfumesContainer) {
-                perfumesContainer.style.display = 'none';
-            }
-            
-            // Scroll al catálogo
+            // El carrusel ya está visible en la pantalla de inicio
+            // Scroll al carrusel de calzados
             setTimeout(() => {
-                const carruselSection = document.getElementById('carrusel-calzados-container');
+                const carruselSection = document.getElementById('carrusel-calzados-inicio-container');
                 if (carruselSection) {
-                    carruselSection.scrollIntoView({ behavior: 'smooth' });
+                    carruselSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
             }, 100);
         }
