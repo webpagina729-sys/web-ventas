@@ -2405,6 +2405,36 @@
             margin-bottom: 8px;
             line-height: 1.5;
         }
+        
+        /* SELECTOR DE CATEGORÍAS */
+        .categoria-selector {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .categoria-btn {
+            padding: 10px 24px;
+            border: 2px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        .categoria-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .categoria-btn.activa {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
         /* CARRUSEL */
         .carrusel-container {
             position: relative;
@@ -2832,11 +2862,25 @@
                     <h3 class="nicho-title">Calzados</h3>
                     <p class="nicho-subtitle">Los calzados son importados, calidad premium de Brasil. Zapatillas deportivas urbanas.</p>
                 </div>
+
+                <!-- SELECTOR DE CATEGORÍAS CALZADOS -->
+                <div class="categoria-selector" id="calzados-categoria-selector" style="display: none; margin: 15px 0; text-align: center; gap: 10px;">
+                    <button class="categoria-btn activa" onclick="filtrarCalzadosPorCategoria('adultos')" data-categoria="adultos">👟 Adultos</button>
+                    <button class="categoria-btn" onclick="mostrarModalNinosProximamente()" data-categoria="niños">🧒 Niños (Próximamente)</button>
+                </div>
+                
+                <!-- CARRUSEL CALZADOS -->
+                <div class="carrusel-container" id="carrusel-calzados-container" style="display: none;">
+                    <div class="carrusel-wrapper" id="carrusel-calzados-wrapper"></div>
+                    <button class="carrusel-nav carrusel-prev" onclick="carruselCalzadosAnterior()" title="Anterior">‹</button>
+                    <button class="carrusel-nav carrusel-next" onclick="carruselCalzadosSiguiente()" title="Siguiente">›</button>
+                    <div class="carrusel-dots" id="carrusel-calzados-dots"></div>
+                </div>
                 
                 <!-- BADGE + BOTÓN -->
                 <div class="nicho-footer">
-                    <div class="nicho-badge">💰 Disponible próximamente</div>
-                    <button class="nicho-button" onclick="abrirModalProximamente('Calzados')">Comenzar próximo pedido en este nicho</button>
+                    <div class="nicho-badge">💰 Monto mínimo: 12 productos</div>
+                    <button class="nicho-button" onclick="abrirCalzados()">Comenzar próximo pedido en este nicho</button>
                 </div>
             </div>
         </div>
@@ -3353,7 +3397,8 @@
         const WORKER_URL = 'https://workerpagos.tuweb.workers.dev';
         const MP_PUBLIC_KEY = 'TEST-f86ff695-f4bd-4bb9-9d81-28a2e39ce685';
         const MP_ENDPOINT = '/api/mp/create-preference';
-        const MIN_ORDER = 150000;
+        const MIN_ORDER = 150000;  // Mínimo para Perfumes (en dinero)
+        const MIN_ORDER_CALZADOS = 12;  // Mínimo para Calzados (cantidad de items)
         
         // DATOS DE PRODUCTOS (256 perfumes árabes)
         const BASE_IMAGE_URL = 'https://raw.githubusercontent.com/webpagina729-sys/web-ventas/main/';
@@ -3618,6 +3663,119 @@
             { id: 256, nombre: "SET PERFUME BOYS POUR HOMME LD8006", imagen: "boys.png", precio: 33120, precioOriginal: 65578, categoria: "masculino", caracteristicas: ["perfume importado", "masculino", "buena duración", "aroma envolvente", "set / kit de perfumería", "presentación única"], info: "Fragancia masculina con presencia marcada y proyección, pensada para uso prolongado durante el día y la noche.", momento: "uso diario / salidas / todo el año" }
         ];
 
+        // 👟 PRODUCTOS DE CALZADOS
+        window.productsCalzados = [
+            { id: 1, nombre: "DUNK CELESTE Y NUDE", imagen: "imagen.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway celeste y nude", "estilo neutro y versátil"], info: "Dunk en tono celeste y nude, combina con todo tipo de outfit.", momento: "Urbana / tarde / uso diario" },
+            { id: 2, nombre: "DUNK BLANCO Y VERDE GAMUZADA", imagen: "dunkblanco.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway blanco y verde", "material gamuzado", "estilo urbano/deportivo"], info: "Dunk en combinación blanco y verde gamuzada. Versátil para looks urbanos y deportivos.", momento: "Urbana / deporte / tarde" },
+            { id: 3, nombre: "DUNK PANDA 3D", imagen: "dunkpanda.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway panda (negro y blanco)", "detalle 3D", "estilo urbano"], info: "Dunk edición Panda con detalle 3D. Look llamativo y urbano.", momento: "Urbana / noche / salidas" },
+            { id: 4, nombre: "DUNK NUDE", imagen: "dunknude.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway nude/beige", "estilo neutro y versátil"], info: "Dunk en tono nude, combina con todo tipo de outfit.", momento: "Urbana / tarde / uso diario" },
+            { id: 5, nombre: "NIKE DUNK PANDA", imagen: "nikepanda.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway panda (negro y blanco)", "modelo clásico muy demandado", "estilo urbano"], info: "El icónico Dunk Panda, negro y blanco, uno de los modelos más populares. Amplia disponibilidad de talles.", momento: "Urbana / deporte / tarde / noche / uso diario" },
+            { id: 6, nombre: "NIKE DUNK TOTAL WHITE", imagen: "niketotal.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway blanco total", "estilo limpio y versátil"], info: "Dunk total white, look clásico que combina con cualquier outfit.", momento: "Urbana / uso diario / tarde" },
+            { id: 7, nombre: "NIKE DUNK BORDO", imagen: "nikebordo.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway burdeo/vino", "estilo urbano"], info: "Dunk en colorway bordo, ideal para outfits otoño-invierno y looks nocturnos.", momento: "Urbana / tarde / noche / otoño-invierno" },
+            { id: 8, nombre: "DUNK GLITTER", imagen: "glitter.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "detalle glitter/brillos", "estilo festivo y llamativo"], info: "Dunk con detalle glitter, perfecta para looks que buscan destacar.", momento: "Noche / eventos / salidas" },
+            { id: 9, nombre: "DUNK CELESTE METALIC", imagen: "dunkceleste.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway celeste metálico", "acabado brillante/metálico"], info: "Dunk en celeste metálico, look llamativo y futurista.", momento: "Noche / eventos / salidas" },
+            { id: 10, nombre: "DUNK CHERRY", imagen: "dunkcherry.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway cherry/rojo cereza", "estilo urbano/llamativo"], info: "Dunk en cherry, color vibrante y llamativo para looks urbanos.", momento: "Urbana / tarde / noche" },
+            { id: 11, nombre: "DUNK TOTAL BLACK", imagen: "totalblack.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway negro total", "estilo versátil y clásico"], info: "Dunk en negro total, combina con todo y es apta para cualquier ocasión.", momento: "Urbana / deporte / tarde / noche / uso diario" },
+            { id: 12, nombre: "DUNK GREY AND BLACK", imagen: "dunkgreyand.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway gris y negro", "estilo urbano/deportivo"], info: "Dunk en gris y negro, combinación sobria y urbana.", momento: "Urbana / tarde / noche" },
+            { id: 13, nombre: "DUNK GREEN AND BLACK", imagen: "dunkgreenand.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway verde y negro", "estilo urbano/deportivo"], info: "Dunk en verde y negro, look fresco y urbano.", momento: "Urbana / deporte / tarde" },
+            { id: 14, nombre: "DUNK AZUL MARINO", imagen: "dunkmarino.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway azul marino", "estilo urbano/clásico"], info: "Dunk en azul marino, colorway clásico y versátil.", momento: "Urbana / tarde / noche" },
+            { id: 15, nombre: "DUNK VERDE", imagen: "dunkverde.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway verde", "estilo urbano/deportivo"], info: "Dunk en verde, color tendencia para looks frescos y urbanos.", momento: "Urbana / deporte / tarde" },
+            { id: 16, nombre: "DUNK GRIS", imagen: "dunkgris.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway gris", "estilo neutro y versátil"], info: "Dunk gris, opción neutra que combina con todo tipo de indumentaria.", momento: "Urbana / uso diario / tarde / noche" },
+            { id: 17, nombre: "NIKE DUNK MARRONES", imagen: "nikemarrones.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway marrón", "estilo terroso/cálido"], info: "Dunk en tono marrón, tendencia en colores tierra.", momento: "Urbana / uso diario / tarde" },
+            { id: 18, nombre: "NIKE DUNK GREY AND CREAM", imagen: "nikecream.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway gris y crema", "estilo neutro y versátil"], info: "Dunk en gris y crema, combinación suave y muy combinable.", momento: "Urbana / uso diario / tarde" },
+            { id: 19, nombre: "NIKE DUNK GRIS CON BLANCO", imagen: "grisconblanco.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway gris con blanco", "estilo neutro/urbano"], info: "Dunk en gris con blanco, opción neutra y versátil para el día a día.", momento: "Urbana / uso diario / tarde" },
+            { id: 20, nombre: "NIKE DUNK BIRD", imagen: "dunkbird.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "diseño bird/pájaro", "estilo urbano/llamativo"], info: "Dunk edición Bird, diseño llamativo y único.", momento: "Urbana / tarde / salidas" },
+            { id: 21, nombre: "JORDAN LOW PANDA", imagen: "lowpanda.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Jordan Low", "colorway panda (negro y blanco)", "perfil bajo"], info: "Jordan Low en colorway Panda, modelo versátil y de perfil bajo.", momento: "Urbana / uso diario / tarde" },
+            { id: 22, nombre: "JORDAN LOW PINK", imagen: "lowrosa.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Jordan Low", "colorway rosa", "perfil bajo"], info: "Jordan Low rosa, opción femenina y moderna de perfil bajo.", momento: "Urbana / tarde / uso diario" },
+            { id: 23, nombre: "BOTITA JORDAN VERDE", imagen: "jordanverde.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo botita (caña alta)", "colorway verde", "estilo Jordan"], info: "Jordan botita en verde, mayor soporte y presencia visual con caña alta.", momento: "Urbana / deporte / tarde / noche" },
+            { id: 24, nombre: "JORDAN LOW MID PINK", imagen: "midpink.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Jordan Low Mid", "colorway rosa", "caña media"], info: "Jordan 1 Mid en rosa, clásico icónico con toque femenino.", momento: "Urbana / tarde / noche / salidas" },
+            { id: 25, nombre: "AIR FORCE BOTITA", imagen: "airforce.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Force 1", "colorway negro total", "estilo urbano/clásico"], info: "Air Force 1 en negro total, icónica y versátil para cualquier look.", momento: "Urbana / uso diario / tarde / noche" },
+            { id: 26, nombre: "RETRO 4 TOTAL WHITE", imagen: "retrototalwhite.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Jordan Retro 4", "colorway blanco total", "estilo retro/deportivo"], info: "Jordan Retro 4 en blanco total, look limpio y clásico.", momento: "Urbana / deporte / tarde" },
+            { id: 27, nombre: "RETRO 4 MOCCA", imagen: "retromocca.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Jordan Retro 4", "colorway mocca/café", "estilo retro/terroso"], info: "Retro 4 en mocca, tono cálido muy en tendencia.", momento: "Urbana / tarde / noche / otoño-invierno" },
+            { id: 28, nombre: "RETRO 4 GOLD", imagen: "retrogold.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Jordan Retro 4", "colorway dorado/gold", "estilo retro/llamativo"], info: "Retro 4 en gold, colorway dorado llamativo y festivo.", momento: "Noche / eventos / salidas" },
+            { id: 29, nombre: "RETRO 4 MARINO", imagen: "retromarino.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Jordan Retro 4", "colorway azul marino", "estilo retro/clásico"], info: "Retro 4 en marino, colorway oscuro y sofisticado.", momento: "Urbana / tarde / noche" },
+            { id: 30, nombre: "AIR FORCE PIPA BLACK", imagen: "pipablack.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Force", "colorway negro", "detalle pipa/swoosh"], info: "Air Force con pipa en negro, estilo urbano y clásico.", momento: "Urbana / uso diario / tarde / noche" },
+            { id: 31, nombre: "AIR FORCE LILA", imagen: "forcelila.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Force", "colorway lila/violeta", "estilo neutro y femenino"], info: "Air Force en lila, tono suave y femenino muy en tendencia.", momento: "Urbana / uso diario / tarde" },
+            { id: 32, nombre: "AIR FORCE WHITE AND BLUE", imagen: "whiteandblue.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Force 1", "colorway blanco y azul", "estilo bicolor clásico"], info: "Air Force 1 en combinación blanco y azul, estilo urbano bicolor.", momento: "Urbana / uso diario / tarde" },
+            { id: 33, nombre: "AIR FORCE 1 LOUIS VUITTON", imagen: "louisvuitton.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Force 1", "estampado inspirado en Louis Vuitton", "estilo luxury streetwear"], info: "Air Force 1 con diseño inspirado en Louis Vuitton. Look lujoso y llamativo.", momento: "Noche / eventos / salidas / urbana" },
+            { id: 34, nombre: "AIR FORCE LOUIS VUITTON MARRON", imagen: "louisvuittonair.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Force", "colorway marrón con estampado LV", "estilo luxury streetwear"], info: "Air Force Louis Vuitton en marrón, tono cálido con diseño lujoso.", momento: "Noche / eventos / salidas" },
+            { id: 35, nombre: "NIKE AIR FORCE STUSSY", imagen: "stussy.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Force", "estampado inspirado en Stüssy", "estilo collab/streetwear"], info: "Air Force edición Stussy, collab icónica del streetwear.", momento: "Urbana / noche / eventos" },
+            { id: 36, nombre: "NIKE AIR FORCE TOTAL WHITE", imagen: "totalwhiteair.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Force 1", "colorway blanco total", "clásico atemporal"], info: "Air Force 1 blancas, el clásico más vendido de todos los tiempos. Amplia disponibilidad.", momento: "Urbana / uso diario / deporte / tarde / noche" },
+            { id: 37, nombre: "NIKE AIR FORCE BLACK AND BLUE", imagen: "airforceblack.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Force", "colorway negro y azul", "estilo llamativo/urbano"], info: "Air Force en negro y azul, combinación audaz y energética.", momento: "Urbana / tarde / noche" },
+            { id: 38, nombre: "NIKE CORTEZ", imagen: "nikecortez.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Cortez clásico", "estilo retro/vintage"], info: "Nike Cortez, el clásico retro de los 70s de regreso en tendencia.", momento: "Urbana / tarde / uso diario" },
+            { id: 39, nombre: "NIKE TN VIOLETA", imagen: "tnvioleta.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo TN / Tuned Air", "colorway violeta", "estilo urbano/running"], info: "Nike TN en violeta, modelo de alta visibilidad y amortiguación Tuned Air.", momento: "Urbana / deporte / tarde" },
+            { id: 40, nombre: "NIKE TN TOTAL BLACK", imagen: "tntotalblack.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo TN / Tuned Air", "colorway negro total", "estilo urbano/running"], info: "Nike TN en negro total, clásico del streetwear con tecnología Tuned Air.", momento: "Urbana / deporte / tarde / noche" },
+            { id: 41, nombre: "NIKE DN WHITE", imagen: "dnairmaxwhite.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Max DN", "tecnología Air Max visible", "estilo futurista"], info: "Nike Air Max DN, diseño futurista con cámara de aire dual.", momento: "Urbana / deporte / tarde / noche" },
+            { id: 42, nombre: "NIKE ZOOMX GRIS", imagen: "zoomxgris.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo ZoomX", "colorway gris", "tecnología ZoomX / alto rendimiento"], info: "Nike ZoomX en gris, tecnología de amortiguación premium para rendimiento.", momento: "Deporte / running / tarde" },
+            { id: 43, nombre: "NIKE INVENCIBLE RUN", imagen: "invencible.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Invincible Run", "máxima amortiguación", "estilo running premium"], info: "Nike Invincible Run, la zapatilla de mayor amortiguación para running.", momento: "Deporte / running / tarde" },
+            { id: 44, nombre: "NIKE AIR ZOOM TOTAL BLACK", imagen: "zoomtotalblack.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Zoom", "colorway negro total", "tecnología Zoom Air"], info: "Nike Air Zoom en negro total, versatilidad y rendimiento en uno.", momento: "Deporte / urbana / tarde / noche" },
+            { id: 45, nombre: "NIKE REACT", imagen: "nikereact.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo React", "colorway negro", "tecnología React foam"], info: "Nike React en negro, amortiguación React foam para el día a día y el deporte.", momento: "Deporte / urbana / tarde / noche" },
+            { id: 46, nombre: "NIKE REVOLUTION", imagen: "rovolution.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Revolution", "estilo running/entrada en gama", "liviana y cómoda"], info: "Nike Revolution, zapatilla liviana ideal para running y uso diario.", momento: "Deporte / uso diario / tarde" },
+            { id: 47, nombre: "NIKE AIR ZOOM PEGASUS 40", imagen: "pegasus.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Zoom Pegasus 40", "tecnología Zoom Air", "running de alta performance"], info: "Nike Air Zoom Pegasus 40, el favorito de los runners con tecnología Zoom Air.", momento: "Deporte / running / tarde" },
+            { id: 48, nombre: "NIKE V5 RNR BLACK", imagen: "nikecreamrnr.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo V2K Run", "colorway negro total", "estilo retro running"], info: "Nike V2K Run en negro total, modelo retro running muy en tendencia.", momento: "Urbana / deporte / tarde / noche" },
+            { id: 50, nombre: "NIKE REVOLUTION BLANCA", imagen: "revolutionblanca.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Revolution", "estilo running/entrada en gama", "liviana y cómoda"], info: "Nike Revolution, zapatilla liviana ideal para running y uso diario.", momento: "Deporte / uso diario / tarde" },
+            { id: 51, nombre: "ZOOM ROSA", imagen: "zoomrosa.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Zoom", "colorway rosa", "estilo femenino/deportivo"], info: "Nike Zoom en rosa, cómoda y femenina para deporte y street.", momento: "Deporte / urbana / tarde / uso diario" },
+            { id: 52, nombre: "NIKE AIR MAX BLACK", imagen: "nikeairmaxblack.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Max", "colorway negro", "cámara de aire visible"], info: "Nike Air Max en negro, icónica cámara de aire y estilo atemporal.", momento: "Urbana / deporte / tarde / noche" },
+            { id: 53, nombre: "CAMPUS ROSE", imagen: "campusrose.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Campus", "colorway rosa", "estilo retro/urbano"], info: "Adidas Campus en rosa, el modelo retro más trendy del momento.", momento: "Urbana / tarde / uso diario" },
+            { id: 54, nombre: "CAMPUS TOTAL WHITE", imagen: "campustotalwhite.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Campus", "colorway blanco total", "amplia disponibilidad de talles"], info: "Campus Total White, el más completo en talles. Look limpio y versátil.", momento: "Urbana / uso diario / tarde / deporte" },
+            { id: 55, nombre: "CAMPUS CLASICA", imagen: "campusclasica.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Campus clásico", "colorway clásico tricolor", "estilo retro/icónico"], info: "Campus Clásica, el modelo original con las 3 tiras icónicas de Adidas.", momento: "Urbana / uso diario / tarde / noche" },
+            { id: 56, nombre: "CAMPUS HELLO KITTY", imagen: "campushello.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Campus", "diseño Hello Kitty", "estilo collab/kawaii"], info: "Campus edición Hello Kitty, collab kawaii muy buscada y llamativa.", momento: "Urbana / tarde / salidas / eventos" },
+            { id: 57, nombre: "CAMPUS GRIS Y NEGRO", imagen: "campusgrisnegro.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Campus", "colorway gris y negro", "estilo retro/urbano"], info: "Campus en gris y negro, combinación neutra y muy versátil.", momento: "Urbana / tarde / uso diario" },
+            { id: 58, nombre: "CAMPUS CREMA", imagen: "campuscrema.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Campus", "colorway crema/off white", "estilo neutro/minimalista"], info: "Campus en crema, tono suave y sofisticado que combina con cualquier outfit.", momento: "Urbana / uso diario / tarde" },
+            { id: 59, nombre: "CAMPUS BROWN", imagen: "campusbrown.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Campus", "colorway marrón/brown", "estilo terroso/tendencia"], info: "Campus Brown, uno de los colores más buscados en la tendencia \"earth tones\".", momento: "Urbana / tarde / uso diario / otoño-invierno" },
+            { id: 60, nombre: "CAMPUS KORN", imagen: "campuskorn.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Campus", "diseño inspirado en Korn", "estilo collab/rock/streetwear"], info: "Campus edición Korn, collab rockera muy codiciada en el mundo streetwear.", momento: "Urbana / noche / eventos / salidas" },
+            { id: 61, nombre: "SUPERSTAR AZUL", imagen: "superstarazul.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Superstar", "colorway azul", "estilo retro/urbano"], info: "Superstar en azul, colorway fresco y urbano muy solicitado.", momento: "Urbana / tarde / uso diario" },
+            { id: 62, nombre: "SUPERSTAR LILA", imagen: "superstarlila.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Superstar", "colorway lila", "estilo retro/femenino"], info: "Superstar en lila, tono suave y femenino muy en tendencia.", momento: "Urbana / tarde / uso diario" },
+            { id: 63, nombre: "SUPERSTAR BLANCO Y NEGRO", imagen: "superstarbn.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Superstar", "colorway blanco y negro", "estilo retro/clásico"], info: "Superstar en blanco y negro con detalle corazón, clásica con un toque especial.", momento: "Urbana / tarde / salidas" },
+            { id: 64, nombre: "SUPERSTAR BLACK AND WHITE", imagen: "superstartblack.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Superstar", "colorway negro y blanco", "estilo retro/clásico"], info: "Superstar en negro y blanco, versión invertida del clásico bicolor.", momento: "Urbana / tarde / salidas" },
+            { id: 65, nombre: "SAMBA ANIMALS PRINT", imagen: "samba.png", precio: 34100, precioOriginal: 34100, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "estampado animal print", "estilo llamativo/fashion"], info: "Samba con estampado animal print, para looks audaces y de alto impacto.", momento: "Urbana / noche / eventos / salidas" },
+            { id: 67, nombre: "ADIDAS SAMBA", imagen: "adidassamba.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "colorway clásico negro/blanco", "estilo retro/fútbol/urbano"], info: "Adidas Samba clásica, ícono del estilo retro global. La más trendy del momento.", momento: "Urbana / tarde / noche / uso diario" },
+            { id: 68, nombre: "SAMBA CARAMELO", imagen: "sambacaramelo.png", precio: 34900, precioOriginal: 34900, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "colorway caramelo/miel", "estilo terroso/tendencia"], info: "Samba Caramelo, tono dulce y cálido muy en auge en la moda urbana.", momento: "Urbana / tarde / uso diario / otoño" },
+            { id: 69, nombre: "SAMBA CELESTE", imagen: "sambaceleste.png", precio: 34900, precioOriginal: 34900, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "colorway celeste/azul claro", "estilo fresco/urbano"], info: "Samba Celeste, colorway fresco y juvenil para looks descontracturados.", momento: "Urbana / tarde / uso diario / primavera-verano" },
+            { id: 70, nombre: "SAMBA CHOCOLATE", imagen: "sambachocolate.png", precio: 34900, precioOriginal: 34900, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "colorway chocolate/marrón oscuro", "estilo terroso/sofisticado"], info: "Samba Chocolate, tono profundo y sofisticado muy requerido en tendencias.", momento: "Urbana / tarde / noche / otoño-invierno" },
+            { id: 71, nombre: "SAMBA ROSA", imagen: "sambarosa.png", precio: 34900, precioOriginal: 34900, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "colorway rosa", "estilo femenino/urbano"], info: "Samba Rosa, el modelo más femenino y uno de los más pedidos de la línea.", momento: "Urbana / tarde / uso diario / primavera" },
+            { id: 72, nombre: "SAMBA BLANCO Y CAFE", imagen: "sambablancocafe.png", precio: 34900, precioOriginal: 34900, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "colorway blanco y café", "estilo bicolor/versátil"], info: "Samba en blanco y café, combinación clásica con toque cálido. Buena disponibilidad de talles.", momento: "Urbana / tarde / uso diario" },
+            { id: 73, nombre: "SAMBA BLACK", imagen: "sambablack.png", precio: 35900, precioOriginal: 35900, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "colorway negro", "estilo urbano/clásico"], info: "Samba Black, versión oscura del ícono retro. Versátil y muy combinable.", momento: "Urbana / tarde / noche / uso diario" },
+            { id: 75, nombre: "SAMBA CREMA", imagen: "sambacrema.png", precio: 35900, precioOriginal: 35900, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "colorway crema/off white", "estilo neutro/minimalista"], info: "Samba en crema, tono suave y sofisticado que combina con cualquier outfit.", momento: "Urbana / uso diario / tarde" },
+            { id: 76, nombre: "SAMBA CLASICA", imagen: "sambaclasica.png", precio: 35900, precioOriginal: 35900, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "colorway clásico negro/blanco", "estilo retro/fútbol/urbano"], info: "Adidas Samba clásica, ícono del estilo retro global. La más trendy del momento.", momento: "Urbana / tarde / noche / uso diario" },
+            { id: 77, nombre: "SAMBA BLUE", imagen: "sambablue.png", precio: 35900, precioOriginal: 35900, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "colorway azul", "estilo fresco/urbano"], info: "Samba en azul, colorway fresco y urbano muy solicitado.", momento: "Urbana / tarde / uso diario / primavera-verano" },
+            { id: 78, nombre: "ADIDAS SL 72", imagen: "adidassl.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas SL 72", "estilo retro/vintage años 70", "diseño icónico"], info: "Adidas SL 72, clásico de los 70s que volvió con fuerza a la tendencia retro.", momento: "Urbana / tarde / uso diario" },
+            { id: 79, nombre: "ADIDAS SUPERSTAR", imagen: "adidassuperstart.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Superstar", "estilo retro/basketball", "punta shell toe icónica"], info: "Adidas Superstar, el ícono del básquet retro con su característica punta shell toe.", momento: "Urbana / tarde / noche / salidas" },
+            { id: 80, nombre: "ADIDAS FORUM", imagen: "adidasforum.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Forum", "estilo retro/basketball", "correa en tobillo"], info: "Adidas Forum, el ícono del básquet retro con su característica correa en el tobillo.", momento: "Urbana / tarde / noche / salidas" },
+            { id: 81, nombre: "FORUM GRIS", imagen: "forumgris.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Forum", "colorway gris", "estilo retro/neutro"], info: "Forum en gris, opción neutra del clásico basket retro.", momento: "Urbana / tarde / uso diario" },
+            { id: 82, nombre: "FORUM TOTAL WHITE", imagen: "forumtotalwhite.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Forum", "colorway blanco total", "estilo retro/limpio"], info: "Forum en blanco total, look limpio y clásico del basket retro.", momento: "Urbana / uso diario / tarde" },
+            { id: 83, nombre: "FORUM LILA", imagen: "forumlila.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Forum", "colorway lila", "estilo retro/femenino"], info: "Forum en lila, tono suave y femenino en el clásico basket retro.", momento: "Urbana / tarde / uso diario" },
+            { id: 84, nombre: "FORUM AZUL", imagen: "forumazul.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Forum", "colorway azul", "estilo retro/urbano"], info: "Forum en azul, colorway fresco y urbano del clásico basket retro.", momento: "Urbana / tarde / uso diario" },
+            { id: 85, nombre: "FORUM BORDO", imagen: "forumbordo.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Forum", "colorway bordo/vino", "estilo retro/urbano"], info: "Forum en bordo, ideal para outfits otoño-invierno y looks nocturnos.", momento: "Urbana / tarde / noche / otoño-invierno" },
+            { id: 86, nombre: "ADIFORUM BLACK", imagen: "adiforumblack.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Forum / Adiforum", "colorway negro", "estilo retro/basketball"], info: "Adiforum en negro, el clásico de básquet de Adidas en su versión más oscura.", momento: "Urbana / tarde / noche" },
+            { id: 87, nombre: "FORUM 2000 BLACK", imagen: "forumblack.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Forum 2000", "colorway negro", "estilo retro/urbano"], info: "Forum 2000 en negro, versión actualizada del clásico Forum.", momento: "Urbana / tarde / noche" },
+            { id: 88, nombre: "ADIZERO BLACK", imagen: "adizeroblack.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adizero", "colorway negro", "estilo running/performance"], info: "Adizero en negro, zapatilla de alta performance para running.", momento: "Deporte / running / tarde" },
+            { id: 89, nombre: "DURAMO TOTAL WHITE", imagen: "duramototalwhite.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Duramo", "colorway blanco total", "estilo running/neutro"], info: "Duramo en blanco total, cómoda y versátil para deporte y calle.", momento: "Deporte / urbana / tarde / uso diario" },
+            { id: 90, nombre: "DURAMO BLACK AND WHITE", imagen: "duramoblackandwhite.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Duramo", "colorway negro y blanco", "estilo running/bicolor"], info: "Duramo en negro y blanco, combinación clásica y deportiva.", momento: "Deporte / urbana / tarde" },
+            { id: 91, nombre: "SUPERNOVA ROSA", imagen: "supernovarosa.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Supernova", "colorway rosa", "estilo running/femenino"], info: "Supernova en rosa, cómoda y femenina para deporte y street.", momento: "Deporte / urbana / tarde / uso diario" },
+            { id: 92, nombre: "BOSTON NEGRA", imagen: "bostonnegra.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Boston", "colorway negro", "estilo running/performance"], info: "Boston en negro, zapatilla de alta performance para running.", momento: "Deporte / running / tarde" },
+            { id: 93, nombre: "BOSTON GRIS", imagen: "bostongris.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Boston", "colorway gris", "estilo running/neutro"], info: "Boston en gris, opción neutra de alta performance para running.", momento: "Deporte / running / tarde" },
+            { id: 94, nombre: "BOSTON PINK", imagen: "bostonpink.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Boston", "colorway rosa", "estilo running/femenino"], info: "Boston en rosa, opción femenina de alta performance para running.", momento: "Deporte / running / tarde" },
+            { id: 95, nombre: "ADIZERO BOSTON 13", imagen: "adizeroboston.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adizero Boston 13", "running de alta performance", "tecnología Adizero"], info: "Adizero Boston 13, la zapatilla de competición de Adidas para runners exigentes.", momento: "Deporte / running / competición" },
+            { id: 96, nombre: "VANS KNU RETRO", imagen: "vansknuretro.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Knu Retro", "estilo retro/chunky", "suela voluminosa"], info: "Vans Knu Retro, modelo chunky retro con mucha presencia visual.", momento: "Urbana / tarde / noche / salidas" },
+            { id: 97, nombre: "VANS UPLAND TOTAL BLACK", imagen: "vansuplandtotalblack.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Upland", "colorway negro total", "estilo urbano/clásico"], info: "Vans Upland en negro total, versátil y combinable con todo.", momento: "Urbana / uso diario / tarde / noche" },
+            { id: 98, nombre: "VANS KNU CLASICA", imagen: "vansknuclasica.png", precio: 35500, precioOriginal: 35500, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Knu Stack clásica", "estilo retro/chunky", "amplia disponibilidad de talles"], info: "Vans Knu clásica, el modelo retro chunky más completo en talles.", momento: "Urbana / tarde / uso diario" },
+            { id: 99, nombre: "VANS KNU TOTAL WHITE", imagen: "vansknutotalwhite.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Knu Stack", "colorway blanco total", "estilo retro/limpio"], info: "Vans Knu en blanco total, look limpio y versátil.", momento: "Urbana / uso diario / tarde" },
+            { id: 100, nombre: "VANS KNU OREO", imagen: "vansknuoreo.png", precio: 34100, precioOriginal: 34100, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Knu Stack", "colorway negro y blanco estilo Oreo", "estilo retro/bicolor"], info: "Vans Knu en Oreo, combinación clásica negro y blanco en versión chunky.", momento: "Urbana / tarde / noche" },
+            { id: 101, nombre: "VANS KNU TOTAL BLACK", imagen: "vansknutotalblack.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Knu Stack", "colorway negro total", "estilo retro/urbano"], info: "Vans Knu en negro total, versátil y combinable con todo.", momento: "Urbana / tarde / noche / uso diario" },
+            { id: 102, nombre: "VANS KNU BOTITA", imagen: "vansknubotita.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Knu botita", "caña alta", "estilo retro/chunky"], info: "Vans Knu botita, mayor soporte y presencia visual con caña alta.", momento: "Urbana / tarde / noche / salidas" },
+            { id: 103, nombre: "VANS HAYLENE BLANCAS", imagen: "vanshayleneblancas.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Haylene", "colorway blanco", "estilo urbano/clásico"], info: "Vans Haylene en blanco, look limpio y versátil para el día a día.", momento: "Urbana / uso diario / tarde" },
+            { id: 104, nombre: "VANS HAYLENE WHITE WHITE", imagen: "vanshaylenewhite.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Haylene", "colorway blanco total (suela blanca)", "estilo urbano/minimalista"], info: "Vans Haylene en blanco total con suela blanca, look ultra limpio y minimalista.", momento: "Urbana / uso diario / tarde" },
+            { id: 105, nombre: "VANS HAYLENE CAFE", imagen: "vanshaylenecafe.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Haylene", "colorway café/marrón", "estilo terroso/urbano"], info: "Vans Haylene en café, tono cálido y terroso muy en tendencia.", momento: "Urbana / tarde / uso diario / otoño-invierno" },
+            { id: 106, nombre: "VANS HAYLENE CREAM", imagen: "vanshaylenecream.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Haylene", "colorway crema", "estilo neutro/minimalista"], info: "Vans Haylene en crema, tono suave que combina con cualquier outfit.", momento: "Urbana / uso diario / tarde" },
+            { id: 107, nombre: "VANS HAYLENE CREAM AND GREY", imagen: "vanshaylenecreamandgrey.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Haylene", "colorway crema y gris", "estilo neutro/bicolor"], info: "Vans Haylene en crema y gris, combinación suave y muy versátil.", momento: "Urbana / uso diario / tarde" },
+            { id: 108, nombre: "VANS HAYLENE MARINO", imagen: "vanshaylenemarino.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Haylene", "colorway azul marino", "estilo urbano/clásico"], info: "Vans Haylene en marino, colorway clásico y versátil.", momento: "Urbana / tarde / noche" },
+            { id: 109, nombre: "VANS HAYLENE GREEN", imagen: "vanshaylenegreen.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Haylene", "colorway verde agua pastel", "estilo urbano/clásico"], info: "Vans Haylene en verde agua, colorway fresco y versátil.", momento: "Urbana / tarde / noche" },
+            { id: 110, nombre: "PUMA SUEDE XL NEGRA", imagen: "pumasuedenegra.png", precio: 35900, precioOriginal: 35900, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Puma Suede", "colorway negro y blanco", "estilo urbano/clásico"], info: "Puma Suede XL en negro, versátil y combinable con todo.", momento: "Urbana / tarde / noche" },
+            { id: 111, nombre: "PUMA SUEDE VERDES", imagen: "pumasuedeverdes.png", precio: 35900, precioOriginal: 35900, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Puma Suede", "colorway verde", "estilo urbano/fresco"], info: "Puma Suede en verde, color fresco y muy solicitado.", momento: "Urbana / tarde / uso diario" },
+            { id: 112, nombre: "NEW BALANCE 9060 WHITE", imagen: "newbalance.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo New Balance 9060", "colorway blanco", "estilo urbano/clásico"], info: "New Balance 9060 en blanco, estilo limpio y versátil para el día a día.", momento: "Urbana / tarde / noche" }
+        ];
+
         // ✅ Variables GLOBALES para que no se pierdan
         window.cart = [];
         window.currentFilter = 'todos';
@@ -3625,6 +3783,23 @@
         window.currentSearch = '';
         window.currentProduct = null;
         window.itemsDisplayed = 6;
+        
+        // Cargar carrito desde localStorage
+        function cargarCarritoDesdeLocalStorage() {
+            const carritoGuardado = localStorage.getItem('cart');
+            if (carritoGuardado) {
+                try {
+                    window.cart = JSON.parse(carritoGuardado);
+                    console.log('✅ Carrito cargado desde localStorage:', window.cart);
+                } catch (error) {
+                    console.warn('⚠️ Error cargando carrito:', error);
+                    window.cart = [];
+                }
+            }
+        }
+        
+        // Llamar a cargar carrito al iniciar
+        cargarCarritoDesdeLocalStorage();
         
         // ✅ Referencia corta para compatibilidad
         let cart = window.cart;
@@ -4183,17 +4358,118 @@
             abrirLogin();
         }
 
+        // Agregar producto al carrito (genérico para perfumes y calzados)
+        function agregarACarrito(tipoProducto, idProducto) {
+            console.log(`➕ [agregarACarrito] Tipo: ${tipoProducto}, ID: ${idProducto}`);
+            
+            // Validar sesión
+            const currentUser = firebase.auth().currentUser;
+            if (!currentUser) {
+                alert('Debes iniciar sesión para agregar productos al carrito');
+                abrirLogin();
+                return;
+            }
+            
+            // Obtener el producto según el tipo
+            let producto = null;
+            if (tipoProducto === 'perfumes') {
+                producto = window.products.find(p => p.id === idProducto);
+            } else if (tipoProducto === 'calzados') {
+                producto = window.productsCalzados.find(p => p.id === idProducto);
+                
+                // Para calzados, necesitamos seleccionar talle
+                // Por ahora, si no hay modal, usamos el primer talle como default
+                const talleSeleccionado = prompt(`Selecciona un talle para ${producto.nombre}:\n\n${producto.talles.join(', ')}`);
+                if (!talleSeleccionado) return; // Usuario canceló
+                
+                if (!producto.talles.includes(talleSeleccionado)) {
+                    alert('⚠️ Talle inválido');
+                    return;
+                }
+                
+                // Agregar el talle al producto
+                producto = { ...producto, talleSeleccionado };
+            }
+            
+            if (!producto) {
+                alert('⚠️ Producto no encontrado');
+                return;
+            }
+            
+            // Agregar cantidad
+            const cantidad = prompt('¿Cuántas unidades deseas agregar?', '1');
+            if (!cantidad) return; // Usuario canceló
+            
+            const cantidadNum = parseInt(cantidad);
+            if (isNaN(cantidadNum) || cantidadNum < 1) {
+                alert('⚠️ Cantidad inválida');
+                return;
+            }
+            
+            // Buscar si ya existe este producto en el carrito
+            const existingItem = window.cart.find(item => 
+                item.id === producto.id && 
+                (tipoProducto === 'perfumes' || item.talleSeleccionado === producto.talleSeleccionado)
+            );
+            
+            if (existingItem) {
+                existingItem.cantidad += cantidadNum;
+            } else {
+                window.cart.push({ ...producto, cantidad: cantidadNum, tipoProducto });
+            }
+            
+            console.log('✅ Producto agregado. Carrito actual:', window.cart);
+            updateCartCount();
+            updateCartDisplay();
+            
+            // Guardar carrito en localStorage
+            localStorage.setItem('cart', JSON.stringify(window.cart));
+            
+            // Mostrar confirmación
+            alert(`✅ ${cantidadNum} ${producto.nombre} agregado(s) al carrito`);
+            
+            // Mostrar modal del carrito
+            document.getElementById('modal-cart').classList.add('active');
+        }
+
         // ═══════════════════════════════════════════════════════════════════
         // PAGO CON MERCADO PAGO - FLUJO COMPLETO
         // ═══════════════════════════════════════════════════════════════════
         
         // Abrir modal de checkout antes de pagar
         function proceedToPayment() {
-            const total = cart.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
-            
-            if (total < MIN_ORDER) {
-                alert('⚠️ Pedido mínimo no alcanzado');
+            // Validar que hay productos en el carrito
+            if (!window.cart || window.cart.length === 0) {
+                alert('⚠️ El carrito está vacío');
                 return;
+            }
+            
+            // Detectar el tipo de productos en el carrito
+            const tieneCalzados = window.cart.some(item => item.tipoProducto === 'calzados');
+            const tienePerfumes = window.cart.some(item => !item.tipoProducto || item.tipoProducto === 'perfumes');
+            
+            // Si tiene calzados, validar cantidad
+            if (tieneCalzados) {
+                const cantidadCalzados = window.cart
+                    .filter(item => item.tipoProducto === 'calzados')
+                    .reduce((sum, item) => sum + item.cantidad, 0);
+                
+                if (cantidadCalzados < MIN_ORDER_CALZADOS) {
+                    alert(`⚠️ El pedido de calzados debe tener como mínimo ${MIN_ORDER_CALZADOS} productos.\nActualmente tienes: ${cantidadCalzados} productos.`);
+                    return;
+                }
+            }
+            
+            // Si tiene perfumes, validar monto
+            if (tienePerfumes) {
+                const totalPerfumes = window.cart
+                    .filter(item => !item.tipoProducto || item.tipoProducto === 'perfumes')
+                    .reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+                
+                if (totalPerfumes < MIN_ORDER) {
+                    alert(`⚠️ El pedido de perfumes debe ser de mínimo $${MIN_ORDER.toLocaleString('es-ES')}.\nActualmente tienes: $${totalPerfumes.toLocaleString('es-ES')}.`);
+                    return;
+                }
             }
 
             // Mostrar modal de checkout
@@ -5708,6 +5984,206 @@
             if (modal) {
                 modal.classList.remove('active');
             }
+        }
+
+        // 👟 FUNCIONES PARA CALZADOS
+        
+        // Abrir catálogo de Calzados
+        function abrirCalzados() {
+            console.log('👟 [abrirCalzados] Abriendo calzados...');
+            
+            // Validar que el usuario tenga código validado
+            if (!window.codigoValidado) {
+                alert('Debes validar tu código de revendedor primero.');
+                abrirModalCodigo();
+                return;
+            }
+            
+            // Mostrar selector de categorías
+            const categoriaSelector = document.querySelector('.categoria-selector');
+            const carruselContainer = document.getElementById('carrusel-calzados-container');
+            
+            if (categoriaSelector) {
+                categoriaSelector.style.display = 'flex';
+            }
+            
+            if (carruselContainer) {
+                carruselContainer.style.display = 'block';
+            }
+            
+            // Filtrar por defecto a Adultos
+            filtrarCalzadosPorCategoria('adultos');
+            
+            // Ocultar catálogo de perfumes
+            const perfumesContainer = document.getElementById('carrusel-container');
+            if (perfumesContainer) {
+                perfumesContainer.style.display = 'none';
+            }
+            
+            // Scroll al catálogo
+            setTimeout(() => {
+                const carruselSection = document.getElementById('carrusel-calzados-container');
+                if (carruselSection) {
+                    carruselSection.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, 100);
+        }
+        
+        // Filtrar Calzados por categoría (Adultos o Niños)
+        function filtrarCalzadosPorCategoria(categoria) {
+            console.log('👟 [filtrarCalzadosPorCategoria] Filtrando por:', categoria);
+            
+            if (categoria === 'niños') {
+                // Mostrar modal de "Próximamente"
+                mostrarModalNinosProximamente();
+                return;
+            }
+            
+            if (categoria === 'adultos') {
+                // Actualizar botones activos
+                const botonesCategoria = document.querySelectorAll('.categoria-btn');
+                botonesCategoria.forEach(btn => {
+                    btn.classList.remove('activa');
+                    if (btn.textContent.includes('Adultos')) {
+                        btn.classList.add('activa');
+                    }
+                });
+                
+                // Mostrar solo calzados adulto
+                window.calzadosActuales = window.productsCalzados.filter(p => p.tipo === 'adulto');
+                
+                // Reinicializar carrusel
+                inicializarCarruselCalzados();
+            }
+        }
+        
+        // Mostrar modal "Próximamente" para Niños
+        function mostrarModalNinosProximamente() {
+            console.log('👶 [mostrarModalNinosProximamente] Mostrando modal de Niños próximamente...');
+            
+            const modal = document.getElementById('proximamente-modal');
+            const titulo = document.getElementById('proximamente-titulo');
+            
+            if (modal) {
+                titulo.textContent = 'La sección de Calzados Niños estará disponible muy pronto. ¡Gracias por tu interés!';
+                modal.classList.add('active');
+            }
+        }
+        
+        // Inicializar carrusel de Calzados
+        function inicializarCarruselCalzados() {
+            console.log('👟 [inicializarCarruselCalzados] Inicializando carrusel con', window.calzadosActuales?.length || 0, 'productos');
+            
+            if (!window.calzadosActuales || window.calzadosActuales.length === 0) {
+                console.warn('⚠️ Sin productos de calzados para mostrar');
+                return;
+            }
+            
+            const wrapper = document.getElementById('carrusel-calzados-wrapper');
+            if (!wrapper) {
+                console.warn('⚠️ No se encontró carrusel-calzados-wrapper');
+                return;
+            }
+            
+            // Limpiar carrusel anterior
+            wrapper.innerHTML = '';
+            
+            // Agregar cada producto como un slide
+            window.calzadosActuales.forEach((producto, index) => {
+                const slide = document.createElement('div');
+                slide.className = 'carrusel-slide';
+                slide.id = `slide-calzados-${index}`;
+                slide.style.display = index === 0 ? 'flex' : 'none';
+                slide.style.flexDirection = 'column';
+                slide.style.justifyContent = 'center';
+                slide.style.gap = '12px';
+                slide.style.padding = '20px';
+                
+                slide.innerHTML = `
+                    <div style="text-align: center;">
+                        <img src="${producto.imagen || 'placeholder.jpg'}" alt="${producto.nombre}" style="max-width: 100%; max-height: 80px; object-fit: contain; margin-bottom: 10px;">
+                        <div style="font-weight: 600; font-size: 14px; color: var(--text); margin-bottom: 6px; line-height: 1.3;">${producto.nombre}</div>
+                        <div style="font-size: 12px; color: var(--text-light); margin-bottom: 8px;">
+                            <span style="font-weight: 600; color: var(--primary);">$${producto.precio.toLocaleString('es-ES')}</span>
+                        </div>
+                        <div style="font-size: 11px; color: var(--text-light); margin-bottom: 10px;">Talles: ${(producto.talles || []).join(', ')}</div>
+                        <button style="background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; transition: background 0.2s;" onclick="agregarACarrito('calzados', ${producto.id})" onmouseover="this.style.background='var(--primary-dark)'" onmouseout="this.style.background='var(--primary)'">
+                            ➕ Agregar
+                        </button>
+                    </div>
+                `;
+                
+                wrapper.appendChild(slide);
+            });
+            
+            // Inicializar dots de navegación
+            actualizarDotsCalzados();
+            
+            // Mostrar primer slide
+            window.calzadosActualesIndex = 0;
+        }
+        
+        // Actualizar dots (puntos) de navegación
+        function actualizarDotsCalzados() {
+            const dotsContainer = document.querySelector('#carrusel-calzados-container .carrusel-dots');
+            if (!dotsContainer) {
+                console.warn('⚠️ No se encontró contenedor de dots');
+                return;
+            }
+            
+            dotsContainer.innerHTML = '';
+            
+            if (!window.calzadosActuales) return;
+            
+            window.calzadosActuales.forEach((_, index) => {
+                const dot = document.createElement('button');
+                dot.className = 'carousel-dot';
+                if (index === 0) dot.classList.add('active');
+                dot.onclick = () => mostrarSlideCalzados(index);
+                dotsContainer.appendChild(dot);
+            });
+        }
+        
+        // Mostrar slide específico
+        function mostrarSlideCalzados(index) {
+            if (!window.calzadosActuales) return;
+            
+            // Limitar índice
+            if (index < 0) {
+                index = window.calzadosActuales.length - 1;
+            } else if (index >= window.calzadosActuales.length) {
+                index = 0;
+            }
+            
+            window.calzadosActualesIndex = index;
+            
+            // Ocultar todos los slides
+            document.querySelectorAll('#carrusel-calzados-wrapper .carousel-slide').forEach(slide => {
+                slide.style.display = 'none';
+            });
+            
+            // Mostrar slide actual
+            const currentSlide = document.getElementById(`slide-calzados-${index}`);
+            if (currentSlide) {
+                currentSlide.style.display = 'flex';
+            }
+            
+            // Actualizar dots
+            document.querySelectorAll('#carrusel-calzados-container .carousel-dot').forEach((dot, i) => {
+                dot.classList.toggle('active', i === index);
+            });
+        }
+        
+        // Navegar carrusel anterior
+        function carruselCalzadosAnterior() {
+            const newIndex = (window.calzadosActualesIndex || 0) - 1;
+            mostrarSlideCalzados(newIndex);
+        }
+        
+        // Navegar carrusel siguiente
+        function carruselCalzadosSiguiente() {
+            const newIndex = (window.calzadosActualesIndex || 0) + 1;
+            mostrarSlideCalzados(newIndex);
         }
 
         // Verificar sesión al cargar la página
