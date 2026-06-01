@@ -4235,7 +4235,7 @@
                 cp: document.getElementById('checkout-cp').value.trim(),
                 direccion: document.getElementById('checkout-direccion').value.trim(),
                 observaciones: document.getElementById('checkout-observaciones').value.trim(),
-                codigoRevendedor: document.getElementById('checkout-codigo-revendedor').value.trim().replace(/\s+/g, '').toUpperCase()
+                codigoRevendedor: document.getElementById('checkout-codigo-revendedor').value.trim()
             };
 
             // VALIDACIONES
@@ -5496,11 +5496,11 @@
         async function validarCodigoRevendedor() {
             const codigoInput = document.getElementById('codigo-input');
             const error = document.getElementById('codigo-error');
-            // Normalizar: eliminar TODOS los espacios y convertir a MAYÚSCULAS
-            let codigo = codigoInput.value.trim().replace(/\s+/g, '').toUpperCase();
+            // Solo trim() - sin transformaciones adicionales
+            let codigo = codigoInput.value.trim();
 
             console.log('🔍 [Validación] Código ingresado (raw):', codigoInput.value);
-            console.log('🔍 [Validación] Código ingresado (limpio):', codigo);
+            console.log('🔍 [Validación] Código ingresado (solo trim):', codigo);
             console.log('🔍 [Validación] Longitud:', codigo.length);
             console.log('🔍 [Validación] Usuario actual logueado:', !!firebase.auth().currentUser);
             console.log('🔍 [Validación] window.currentUser:', window.currentUser);
@@ -5523,8 +5523,8 @@
                 const usuarioActual = firebase.auth().currentUser;
                 if (usuarioActual && window.currentUser?.codigoVendedor) {
                     console.log('🔍 [Validación] Usuario logueado. Verificando su código...');
-                    // Normalizar igual: eliminar espacios y MAYÚSCULAS
-                    const codigoDelUsuario = window.currentUser.codigoVendedor.trim().replace(/\s+/g, '').toUpperCase();
+                    // Solo trim() - igual que el código ingresado
+                    const codigoDelUsuario = window.currentUser.codigoVendedor.trim();
                     console.log('🔍 [Validación] Código del usuario:', codigoDelUsuario);
                     
                     if (codigo === codigoDelUsuario) {
@@ -5545,53 +5545,21 @@
 
                 console.log('🔍 [Validación] Buscando en Firestore...');
                 
-                // ESTRATEGIA 2: Buscar en Firestore (para usuarios no logueados o código no coincide)
+                // Buscar exactamente como está en Firestore (sin transformaciones)
                 let resultado = await firebase.firestore()
                     .collection('usuarios')
                     .where('codigoVendedor', '==', codigo)
                     .get();
 
-                console.log('🔍 [Validación] Resultados encontrados (búsqueda exacta):', resultado.size);
+                console.log('🔍 [Validación] Resultados encontrados:', resultado.size);
                 if (resultado.size > 0) {
                     console.log('✅ [Validación] ENCONTRADO:', resultado.docs[0].data());
                 }
 
-                // Si no encuentra, intentar búsquedas alternativas
-                if (resultado.empty) {
-                    console.warn('⚠️ [Validación] No encontrado con búsqueda exacta. Intentando variantes...');
-                    
-                    // Intentar búsqueda 2: convertir a minúsculas
-                    resultado = await firebase.firestore()
-                        .collection('usuarios')
-                        .where('codigoVendedor', '==', codigo.toLowerCase())
-                        .get();
-                    
-                    console.log('🔍 [Validación] Resultados con minúsculas:', resultado.size);
-                    if (resultado.size > 0) {
-                        console.log('✅ [Validación] ENCONTRADO (minúsculas):', resultado.docs[0].data());
-                    }
-                }
-
-                // Intentar búsqueda 3: sin el prefijo "RW-" por si acaso
-                if (resultado.empty && codigo.startsWith('RW-')) {
-                    const codigoSinPrefijo = codigo.substring(3);
-                    console.log('🔍 [Validación] Intentando sin prefijo RW-:', codigoSinPrefijo);
-                    
-                    resultado = await firebase.firestore()
-                        .collection('usuarios')
-                        .where('codigoVendedor', '==', codigoSinPrefijo)
-                        .get();
-                    
-                    console.log('🔍 [Validación] Resultados sin prefijo:', resultado.size);
-                    if (resultado.size > 0) {
-                        console.log('✅ [Validación] ENCONTRADO (sin prefijo):', resultado.docs[0].data());
-                    }
-                }
-
                 if (resultado.empty) {
                     console.error('❌ [Validación] Código NO encontrado en Firestore');
-                    console.warn('⚠️ [Validación] Nota: Si el código es incorrecto, verifica que sea exacto.');
-                    console.warn('⚠️ [Validación] Los códigos son sensibles a mayúsculas/minúsculas y espacios en blanco.');
+                    console.warn('⚠️ [Validación] Código ingresado:', codigo);
+                    console.warn('⚠️ [Validación] Verifica que sea exacto como en tu Perfil');
                     
                     // Código NO válido
                     error.textContent = 'Código de revendedor inválido. Verifica que sea exacto (sin espacios extras) e intenta de nuevo.';
