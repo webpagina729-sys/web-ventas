@@ -2405,36 +2405,34 @@
             margin-bottom: 8px;
             line-height: 1.5;
         }
-        
-        /* SELECTOR DE CATEGORÍAS */
-        .categoria-selector {
+        /* SELECTOR DE CATEGORÍA */
+        .category-selector {
             display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
             justify-content: center;
-            gap: 16px;
-            margin: 20px 0;
-            flex-wrap: wrap;
         }
-        .categoria-btn {
-            padding: 10px 24px;
+        .category-btn {
+            padding: 12px 24px;
             border: 2px solid var(--border);
             background: var(--surface);
             color: var(--text);
             border-radius: var(--radius);
-            cursor: pointer;
-            font-weight: 500;
             font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
             transition: all 0.3s ease;
+            font-family: var(--font-body);
         }
-        .categoria-btn:hover {
+        .category-btn:hover {
             border-color: var(--primary);
             color: var(--primary);
         }
-        .categoria-btn.activa {
+        .category-btn.active {
             background: var(--primary);
             color: white;
             border-color: var(--primary);
         }
-        
         /* CARRUSEL */
         .carrusel-container {
             position: relative;
@@ -2838,7 +2836,7 @@
                 <!-- BADGE + BOTÓN -->
                 <div class="nicho-footer">
                     <div class="nicho-badge">💰 Monto mínimo: $150.000</div>
-                    <button class="nicho-button" onclick="abrirModalCodigo('perfumes')">Comenzar próximo pedido en este nicho</button>
+                    <button class="nicho-button" onclick="abrirModalCodigo()">Comenzar próximo pedido en este nicho</button>
                 </div>
             </div>
 
@@ -2852,7 +2850,7 @@
                 <!-- BADGE + BOTÓN -->
                 <div class="nicho-footer">
                     <div class="nicho-badge">💰 Monto mínimo: $200.000</div>
-                    <button class="nicho-button" onclick="abrirModalCodigo()">Comenzar próximo pedido en este nicho</button>
+                    <button class="nicho-button" onclick="abrirModalProximamente('De Todo')">Comenzar próximo pedido en este nicho</button>
                 </div>
             </div>
 
@@ -2863,18 +2861,33 @@
                     <p class="nicho-subtitle">Los calzados son importados, calidad premium de Brasil. Zapatillas deportivas urbanas.</p>
                 </div>
 
-                <!-- CARRUSEL CALZADOS - PANTALLA INICIO -->
-                <div class="carrusel-container" id="carrusel-calzados-inicio-container">
-                    <div class="carrusel-wrapper" id="carrusel-calzados-inicio-wrapper"></div>
-                    <button class="carrusel-nav carrusel-prev" onclick="carruselCalzadosInicioAnterior()" title="Anterior">‹</button>
-                    <button class="carrusel-nav carrusel-next" onclick="carruselCalzadosInicioSiguiente()" title="Siguiente">›</button>
-                    <div class="carrusel-dots" id="carrusel-calzados-inicio-dots"></div>
+                <!-- SELECTOR DE CATEGORÍA (Adultos/Niños) -->
+                <div class="category-selector" id="shoes-category-selector">
+                    <button class="category-btn active" onclick="switchShoesCategory('adultos')">Adultos</button>
+                    <button class="category-btn" onclick="switchShoesCategory('niños')">Niños</button>
+                </div>
+                
+                <!-- CARRUSEL ADULTOS -->
+                <div id="shoes-adultos-container" style="display: block;">
+                    <div class="carrusel-container" id="carrusel-container-shoes-adultos">
+                        <div class="carrusel-wrapper" id="carrusel-wrapper-shoes-adultos"></div>
+                        <button class="carrusel-nav carrusel-prev" onclick="carruselAnterior('shoes-adultos')" title="Anterior">‹</button>
+                        <button class="carrusel-nav carrusel-next" onclick="carruselSiguiente('shoes-adultos')" title="Siguiente">›</button>
+                        <div class="carrusel-dots" id="carrusel-dots-shoes-adultos"></div>
+                    </div>
+                </div>
+
+                <!-- MODAL NIÑOS PRÓXIMAMENTE -->
+                <div id="shoes-niños-container" style="display: none; text-align: center; padding: 40px;">
+                    <h3 style="font-size: 24px; font-weight: 600; color: var(--primary); margin-bottom: 20px;">Zapatillas para Niños</h3>
+                    <p style="font-size: 18px; color: var(--text-light); margin-bottom: 30px;">Próximamente disponibles los mejores modelos para los más pequeños</p>
+                    <div style="font-size: 72px; margin: 40px 0;">👟</div>
                 </div>
                 
                 <!-- BADGE + BOTÓN -->
                 <div class="nicho-footer">
                     <div class="nicho-badge">💰 Monto mínimo: 12 productos</div>
-                    <button class="nicho-button" onclick="abrirCalzados()">Comenzar próximo pedido en este nicho</button>
+                    <button class="nicho-button" onclick="abrirModalCodigoCalzados()">Comenzar próximo pedido en este nicho</button>
                 </div>
             </div>
         </div>
@@ -3352,107 +3365,15 @@
     </div>
 
     <script>
-        // 👟 CARRUSEL DE CALZADOS EN PANTALLA DE INICIO
-        let carruselCalzadosInicioIndex = 0;
-        let productosCarruselCalzados = [];
-        
-        function inicializarCarruselCalzadosInicio() {
-            // Obtener productos de calzados con precio entre 5000-45000
-            productosCarruselCalzados = (window.productsCalzados || [])
-                .filter(p => p.tipo === 'adulto' && p.imagen)
-                .sort(() => Math.random() - 0.5) // Aleatorios
-                .slice(0, 8); // Máximo 8 productos
-            
-            if (productosCarruselCalzados.length === 0) {
-                console.warn('⚠️ No hay productos de calzados disponibles para el carrusel');
-                return;
-            }
-            
-            renderizarCarruselCalzadosInicio();
-        }
-        
-        function renderizarCarruselCalzadosInicio() {
-            const wrapper = document.getElementById('carrusel-calzados-inicio-wrapper');
-            if (!wrapper) return;
-            
-            wrapper.innerHTML = '';
-            carruselCalzadosInicioIndex = 0;
-            
-            productosCarruselCalzados.forEach((producto, index) => {
-                const slide = document.createElement('div');
-                slide.className = 'carrusel-slide';
-                slide.style.display = index === 0 ? 'flex' : 'none';
-                slide.innerHTML = `<img src="${producto.imagen}" alt="${producto.nombre}">`;
-                wrapper.appendChild(slide);
-            });
-            
-            actualizarDotsCalzadosInicio();
-        }
-        
-        function actualizarDotsCalzadosInicio() {
-            const dotsContainer = document.getElementById('carrusel-calzados-inicio-dots');
-            if (!dotsContainer) return;
-            
-            dotsContainer.innerHTML = '';
-            productosCarruselCalzados.forEach((_, index) => {
-                const dot = document.createElement('button');
-                dot.className = `carrusel-dot ${index === carruselCalzadosInicioIndex ? 'active' : ''}`;
-                dot.onclick = () => mostrarSlideCalzadosInicio(index);
-                dotsContainer.appendChild(dot);
-            });
-        }
-        
-        function mostrarSlideCalzadosInicio(index) {
-            const slides = document.querySelectorAll('#carrusel-calzados-inicio-wrapper .carrusel-slide');
-            const dots = document.querySelectorAll('#carrusel-calzados-inicio-dots .carrusel-dot');
-            
-            slides.forEach(slide => slide.style.display = 'none');
-            dots.forEach(dot => dot.classList.remove('active'));
-            
-            if (slides[index]) {
-                slides[index].style.display = 'flex';
-            }
-            if (dots[index]) {
-                dots[index].classList.add('active');
-            }
-            
-            carruselCalzadosInicioIndex = index;
-        }
-        
-        function carruselCalzadosInicioAnterior() {
-            let newIndex = carruselCalzadosInicioIndex - 1;
-            if (newIndex < 0) newIndex = productosCarruselCalzados.length - 1;
-            mostrarSlideCalzadosInicio(newIndex);
-        }
-        
-        function carruselCalzadosInicioSiguiente() {
-            let newIndex = carruselCalzadosInicioIndex + 1;
-            if (newIndex >= productosCarruselCalzados.length) newIndex = 0;
-            mostrarSlideCalzadosInicio(newIndex);
-        }
-
         // Verificar que los elementos críticos existan en el DOM
         document.addEventListener('DOMContentLoaded', () => {
-            // Inicializar carrusel de Calzados en pantalla de inicio (esperar a Firebase + Products)
-            const initCarruselCalzados = () => {
-                if (window.firebaseReady && window.products && window.products.length > 0) {
-                    setTimeout(() => {
-                        inicializarCarruselCalzadosInicio();
-                    }, 100);
-                } else if (!window.firebaseReady || !window.products) {
-                    // Reintentar en 50ms
-                    setTimeout(initCarruselCalzados, 50);
-                } else {
-                    console.warn('⚠️ [Init] No products available for carousel');
-                }
-            };
-            initCarruselCalzados();
+            // DOM cargado
         });
         
         // ═══════════════════════════════════════════════════════════════════════════
         // 🔧 CONFIGURACIÓN - FIREBASE AUTHENTICATION
         // ═══════════════════════════════════════════════════════════════════════════
-        window.firebaseConfig = {
+        const firebaseConfig = {
             apiKey: "AIzaSyBRzd3HXbY6xIBIBNkzATo70kredodhKwc",
             authDomain: "revendeways-auth.firebaseapp.com",
             projectId: "revendeways-auth",
@@ -3460,7 +3381,6 @@
             messagingSenderId: "157263733033",
             appId: "1:157263733033:web:a2b8c3d4e5f6g7h8i9j0k1l"
         };
-        console.log('✅ [Config] firebaseConfig disponible globalmente:', !!window.firebaseConfig);
 
         // ═══════════════════════════════════════════════════════════════════════════
         // 🔧 INICIALIZAR FIREBASE INMEDIATAMENTE
@@ -3484,8 +3404,16 @@
         const WORKER_URL = 'https://workerpagos.tuweb.workers.dev';
         const MP_PUBLIC_KEY = 'TEST-f86ff695-f4bd-4bb9-9d81-28a2e39ce685';
         const MP_ENDPOINT = '/api/mp/create-preference';
-        const MIN_ORDER = 150000;  // Mínimo para Perfumes (en dinero)
-        const MIN_ORDER_CALZADOS = 12;  // Mínimo para Calzados (cantidad de items)
+        const MIN_ORDER_PERFUMES = 150000;  // Mínimo en dinero para perfumes
+        const MIN_ORDER_SHOES_QTY = 12;     // Mínimo en cantidad para zapatillas
+        
+        // Función para obtener el MIN_ORDER según el catálogo actual
+        function getMinOrder() {
+            return MIN_ORDER_PERFUMES;  // Por defecto perfumes (por ahora)
+        }
+        
+        // Compatibilidad: MIN_ORDER siempre es 150000 para Perfumes
+        const MIN_ORDER = MIN_ORDER_PERFUMES;
         
         // DATOS DE PRODUCTOS (256 perfumes árabes)
         const BASE_IMAGE_URL = 'https://raw.githubusercontent.com/webpagina729-sys/web-ventas/main/';
@@ -3750,150 +3678,129 @@
             { id: 256, nombre: "SET PERFUME BOYS POUR HOMME LD8006", imagen: "boys.png", precio: 33120, precioOriginal: 65578, categoria: "masculino", caracteristicas: ["perfume importado", "masculino", "buena duración", "aroma envolvente", "set / kit de perfumería", "presentación única"], info: "Fragancia masculina con presencia marcada y proyección, pensada para uso prolongado durante el día y la noche.", momento: "uso diario / salidas / todo el año" }
         ];
 
-        // 👟 PRODUCTOS DE CALZADOS
-        window.productsCalzados = [
-            { id: 1, nombre: "DUNK CELESTE Y NUDE", imagen: "imagen.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway celeste y nude", "estilo neutro y versátil"], info: "Dunk en tono celeste y nude, combina con todo tipo de outfit.", momento: "Urbana / tarde / uso diario" },
-            { id: 2, nombre: "DUNK BLANCO Y VERDE GAMUZADA", imagen: "dunkblanco.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway blanco y verde", "material gamuzado", "estilo urbano/deportivo"], info: "Dunk en combinación blanco y verde gamuzada. Versátil para looks urbanos y deportivos.", momento: "Urbana / deporte / tarde" },
-            { id: 3, nombre: "DUNK PANDA 3D", imagen: "dunkpanda.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway panda (negro y blanco)", "detalle 3D", "estilo urbano"], info: "Dunk edición Panda con detalle 3D. Look llamativo y urbano.", momento: "Urbana / noche / salidas" },
-            { id: 4, nombre: "DUNK NUDE", imagen: "dunknude.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway nude/beige", "estilo neutro y versátil"], info: "Dunk en tono nude, combina con todo tipo de outfit.", momento: "Urbana / tarde / uso diario" },
-            { id: 5, nombre: "NIKE DUNK PANDA", imagen: "nikepanda.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway panda (negro y blanco)", "modelo clásico muy demandado", "estilo urbano"], info: "El icónico Dunk Panda, negro y blanco, uno de los modelos más populares. Amplia disponibilidad de talles.", momento: "Urbana / deporte / tarde / noche / uso diario" },
-            { id: 6, nombre: "NIKE DUNK TOTAL WHITE", imagen: "niketotal.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway blanco total", "estilo limpio y versátil"], info: "Dunk total white, look clásico que combina con cualquier outfit.", momento: "Urbana / uso diario / tarde" },
-            { id: 7, nombre: "NIKE DUNK BORDO", imagen: "nikebordo.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway burdeo/vino", "estilo urbano"], info: "Dunk en colorway bordo, ideal para outfits otoño-invierno y looks nocturnos.", momento: "Urbana / tarde / noche / otoño-invierno" },
-            { id: 8, nombre: "DUNK GLITTER", imagen: "glitter.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "detalle glitter/brillos", "estilo festivo y llamativo"], info: "Dunk con detalle glitter, perfecta para looks que buscan destacar.", momento: "Noche / eventos / salidas" },
-            { id: 9, nombre: "DUNK CELESTE METALIC", imagen: "dunkceleste.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway celeste metálico", "acabado brillante/metálico"], info: "Dunk en celeste metálico, look llamativo y futurista.", momento: "Noche / eventos / salidas" },
-            { id: 10, nombre: "DUNK CHERRY", imagen: "dunkcherry.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway cherry/rojo cereza", "estilo urbano/llamativo"], info: "Dunk en cherry, color vibrante y llamativo para looks urbanos.", momento: "Urbana / tarde / noche" },
-            { id: 11, nombre: "DUNK TOTAL BLACK", imagen: "totalblack.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway negro total", "estilo versátil y clásico"], info: "Dunk en negro total, combina con todo y es apta para cualquier ocasión.", momento: "Urbana / deporte / tarde / noche / uso diario" },
-            { id: 12, nombre: "DUNK GREY AND BLACK", imagen: "dunkgreyand.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway gris y negro", "estilo urbano/deportivo"], info: "Dunk en gris y negro, combinación sobria y urbana.", momento: "Urbana / tarde / noche" },
-            { id: 13, nombre: "DUNK GREEN AND BLACK", imagen: "dunkgreenand.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway verde y negro", "estilo urbano/deportivo"], info: "Dunk en verde y negro, look fresco y urbano.", momento: "Urbana / deporte / tarde" },
-            { id: 14, nombre: "DUNK AZUL MARINO", imagen: "dunkmarino.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway azul marino", "estilo urbano/clásico"], info: "Dunk en azul marino, colorway clásico y versátil.", momento: "Urbana / tarde / noche" },
-            { id: 15, nombre: "DUNK VERDE", imagen: "dunkverde.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway verde", "estilo urbano/deportivo"], info: "Dunk en verde, color tendencia para looks frescos y urbanos.", momento: "Urbana / deporte / tarde" },
-            { id: 16, nombre: "DUNK GRIS", imagen: "dunkgris.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway gris", "estilo neutro y versátil"], info: "Dunk gris, opción neutra que combina con todo tipo de indumentaria.", momento: "Urbana / uso diario / tarde / noche" },
-            { id: 17, nombre: "NIKE DUNK MARRONES", imagen: "nikemarrones.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway marrón", "estilo terroso/cálido"], info: "Dunk en tono marrón, tendencia en colores tierra.", momento: "Urbana / uso diario / tarde" },
-            { id: 18, nombre: "NIKE DUNK GREY AND CREAM", imagen: "nikecream.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway gris y crema", "estilo neutro y versátil"], info: "Dunk en gris y crema, combinación suave y muy combinable.", momento: "Urbana / uso diario / tarde" },
-            { id: 19, nombre: "NIKE DUNK GRIS CON BLANCO", imagen: "grisconblanco.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway gris con blanco", "estilo neutro/urbano"], info: "Dunk en gris con blanco, opción neutra y versátil para el día a día.", momento: "Urbana / uso diario / tarde" },
-            { id: 20, nombre: "NIKE DUNK BIRD", imagen: "dunkbird.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "diseño bird/pájaro", "estilo urbano/llamativo"], info: "Dunk edición Bird, diseño llamativo y único.", momento: "Urbana / tarde / salidas" },
-            { id: 21, nombre: "JORDAN LOW PANDA", imagen: "lowpanda.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Jordan Low", "colorway panda (negro y blanco)", "perfil bajo"], info: "Jordan Low en colorway Panda, modelo versátil y de perfil bajo.", momento: "Urbana / uso diario / tarde" },
-            { id: 22, nombre: "JORDAN LOW PINK", imagen: "lowrosa.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Jordan Low", "colorway rosa", "perfil bajo"], info: "Jordan Low rosa, opción femenina y moderna de perfil bajo.", momento: "Urbana / tarde / uso diario" },
-            { id: 23, nombre: "BOTITA JORDAN VERDE", imagen: "jordanverde.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo botita (caña alta)", "colorway verde", "estilo Jordan"], info: "Jordan botita en verde, mayor soporte y presencia visual con caña alta.", momento: "Urbana / deporte / tarde / noche" },
-            { id: 24, nombre: "JORDAN LOW MID PINK", imagen: "midpink.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Jordan Low Mid", "colorway rosa", "caña media"], info: "Jordan 1 Mid en rosa, clásico icónico con toque femenino.", momento: "Urbana / tarde / noche / salidas" },
-            { id: 25, nombre: "AIR FORCE BOTITA", imagen: "airforce.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Force 1", "colorway negro total", "estilo urbano/clásico"], info: "Air Force 1 en negro total, icónica y versátil para cualquier look.", momento: "Urbana / uso diario / tarde / noche" },
-            { id: 26, nombre: "RETRO 4 TOTAL WHITE", imagen: "retrototalwhite.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Jordan Retro 4", "colorway blanco total", "estilo retro/deportivo"], info: "Jordan Retro 4 en blanco total, look limpio y clásico.", momento: "Urbana / deporte / tarde" },
-            { id: 27, nombre: "RETRO 4 MOCCA", imagen: "retromocca.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Jordan Retro 4", "colorway mocca/café", "estilo retro/terroso"], info: "Retro 4 en mocca, tono cálido muy en tendencia.", momento: "Urbana / tarde / noche / otoño-invierno" },
-            { id: 28, nombre: "RETRO 4 GOLD", imagen: "retrogold.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Jordan Retro 4", "colorway dorado/gold", "estilo retro/llamativo"], info: "Retro 4 en gold, colorway dorado llamativo y festivo.", momento: "Noche / eventos / salidas" },
-            { id: 29, nombre: "RETRO 4 MARINO", imagen: "retromarino.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Jordan Retro 4", "colorway azul marino", "estilo retro/clásico"], info: "Retro 4 en marino, colorway oscuro y sofisticado.", momento: "Urbana / tarde / noche" },
-            { id: 30, nombre: "AIR FORCE PIPA BLACK", imagen: "pipablack.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Force", "colorway negro", "detalle pipa/swoosh"], info: "Air Force con pipa en negro, estilo urbano y clásico.", momento: "Urbana / uso diario / tarde / noche" },
-            { id: 31, nombre: "AIR FORCE LILA", imagen: "forcelila.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Force", "colorway lila/violeta", "estilo neutro y femenino"], info: "Air Force en lila, tono suave y femenino muy en tendencia.", momento: "Urbana / uso diario / tarde" },
-            { id: 32, nombre: "AIR FORCE WHITE AND BLUE", imagen: "whiteandblue.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Force 1", "colorway blanco y azul", "estilo bicolor clásico"], info: "Air Force 1 en combinación blanco y azul, estilo urbano bicolor.", momento: "Urbana / uso diario / tarde" },
-            { id: 33, nombre: "AIR FORCE 1 LOUIS VUITTON", imagen: "louisvuitton.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Force 1", "estampado inspirado en Louis Vuitton", "estilo luxury streetwear"], info: "Air Force 1 con diseño inspirado en Louis Vuitton. Look lujoso y llamativo.", momento: "Noche / eventos / salidas / urbana" },
-            { id: 34, nombre: "AIR FORCE LOUIS VUITTON MARRON", imagen: "louisvuittonair.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Force", "colorway marrón con estampado LV", "estilo luxury streetwear"], info: "Air Force Louis Vuitton en marrón, tono cálido con diseño lujoso.", momento: "Noche / eventos / salidas" },
-            { id: 35, nombre: "NIKE AIR FORCE STUSSY", imagen: "stussy.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Force", "estampado inspirado en Stüssy", "estilo collab/streetwear"], info: "Air Force edición Stussy, collab icónica del streetwear.", momento: "Urbana / noche / eventos" },
-            { id: 36, nombre: "NIKE AIR FORCE TOTAL WHITE", imagen: "totalwhiteair.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Force 1", "colorway blanco total", "clásico atemporal"], info: "Air Force 1 blancas, el clásico más vendido de todos los tiempos. Amplia disponibilidad.", momento: "Urbana / uso diario / deporte / tarde / noche" },
-            { id: 37, nombre: "NIKE AIR FORCE BLACK AND BLUE", imagen: "airforceblack.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Force", "colorway negro y azul", "estilo llamativo/urbano"], info: "Air Force en negro y azul, combinación audaz y energética.", momento: "Urbana / tarde / noche" },
-            { id: 38, nombre: "NIKE CORTEZ", imagen: "nikecortez.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Cortez clásico", "estilo retro/vintage"], info: "Nike Cortez, el clásico retro de los 70s de regreso en tendencia.", momento: "Urbana / tarde / uso diario" },
-            { id: 39, nombre: "NIKE TN VIOLETA", imagen: "tnvioleta.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo TN / Tuned Air", "colorway violeta", "estilo urbano/running"], info: "Nike TN en violeta, modelo de alta visibilidad y amortiguación Tuned Air.", momento: "Urbana / deporte / tarde" },
-            { id: 40, nombre: "NIKE TN TOTAL BLACK", imagen: "tntotalblack.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo TN / Tuned Air", "colorway negro total", "estilo urbano/running"], info: "Nike TN en negro total, clásico del streetwear con tecnología Tuned Air.", momento: "Urbana / deporte / tarde / noche" },
-            { id: 41, nombre: "NIKE DN WHITE", imagen: "dnairmaxwhite.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Max DN", "tecnología Air Max visible", "estilo futurista"], info: "Nike Air Max DN, diseño futurista con cámara de aire dual.", momento: "Urbana / deporte / tarde / noche" },
-            { id: 42, nombre: "NIKE ZOOMX GRIS", imagen: "zoomxgris.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo ZoomX", "colorway gris", "tecnología ZoomX / alto rendimiento"], info: "Nike ZoomX en gris, tecnología de amortiguación premium para rendimiento.", momento: "Deporte / running / tarde" },
-            { id: 43, nombre: "NIKE INVENCIBLE RUN", imagen: "invencible.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Invincible Run", "máxima amortiguación", "estilo running premium"], info: "Nike Invincible Run, la zapatilla de mayor amortiguación para running.", momento: "Deporte / running / tarde" },
-            { id: 44, nombre: "NIKE AIR ZOOM TOTAL BLACK", imagen: "zoomtotalblack.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Zoom", "colorway negro total", "tecnología Zoom Air"], info: "Nike Air Zoom en negro total, versatilidad y rendimiento en uno.", momento: "Deporte / urbana / tarde / noche" },
-            { id: 45, nombre: "NIKE REACT", imagen: "nikereact.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo React", "colorway negro", "tecnología React foam"], info: "Nike React en negro, amortiguación React foam para el día a día y el deporte.", momento: "Deporte / urbana / tarde / noche" },
-            { id: 46, nombre: "NIKE REVOLUTION", imagen: "rovolution.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Revolution", "estilo running/entrada en gama", "liviana y cómoda"], info: "Nike Revolution, zapatilla liviana ideal para running y uso diario.", momento: "Deporte / uso diario / tarde" },
-            { id: 47, nombre: "NIKE AIR ZOOM PEGASUS 40", imagen: "pegasus.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Zoom Pegasus 40", "tecnología Zoom Air", "running de alta performance"], info: "Nike Air Zoom Pegasus 40, el favorito de los runners con tecnología Zoom Air.", momento: "Deporte / running / tarde" },
-            { id: 48, nombre: "NIKE V5 RNR BLACK", imagen: "nikecreamrnr.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo V2K Run", "colorway negro total", "estilo retro running"], info: "Nike V2K Run en negro total, modelo retro running muy en tendencia.", momento: "Urbana / deporte / tarde / noche" },
-            { id: 50, nombre: "NIKE REVOLUTION BLANCA", imagen: "revolutionblanca.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Revolution", "estilo running/entrada en gama", "liviana y cómoda"], info: "Nike Revolution, zapatilla liviana ideal para running y uso diario.", momento: "Deporte / uso diario / tarde" },
-            { id: 51, nombre: "ZOOM ROSA", imagen: "zoomrosa.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Zoom", "colorway rosa", "estilo femenino/deportivo"], info: "Nike Zoom en rosa, cómoda y femenina para deporte y street.", momento: "Deporte / urbana / tarde / uso diario" },
-            { id: 52, nombre: "NIKE AIR MAX BLACK", imagen: "nikeairmaxblack.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Max", "colorway negro", "cámara de aire visible"], info: "Nike Air Max en negro, icónica cámara de aire y estilo atemporal.", momento: "Urbana / deporte / tarde / noche" },
-            { id: 53, nombre: "CAMPUS ROSE", imagen: "campusrose.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Campus", "colorway rosa", "estilo retro/urbano"], info: "Adidas Campus en rosa, el modelo retro más trendy del momento.", momento: "Urbana / tarde / uso diario" },
-            { id: 54, nombre: "CAMPUS TOTAL WHITE", imagen: "campustotalwhite.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Campus", "colorway blanco total", "amplia disponibilidad de talles"], info: "Campus Total White, el más completo en talles. Look limpio y versátil.", momento: "Urbana / uso diario / tarde / deporte" },
-            { id: 55, nombre: "CAMPUS CLASICA", imagen: "campusclasica.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Campus clásico", "colorway clásico tricolor", "estilo retro/icónico"], info: "Campus Clásica, el modelo original con las 3 tiras icónicas de Adidas.", momento: "Urbana / uso diario / tarde / noche" },
-            { id: 56, nombre: "CAMPUS HELLO KITTY", imagen: "campushello.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Campus", "diseño Hello Kitty", "estilo collab/kawaii"], info: "Campus edición Hello Kitty, collab kawaii muy buscada y llamativa.", momento: "Urbana / tarde / salidas / eventos" },
-            { id: 57, nombre: "CAMPUS GRIS Y NEGRO", imagen: "campusgrisnegro.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Campus", "colorway gris y negro", "estilo retro/urbano"], info: "Campus en gris y negro, combinación neutra y muy versátil.", momento: "Urbana / tarde / uso diario" },
-            { id: 58, nombre: "CAMPUS CREMA", imagen: "campuscrema.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Campus", "colorway crema/off white", "estilo neutro/minimalista"], info: "Campus en crema, tono suave y sofisticado que combina con cualquier outfit.", momento: "Urbana / uso diario / tarde" },
-            { id: 59, nombre: "CAMPUS BROWN", imagen: "campusbrown.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Campus", "colorway marrón/brown", "estilo terroso/tendencia"], info: "Campus Brown, uno de los colores más buscados en la tendencia \"earth tones\".", momento: "Urbana / tarde / uso diario / otoño-invierno" },
-            { id: 60, nombre: "CAMPUS KORN", imagen: "campuskorn.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Campus", "diseño inspirado en Korn", "estilo collab/rock/streetwear"], info: "Campus edición Korn, collab rockera muy codiciada en el mundo streetwear.", momento: "Urbana / noche / eventos / salidas" },
-            { id: 61, nombre: "SUPERSTAR AZUL", imagen: "superstarazul.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Superstar", "colorway azul", "estilo retro/urbano"], info: "Superstar en azul, colorway fresco y urbano muy solicitado.", momento: "Urbana / tarde / uso diario" },
-            { id: 62, nombre: "SUPERSTAR LILA", imagen: "superstarlila.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Superstar", "colorway lila", "estilo retro/femenino"], info: "Superstar en lila, tono suave y femenino muy en tendencia.", momento: "Urbana / tarde / uso diario" },
-            { id: 63, nombre: "SUPERSTAR BLANCO Y NEGRO", imagen: "superstarbn.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Superstar", "colorway blanco y negro", "estilo retro/clásico"], info: "Superstar en blanco y negro con detalle corazón, clásica con un toque especial.", momento: "Urbana / tarde / salidas" },
-            { id: 64, nombre: "SUPERSTAR BLACK AND WHITE", imagen: "superstartblack.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Superstar", "colorway negro y blanco", "estilo retro/clásico"], info: "Superstar en negro y blanco, versión invertida del clásico bicolor.", momento: "Urbana / tarde / salidas" },
-            { id: 65, nombre: "SAMBA ANIMALS PRINT", imagen: "samba.png", precio: 34100, precioOriginal: 34100, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "estampado animal print", "estilo llamativo/fashion"], info: "Samba con estampado animal print, para looks audaces y de alto impacto.", momento: "Urbana / noche / eventos / salidas" },
-            { id: 67, nombre: "ADIDAS SAMBA", imagen: "adidassamba.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "colorway clásico negro/blanco", "estilo retro/fútbol/urbano"], info: "Adidas Samba clásica, ícono del estilo retro global. La más trendy del momento.", momento: "Urbana / tarde / noche / uso diario" },
-            { id: 68, nombre: "SAMBA CARAMELO", imagen: "sambacaramelo.png", precio: 34900, precioOriginal: 34900, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "colorway caramelo/miel", "estilo terroso/tendencia"], info: "Samba Caramelo, tono dulce y cálido muy en auge en la moda urbana.", momento: "Urbana / tarde / uso diario / otoño" },
-            { id: 69, nombre: "SAMBA CELESTE", imagen: "sambaceleste.png", precio: 34900, precioOriginal: 34900, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "colorway celeste/azul claro", "estilo fresco/urbano"], info: "Samba Celeste, colorway fresco y juvenil para looks descontracturados.", momento: "Urbana / tarde / uso diario / primavera-verano" },
-            { id: 70, nombre: "SAMBA CHOCOLATE", imagen: "sambachocolate.png", precio: 34900, precioOriginal: 34900, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "colorway chocolate/marrón oscuro", "estilo terroso/sofisticado"], info: "Samba Chocolate, tono profundo y sofisticado muy requerido en tendencias.", momento: "Urbana / tarde / noche / otoño-invierno" },
-            { id: 71, nombre: "SAMBA ROSA", imagen: "sambarosa.png", precio: 34900, precioOriginal: 34900, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "colorway rosa", "estilo femenino/urbano"], info: "Samba Rosa, el modelo más femenino y uno de los más pedidos de la línea.", momento: "Urbana / tarde / uso diario / primavera" },
-            { id: 72, nombre: "SAMBA BLANCO Y CAFE", imagen: "sambablancocafe.png", precio: 34900, precioOriginal: 34900, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "colorway blanco y café", "estilo bicolor/versátil"], info: "Samba en blanco y café, combinación clásica con toque cálido. Buena disponibilidad de talles.", momento: "Urbana / tarde / uso diario" },
-            { id: 73, nombre: "SAMBA BLACK", imagen: "sambablack.png", precio: 35900, precioOriginal: 35900, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "colorway negro", "estilo urbano/clásico"], info: "Samba Black, versión oscura del ícono retro. Versátil y muy combinable.", momento: "Urbana / tarde / noche / uso diario" },
-            { id: 75, nombre: "SAMBA CREMA", imagen: "sambacrema.png", precio: 35900, precioOriginal: 35900, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "colorway crema/off white", "estilo neutro/minimalista"], info: "Samba en crema, tono suave y sofisticado que combina con cualquier outfit.", momento: "Urbana / uso diario / tarde" },
-            { id: 76, nombre: "SAMBA CLASICA", imagen: "sambaclasica.png", precio: 35900, precioOriginal: 35900, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "colorway clásico negro/blanco", "estilo retro/fútbol/urbano"], info: "Adidas Samba clásica, ícono del estilo retro global. La más trendy del momento.", momento: "Urbana / tarde / noche / uso diario" },
-            { id: 77, nombre: "SAMBA BLUE", imagen: "sambablue.png", precio: 35900, precioOriginal: 35900, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "colorway azul", "estilo fresco/urbano"], info: "Samba en azul, colorway fresco y urbano muy solicitado.", momento: "Urbana / tarde / uso diario / primavera-verano" },
-            { id: 78, nombre: "ADIDAS SL 72", imagen: "adidassl.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas SL 72", "estilo retro/vintage años 70", "diseño icónico"], info: "Adidas SL 72, clásico de los 70s que volvió con fuerza a la tendencia retro.", momento: "Urbana / tarde / uso diario" },
-            { id: 79, nombre: "ADIDAS SUPERSTAR", imagen: "adidassuperstart.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Superstar", "estilo retro/basketball", "punta shell toe icónica"], info: "Adidas Superstar, el ícono del básquet retro con su característica punta shell toe.", momento: "Urbana / tarde / noche / salidas" },
-            { id: 80, nombre: "ADIDAS FORUM", imagen: "adidasforum.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Forum", "estilo retro/basketball", "correa en tobillo"], info: "Adidas Forum, el ícono del básquet retro con su característica correa en el tobillo.", momento: "Urbana / tarde / noche / salidas" },
-            { id: 81, nombre: "FORUM GRIS", imagen: "forumgris.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Forum", "colorway gris", "estilo retro/neutro"], info: "Forum en gris, opción neutra del clásico basket retro.", momento: "Urbana / tarde / uso diario" },
-            { id: 82, nombre: "FORUM TOTAL WHITE", imagen: "forumtotalwhite.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Forum", "colorway blanco total", "estilo retro/limpio"], info: "Forum en blanco total, look limpio y clásico del basket retro.", momento: "Urbana / uso diario / tarde" },
-            { id: 83, nombre: "FORUM LILA", imagen: "forumlila.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Forum", "colorway lila", "estilo retro/femenino"], info: "Forum en lila, tono suave y femenino en el clásico basket retro.", momento: "Urbana / tarde / uso diario" },
-            { id: 84, nombre: "FORUM AZUL", imagen: "forumazul.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Forum", "colorway azul", "estilo retro/urbano"], info: "Forum en azul, colorway fresco y urbano del clásico basket retro.", momento: "Urbana / tarde / uso diario" },
-            { id: 85, nombre: "FORUM BORDO", imagen: "forumbordo.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Forum", "colorway bordo/vino", "estilo retro/urbano"], info: "Forum en bordo, ideal para outfits otoño-invierno y looks nocturnos.", momento: "Urbana / tarde / noche / otoño-invierno" },
-            { id: 86, nombre: "ADIFORUM BLACK", imagen: "adiforumblack.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Forum / Adiforum", "colorway negro", "estilo retro/basketball"], info: "Adiforum en negro, el clásico de básquet de Adidas en su versión más oscura.", momento: "Urbana / tarde / noche" },
-            { id: 87, nombre: "FORUM 2000 BLACK", imagen: "forumblack.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Forum 2000", "colorway negro", "estilo retro/urbano"], info: "Forum 2000 en negro, versión actualizada del clásico Forum.", momento: "Urbana / tarde / noche" },
-            { id: 88, nombre: "ADIZERO BLACK", imagen: "adizeroblack.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adizero", "colorway negro", "estilo running/performance"], info: "Adizero en negro, zapatilla de alta performance para running.", momento: "Deporte / running / tarde" },
-            { id: 89, nombre: "DURAMO TOTAL WHITE", imagen: "duramototalwhite.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Duramo", "colorway blanco total", "estilo running/neutro"], info: "Duramo en blanco total, cómoda y versátil para deporte y calle.", momento: "Deporte / urbana / tarde / uso diario" },
-            { id: 90, nombre: "DURAMO BLACK AND WHITE", imagen: "duramoblackandwhite.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Duramo", "colorway negro y blanco", "estilo running/bicolor"], info: "Duramo en negro y blanco, combinación clásica y deportiva.", momento: "Deporte / urbana / tarde" },
-            { id: 91, nombre: "SUPERNOVA ROSA", imagen: "supernovarosa.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Supernova", "colorway rosa", "estilo running/femenino"], info: "Supernova en rosa, cómoda y femenina para deporte y street.", momento: "Deporte / urbana / tarde / uso diario" },
-            { id: 92, nombre: "BOSTON NEGRA", imagen: "bostonnegra.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Boston", "colorway negro", "estilo running/performance"], info: "Boston en negro, zapatilla de alta performance para running.", momento: "Deporte / running / tarde" },
-            { id: 93, nombre: "BOSTON GRIS", imagen: "bostongris.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Boston", "colorway gris", "estilo running/neutro"], info: "Boston en gris, opción neutra de alta performance para running.", momento: "Deporte / running / tarde" },
-            { id: 94, nombre: "BOSTON PINK", imagen: "bostonpink.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Boston", "colorway rosa", "estilo running/femenino"], info: "Boston en rosa, opción femenina de alta performance para running.", momento: "Deporte / running / tarde" },
-            { id: 95, nombre: "ADIZERO BOSTON 13", imagen: "adizeroboston.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adizero Boston 13", "running de alta performance", "tecnología Adizero"], info: "Adizero Boston 13, la zapatilla de competición de Adidas para runners exigentes.", momento: "Deporte / running / competición" },
-            { id: 96, nombre: "VANS KNU RETRO", imagen: "vansknuretro.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Knu Retro", "estilo retro/chunky", "suela voluminosa"], info: "Vans Knu Retro, modelo chunky retro con mucha presencia visual.", momento: "Urbana / tarde / noche / salidas" },
-            { id: 97, nombre: "VANS UPLAND TOTAL BLACK", imagen: "vansuplandtotalblack.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Upland", "colorway negro total", "estilo urbano/clásico"], info: "Vans Upland en negro total, versátil y combinable con todo.", momento: "Urbana / uso diario / tarde / noche" },
-            { id: 98, nombre: "VANS KNU CLASICA", imagen: "vansknuclasica.png", precio: 35500, precioOriginal: 35500, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Knu Stack clásica", "estilo retro/chunky", "amplia disponibilidad de talles"], info: "Vans Knu clásica, el modelo retro chunky más completo en talles.", momento: "Urbana / tarde / uso diario" },
-            { id: 99, nombre: "VANS KNU TOTAL WHITE", imagen: "vansknutotalwhite.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Knu Stack", "colorway blanco total", "estilo retro/limpio"], info: "Vans Knu en blanco total, look limpio y versátil.", momento: "Urbana / uso diario / tarde" },
-            { id: 100, nombre: "VANS KNU OREO", imagen: "vansknuoreo.png", precio: 34100, precioOriginal: 34100, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Knu Stack", "colorway negro y blanco estilo Oreo", "estilo retro/bicolor"], info: "Vans Knu en Oreo, combinación clásica negro y blanco en versión chunky.", momento: "Urbana / tarde / noche" },
-            { id: 101, nombre: "VANS KNU TOTAL BLACK", imagen: "vansknutotalblack.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Knu Stack", "colorway negro total", "estilo retro/urbano"], info: "Vans Knu en negro total, versátil y combinable con todo.", momento: "Urbana / tarde / noche / uso diario" },
-            { id: 102, nombre: "VANS KNU BOTITA", imagen: "vansknubotita.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Knu botita", "caña alta", "estilo retro/chunky"], info: "Vans Knu botita, mayor soporte y presencia visual con caña alta.", momento: "Urbana / tarde / noche / salidas" },
-            { id: 103, nombre: "VANS HAYLENE BLANCAS", imagen: "vanshayleneblancas.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Haylene", "colorway blanco", "estilo urbano/clásico"], info: "Vans Haylene en blanco, look limpio y versátil para el día a día.", momento: "Urbana / uso diario / tarde" },
-            { id: 104, nombre: "VANS HAYLENE WHITE WHITE", imagen: "vanshaylenewhite.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Haylene", "colorway blanco total (suela blanca)", "estilo urbano/minimalista"], info: "Vans Haylene en blanco total con suela blanca, look ultra limpio y minimalista.", momento: "Urbana / uso diario / tarde" },
-            { id: 105, nombre: "VANS HAYLENE CAFE", imagen: "vanshaylenecafe.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Haylene", "colorway café/marrón", "estilo terroso/urbano"], info: "Vans Haylene en café, tono cálido y terroso muy en tendencia.", momento: "Urbana / tarde / uso diario / otoño-invierno" },
-            { id: 106, nombre: "VANS HAYLENE CREAM", imagen: "vanshaylenecream.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Haylene", "colorway crema", "estilo neutro/minimalista"], info: "Vans Haylene en crema, tono suave que combina con cualquier outfit.", momento: "Urbana / uso diario / tarde" },
-            { id: 107, nombre: "VANS HAYLENE CREAM AND GREY", imagen: "vanshaylenecreamandgrey.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Haylene", "colorway crema y gris", "estilo neutro/bicolor"], info: "Vans Haylene en crema y gris, combinación suave y muy versátil.", momento: "Urbana / uso diario / tarde" },
-            { id: 108, nombre: "VANS HAYLENE MARINO", imagen: "vanshaylenemarino.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Haylene", "colorway azul marino", "estilo urbano/clásico"], info: "Vans Haylene en marino, colorway clásico y versátil.", momento: "Urbana / tarde / noche" },
-            { id: 109, nombre: "VANS HAYLENE GREEN", imagen: "vanshaylenegreen.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Haylene", "colorway verde agua pastel", "estilo urbano/clásico"], info: "Vans Haylene en verde agua, colorway fresco y versátil.", momento: "Urbana / tarde / noche" },
-            { id: 110, nombre: "PUMA SUEDE XL NEGRA", imagen: "pumasuedenegra.png", precio: 35900, precioOriginal: 35900, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Puma Suede", "colorway negro y blanco", "estilo urbano/clásico"], info: "Puma Suede XL en negro, versátil y combinable con todo.", momento: "Urbana / tarde / noche" },
-            { id: 111, nombre: "PUMA SUEDE VERDES", imagen: "pumasuedeverdes.png", precio: 35900, precioOriginal: 35900, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Puma Suede", "colorway verde", "estilo urbano/fresco"], info: "Puma Suede en verde, color fresco y muy solicitado.", momento: "Urbana / tarde / uso diario" },
-            { id: 112, nombre: "NEW BALANCE 9060 WHITE", imagen: "newbalance.png", precio: 37000, precioOriginal: 37000, tipo: "adulto", talles: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo New Balance 9060", "colorway blanco", "estilo urbano/clásico"], info: "New Balance 9060 en blanco, estilo limpio y versátil para el día a día.", momento: "Urbana / tarde / noche" }
+        // DATOS DE PRODUCTOS (112 zapatillas adultos)
+        window.shoes = [
+            { id: 1, nombre: "DUNK CELESTE Y NUDE", imagen: "imagen.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway celeste y nude", "estilo neutro y versátil"], info: "Dunk en tono celeste y nude, combina con todo tipo de outfit.", momento: "Urbana / tarde / uso diario" },
+            { id: 2, nombre: "DUNK BLANCO Y VERDE GAMUZADA", imagen: "dunkblanco.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway blanco y verde", "material gamuzado", "estilo urbano/deportivo"], info: "Dunk en combinación blanco y verde gamuzada. Versátil para looks urbanos y deportivos.", momento: "Urbana / deporte / tarde" },
+            { id: 3, nombre: "DUNK PANDA 3D", imagen: "dunkpanda.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway panda (negro y blanco)", "detalle 3D", "estilo urbano"], info: "Dunk edición Panda con detalle 3D. Look llamativo y urbano.", momento: "Urbana / noche / salidas" },
+            { id: 4, nombre: "DUNK NUDE", imagen: "dunknude.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway nude/beige", "estilo neutro y versátil"], info: "Dunk en tono nude, combina con todo tipo de outfit.", momento: "Urbana / tarde / uso diario" },
+            { id: 5, nombre: "NIKE DUNK PANDA", imagen: "nikepanda.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway panda (negro y blanco)", "modelo clásico muy demandado", "estilo urbano"], info: "El icónico Dunk Panda, negro y blanco, uno de los modelos más populares. Amplia disponibilidad de talles.", momento: "Urbana / deporte / tarde / noche / uso diario" },
+            { id: 6, nombre: "NIKE DUNK TOTAL WHITE", imagen: "niketotal.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway blanco total", "estilo limpio y versátil"], info: "Dunk total white, look clásico que combina con cualquier outfit.", momento: "Urbana / uso diario / tarde" },
+            { id: 7, nombre: "NIKE DUNK BORDO", imagen: "nikebordo.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway burdeo/vino", "estilo urbano"], info: "Dunk en colorway bordo, ideal para outfits otoño-invierno y looks nocturnos.", momento: "Urbana / tarde / noche / otoño-invierno" },
+            { id: 8, nombre: "DUNK GLITTER", imagen: "glitter.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "detalle glitter/brillos", "estilo festivo y llamativo"], info: "Dunk con detalle glitter, perfecta para looks que buscan destacar.", momento: "Noche / eventos / salidas" },
+            { id: 9, nombre: "DUNK CELESTE METALIC", imagen: "dunkceleste.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway celeste metálico", "acabado brillante/metálico"], info: "Dunk en celeste metálico, look llamativo y futurista.", momento: "Noche / eventos / salidas" },
+            { id: 10, nombre: "DUNK CHERRY", imagen: "dunkcherry.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway cherry/rojo cereza", "estilo urbano/llamativo"], info: "Dunk en cherry, color vibrante y llamativo para looks urbanos.", momento: "Urbana / tarde / noche" },
+            { id: 11, nombre: "DUNK TOTAL BLACK", imagen: "totalblack.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway negro total", "estilo versátil y clásico"], info: "Dunk en negro total, combina con todo y es apta para cualquier ocasión.", momento: "Urbana / deporte / tarde / noche / uso diario" },
+            { id: 12, nombre: "DUNK GREY AND BLACK", imagen: "dunkgreyand.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway gris y negro", "estilo urbano/deportivo"], info: "Dunk en gris y negro, combinación sobria y urbana.", momento: "Urbana / tarde / noche" },
+            { id: 13, nombre: "DUNK GREEN AND BLACK", imagen: "dunkgreenand.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway verde y negro", "estilo urbano/deportivo"], info: "Dunk en verde y negro, look fresco y urbano.", momento: "Urbana / deporte / tarde" },
+            { id: 14, nombre: "DUNK AZUL MARINO", imagen: "dunkmarino.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway azul marino", "estilo urbano/clásico"], info: "Dunk en azul marino, colorway clásico y versátil.", momento: "Urbana / tarde / noche" },
+            { id: 15, nombre: "DUNK VERDE", imagen: "dunkverde.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway verde", "estilo urbano/deportivo"], info: "Dunk en verde, color tendencia para looks frescos y urbanos.", momento: "Urbana / deporte / tarde" },
+            { id: 16, nombre: "DUNK GRIS", imagen: "dunkgris.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway gris", "estilo neutro y versátil"], info: "Dunk gris, opción neutra que combina con todo tipo de indumentaria.", momento: "Urbana / uso diario / tarde / noche" },
+            { id: 17, nombre: "NIKE DUNK MARRONES", imagen: "nikemarrones.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway marrón", "estilo terroso/cálido"], info: "Dunk en tono marrón, tendencia en colores tierra.", momento: "Urbana / uso diario / tarde" },
+            { id: 18, nombre: "NIKE DUNK GREY AND CREAM", imagen: "nikecream.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway gris y crema", "estilo neutro y versátil"], info: "Dunk en gris y crema, combinación suave y muy combinable.", momento: "Urbana / uso diario / tarde" },
+            { id: 19, nombre: "NIKE DUNK GRIS CON BLANCO", imagen: "grisconblanco.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "colorway gris con blanco", "estilo neutro/urbano"], info: "Dunk en gris con blanco, opción neutra y versátil para el día a día.", momento: "Urbana / uso diario / tarde" },
+            { id: 20, nombre: "NIKE DUNK BIRD", imagen: "dunkbird.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "diseño bird/pájaro", "estilo urbano/llamativo"], info: "Dunk edición Bird, diseño llamativo y único.", momento: "Urbana / tarde / salidas" },
+            { id: 21, nombre: "JORDAN LOW PANDA", imagen: "lowpanda.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Jordan Low", "colorway panda (negro y blanco)", "perfil bajo"], info: "Jordan Low en colorway Panda, modelo versátil y de perfil bajo.", momento: "Urbana / uso diario / tarde" },
+            { id: 22, nombre: "JORDAN LOW PINK", imagen: "lowrosa.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Jordan Low", "colorway rosa", "perfil bajo"], info: "Jordan Low rosa, opción femenina y moderna de perfil bajo.", momento: "Urbana / tarde / uso diario" },
+            { id: 23, nombre: "BOTITA JORDAN VERDE", imagen: "jordanverde.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo botita (caña alta)", "colorway verde", "estilo Jordan"], info: "Jordan botita en verde, mayor soporte y presencia visual con caña alta.", momento: "Urbana / deporte / tarde / noche" },
+            { id: 24, nombre: "JORDAN LOW MID PINK", imagen: "midpink.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Jordan Low Mid", "colorway rosa", "caña media"], info: "Jordan 1 Mid en rosa, clásico icónico con toque femenino.", momento: "Urbana / tarde / noche / salidas" },
+            { id: 25, nombre: "AIR FORCE BOTITA", imagen: "airforce.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Force 1", "colorway negro total", "estilo urbano/clásico"], info: "Air Force 1 en negro total, icónica y versátil para cualquier look.", momento: "Urbana / uso diario / tarde / noche" },
+            { id: 26, nombre: "RETRO 4 TOTAL WHITE", imagen: "retrototalwhite.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Jordan Retro 4", "colorway blanco total", "estilo retro/deportivo"], info: "Jordan Retro 4 en blanco total, look limpio y clásico.", momento: "Urbana / deporte / tarde" },
+            { id: 27, nombre: "RETRO 4 MOCCA", imagen: "retromocca.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Jordan Retro 4", "colorway mocca/café", "estilo retro/terroso"], info: "Retro 4 en mocca, tono cálido muy en tendencia.", momento: "Urbana / tarde / noche / otoño-invierno" },
+            { id: 28, nombre: "RETRO 4 GOLD", imagen: "retrogold.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Jordan Retro 4", "colorway dorado/gold", "estilo retro/llamativo"], info: "Retro 4 en gold, colorway dorado llamativo y festivo.", momento: "Noche / eventos / salidas" },
+            { id: 29, nombre: "RETRO 4 MARINO", imagen: "retromarino.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Jordan Retro 4", "colorway azul marino", "estilo retro/clásico"], info: "Retro 4 en marino, colorway oscuro y sofisticado.", momento: "Urbana / tarde / noche" },
+            { id: 30, nombre: "AIR FORCE PIPA BLACK", imagen: "pipablack.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Force", "colorway negro", "detalle pipa/swoosh"], info: "Air Force con pipa en negro, estilo urbano y clásico.", momento: "Urbana / uso diario / tarde / noche" },
+            { id: 31, nombre: "AIR FORCE LILA", imagen: "forcelila.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Force", "colorway lila/violeta", "estilo neutro y femenino"], info: "Air Force en lila, tono suave y femenino muy en tendencia.", momento: "Urbana / uso diario / tarde" },
+            { id: 32, nombre: "AIR FORCE WHITE AND BLUE", imagen: "whiteandblue.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Force 1", "colorway blanco y azul", "estilo bicolor clásico"], info: "Air Force 1 en combinación blanco y azul, estilo urbano bicolor.", momento: "Urbana / uso diario / tarde" },
+            { id: 33, nombre: "AIR FORCE 1 LOUIS VUITTON", imagen: "louisvuitton.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Force 1", "estampado inspirado en Louis Vuitton", "estilo luxury streetwear"], info: "Air Force 1 con diseño inspirado en Louis Vuitton. Look lujoso y llamativo.", momento: "Noche / eventos / salidas / urbana" },
+            { id: 34, nombre: "AIR FORCE LOUIS VUITTON MARRON", imagen: "louisvuittonair.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Force", "colorway marrón con estampado LV", "estilo luxury streetwear"], info: "Air Force Louis Vuitton en marrón, tono cálido con diseño lujoso.", momento: "Noche / eventos / salidas" },
+            { id: 35, nombre: "NIKE AIR FORCE STUSSY", imagen: "stussy.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Force", "estampado inspirado en Stüssy", "estilo collab/streetwear"], info: "Air Force edición Stussy, collab icónica del streetwear.", momento: "Urbana / noche / eventos" },
+            { id: 36, nombre: "NIKE AIR FORCE TOTAL WHITE", imagen: "totalwhiteair.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Force 1", "colorway blanco total", "clásico atemporal"], info: "Air Force 1 blancas, el clásico más vendido de todos los tiempos. Amplia disponibilidad.", momento: "Urbana / uso diario / deporte / tarde / noche" },
+            { id: 37, nombre: "NIKE AIR FORCE BLACK AND BLUE", imagen: "airforceblack.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Force", "colorway negro y azul", "estilo llamativo/urbano"], info: "Air Force en negro y azul, combinación audaz y energética.", momento: "Urbana / tarde / noche" },
+            { id: 38, nombre: "NIKE CORTEZ", imagen: "nikecortez.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Cortez clásico", "estilo retro/vintage"], info: "Nike Cortez, el clásico retro de los 70s de regreso en tendencia.", momento: "Urbana / tarde / uso diario" },
+            { id: 39, nombre: "NIKE TN VIOLETA", imagen: "tnvioleta.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo TN / Tuned Air", "colorway violeta", "estilo urbano/running"], info: "Nike TN en violeta, modelo de alta visibilidad y amortiguación Tuned Air.", momento: "Urbana / deporte / tarde" },
+            { id: 40, nombre: "NIKE TN TOTAL BLACK", imagen: "tntotalblack.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo TN / Tuned Air", "colorway negro total", "estilo urbano/running"], info: "Nike TN en negro, clásico del streetwear con tecnología Tuned Air.", momento: "Urbana / deporte / tarde / noche" },
+            { id: 41, nombre: "NIKE DN WHITE", imagen: "dnairmaxwhite.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Max DN", "tecnología Air Max visible", "estilo futurista"], info: "Nike Air Max DN, diseño futurista con cámara de aire dual.", momento: "Urbana / deporte / tarde / noche" },
+            { id: 42, nombre: "NIKE ZOOMX GRIS", imagen: "zoomxgris.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo ZoomX", "colorway gris", "tecnología ZoomX / alto rendimiento"], info: "Nike ZoomX en gris, tecnología de amortiguación premium para rendimiento.", momento: "Deporte / running / tarde" },
+            { id: 43, nombre: "NIKE INVENCIBLE RUN", imagen: "invencible.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Invincible Run", "máxima amortiguación", "estilo running premium"], info: "Nike Invincible Run, la zapatilla de mayor amortiguación para running.", momento: "Deporte / running / tarde" },
+            { id: 44, nombre: "NIKE AIR ZOOM TOTAL BLACK", imagen: "zoomtotalblack.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Zoom", "colorway negro total", "tecnología Zoom Air"], info: "Nike Air Zoom en negro total, versatilidad y rendimiento en uno.", momento: "Deporte / urbana / tarde / noche" },
+            { id: 45, nombre: "NIKE REACT", imagen: "nikereact.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo React", "colorway negro", "tecnología React foam"], info: "Nike React en negro, amortiguación React foam para el día a día y el deporte.", momento: "Deporte / urbana / tarde / noche" },
+            { id: 46, nombre: "NIKE REVOLUTION", imagen: "rovolution.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Revolution", "estilo running/entrada en gama", "liviana y cómoda"], info: "Nike Revolution, zapatilla liviana ideal para running y uso diario.", momento: "Deporte / uso diario / tarde" },
+            { id: 47, nombre: "NIKE AIR ZOOM PEGASUS 40", imagen: "pegasus.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Zoom Pegasus 40", "tecnología Zoom Air", "running de alta performance"], info: "Nike Air Zoom Pegasus 40, el favorito de los runners con tecnología Zoom Air.", momento: "Deporte / running / tarde" },
+            { id: 48, nombre: "NIKE V5 RNR BLACK", imagen: "nikecreamrnr.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo V2K Run", "colorway negro total", "estilo retro running"], info: "Nike V2K Run en negro total, modelo retro running muy en tendencia.", momento: "Urbana / deporte / tarde / noche" },
+            { id: 50, nombre: "NIKE REVOLUTION", imagen: "revolutionblanca.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Revolution", "estilo running/entrada en gama", "liviana y cómoda"], info: "Nike Revolution, zapatilla liviana ideal para running y uso diario.", momento: "Deporte / uso diario / tarde" },
+            { id: 51, nombre: "ZOOM ROSA", imagen: "zoomrosa.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Zoom", "colorway rosa", "estilo femenino/deportivo"], info: "Nike Zoom en rosa, cómoda y femenina para deporte y street.", momento: "Deporte / urbana / tarde / uso diario" },
+            { id: 52, nombre: "NIKE AIR MAX BLACK", imagen: "nikeairmaxblack.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Air Max", "colorway negro", "cámara de aire visible"], info: "Nike Air Max en negro, icónica cámara de aire y estilo atemporal.", momento: "Urbana / deporte / tarde / noche" },
+            { id: 53, nombre: "CAMPUS ROSE", imagen: "campusrose.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Campus", "colorway rosa", "estilo retro/urbano"], info: "Adidas Campus en rosa, el modelo retro más trendy del momento.", momento: "Urbana / tarde / uso diario" },
+            { id: 54, nombre: "CAMPUS TOTAL WHITE", imagen: "campustotalwhite.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Campus", "colorway blanco total", "amplia disponibilidad de talles"], info: "Campus Total White, el más completo en talles. Look limpio y versátil.", momento: "Urbana / uso diario / tarde / deporte" },
+            { id: 55, nombre: "CAMPUS CLASICA", imagen: "campusclasica.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Campus clásico", "colorway clásico tricolor", "estilo retro/icónico"], info: "Campus Clásica, el modelo original con las 3 tiras icónicas de Adidas.", momento: "Urbana / uso diario / tarde / noche" },
+            { id: 56, nombre: "CAMPUS HELLO KITTY", imagen: "campushello.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Campus", "diseño Hello Kitty", "estilo collab/kawaii"], info: "Campus edición Hello Kitty, collab kawaii muy buscada y llamativa.", momento: "Urbana / tarde / salidas / eventos" },
+            { id: 57, nombre: "CAMPUS GRIS Y NEGRO", imagen: "campusgrisnegro.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Campus", "colorway gris y negro", "estilo retro/urbano"], info: "Campus en gris y negro, combinación neutra y muy versátil.", momento: "Urbana / tarde / uso diario" },
+            { id: 58, nombre: "CAMPUS CREMA", imagen: "campuscrema.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Campus", "colorway crema/off white", "estilo neutro/minimalista"], info: "Campus en crema, tono suave y sofisticado que combina con cualquier outfit.", momento: "Urbana / uso diario / tarde" },
+            { id: 59, nombre: "CAMPUS BROWN", imagen: "campusbrown.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Campus", "colorway marrón/brown", "estilo terroso/tendencia"], info: "Campus Brown, uno de los colores más buscados en la tendencia \"earth tones\".", momento: "Urbana / tarde / uso diario / otoño-invierno" },
+            { id: 60, nombre: "CAMPUS KORN", imagen: "campuskorn.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Campus", "diseño inspirado en Korn", "estilo collab/rock/streetwear"], info: "Campus edición Korn, collab rockera muy codiciada en el mundo streetwear.", momento: "Urbana / noche / eventos / salidas" },
+            { id: 61, nombre: "SUPERSTAR AZUL", imagen: "superstarazul.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Superstar", "colorway azul", "estilo retro/urbano"], info: "Superstar en azul, colorway fresco y urbano muy solicitado.", momento: "Urbana / tarde / uso diario" },
+            { id: 62, nombre: "SUPERSTAR LILA", imagen: "superstarlila.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Superstar", "colorway lila", "estilo retro/femenino"], info: "Superstar en lila, tono suave y femenino muy en tendencia.", momento: "Urbana / tarde / uso diario" },
+            { id: 63, nombre: "SUPERSTAR BLANCO Y NEGRO", imagen: "superstarbn.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Superstar", "colorway blanco y negro", "estilo retro/clásico"], info: "Superstar en blanco y negro con detalle corazón, clásica con un toque especial.", momento: "Urbana / tarde / salidas" },
+            { id: 64, nombre: "SUPERSTAR BLACK AND WHITE", imagen: "superstartblack.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Superstar", "colorway negro y blanco", "estilo retro/clásico"], info: "Superstar en negro y blanco, versión invertida del clásico bicolor.", momento: "Urbana / tarde / salidas" },
+            { id: 65, nombre: "SAMBA ANIMALS PRINT", imagen: "samba.png", precio: 34100, precioOriginal: 34100, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "estampado animal print", "estilo llamativo/fashion"], info: "Samba con estampado animal print, para looks audaces y de alto impacto.", momento: "Urbana / noche / eventos / salidas" },
+            { id: 67, nombre: "ADIDAS SAMBA (bicolor clásica)", imagen: "adidassamba.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "colorway clásico negro/blanco", "estilo retro/fútbol/urbano"], info: "Adidas Samba clásica, ícono del estilo retro global. La más trendy del momento.", momento: "Urbana / tarde / noche / uso diario" },
+            { id: 68, nombre: "SAMBA CARAMELO", imagen: "sambacaramelo.png", precio: 34900, precioOriginal: 34900, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "colorway caramelo/miel", "estilo terroso/tendencia"], info: "Samba Caramelo, tono dulce y cálido muy en auge en la moda urbana.", momento: "Urbana / tarde / uso diario / otoño" },
+            { id: 69, nombre: "SAMBA CELESTE", imagen: "sambaceleste.png", precio: 34900, precioOriginal: 34900, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "colorway celeste/azul claro", "estilo fresco/urbano"], info: "Samba Celeste, colorway fresco y juvenil para looks descontracturados.", momento: "Urbana / tarde / uso diario / primavera-verano" },
+            { id: 70, nombre: "SAMBA CHOCOLATE", imagen: "sambachocolate.png", precio: 34900, precioOriginal: 34900, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "colorway chocolate/marrón oscuro", "estilo terroso/sofisticado"], info: "Samba Chocolate, tono profundo y sofisticado muy requerido en tendencias.", momento: "Urbana / tarde / noche / otoño-invierno" },
+            { id: 71, nombre: "SAMBA ROSA", imagen: "sambarosa.png", precio: 34900, precioOriginal: 34900, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "colorway rosa", "estilo femenino/urbano"], info: "Samba Rosa, el modelo más femenino y uno de los más pedidos de la línea.", momento: "Urbana / tarde / uso diario / primavera" },
+            { id: 72, nombre: "SAMBA BLANCO Y CAFE", imagen: "sambablancocafe.png", precio: 34900, precioOriginal: 34900, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "colorway blanco y café", "estilo bicolor/versátil"], info: "Samba en blanco y café, combinación clásica con toque cálido. Buena disponibilidad de talles.", momento: "Urbana / tarde / uso diario" },
+            { id: 73, nombre: "SAMBA BLACK", imagen: "sambablack.png", precio: 35900, precioOriginal: 35900, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "colorway negro", "estilo urbano/clásico"], info: "Samba Black, versión oscura del ícono retro. Versátil y muy combinable.", momento: "Urbana / tarde / noche / uso diario" },
+            { id: 75, nombre: "SAMBA CREMA", imagen: "sambacrema.png", precio: 35900, precioOriginal: 35900, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "colorway crema/off white", "estilo neutro/minimalista"], info: "Samba en crema, tono suave y sofisticado que combina con cualquier outfit.", momento: "Urbana / uso diario / tarde" },
+            { id: 76, nombre: "SAMBA CLASICA", imagen: "sambaclasica.png", precio: 35900, precioOriginal: 35900, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "colorway clásico negro/blanco", "estilo retro/fútbol/urbano"], info: "Adidas Samba clásica, ícono del estilo retro global. La más trendy del momento.", momento: "Urbana / tarde / noche / uso diario" },
+            { id: 77, nombre: "SAMBA BLUE", imagen: "sambablue.png", precio: 35900, precioOriginal: 35900, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Samba", "colorway azul", "estilo fresco/urbano"], info: "Samba en azul, colorway fresco y urbano muy solicitado.", momento: "Urbana / tarde / uso diario / primavera-verano" },
+            { id: 78, nombre: "ADIDAS SL 72", imagen: "adidassl.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas SL 72", "estilo retro/vintage años 70", "diseño icónico"], info: "Adidas SL 72, clásico de los 70s que volvió con fuerza a la tendencia retro.", momento: "Urbana / tarde / uso diario" },
+            { id: 79, nombre: "ADIDAS SUPERSTAR", imagen: "adidassuperstart.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Superstar", "estilo retro/basketball", "punta shell toe icónica"], info: "Adidas Superstar, el ícono del básquet retro con su característica punta shell toe.", momento: "Urbana / tarde / noche / salidas" },
+            { id: 80, nombre: "ADIDAS FORUM", imagen: "adidasforum.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Forum", "estilo retro/basketball", "correa en tobillo"], info: "Adidas Forum, el ícono del básquet retro con su característica correa en el tobillo.", momento: "Urbana / tarde / noche / salidas" },
+            { id: 81, nombre: "FORUM GRIS", imagen: "forumgris.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Forum", "colorway gris", "estilo retro/neutro"], info: "Forum en gris, opción neutra del clásico basket retro.", momento: "Urbana / tarde / uso diario" },
+            { id: 82, nombre: "FORUM TOTAL WHITE", imagen: "forumtotalwhite.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Forum", "colorway blanco total", "estilo retro/limpio"], info: "Forum en blanco total, look limpio y clásico del basket retro.", momento: "Urbana / uso diario / tarde" },
+            { id: 83, nombre: "FORUM LILA", imagen: "forumlila.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Forum", "colorway lila", "estilo retro/femenino"], info: "Forum en lila, tono suave y femenino en el clásico basket retro.", momento: "Urbana / tarde / uso diario" },
+            { id: 84, nombre: "FORUM AZUL", imagen: "forumazul.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Forum", "colorway azul", "estilo retro/urbano"], info: "Forum en azul, colorway fresco y urbano del clásico basket retro.", momento: "Urbana / tarde / uso diario" },
+            { id: 85, nombre: "FORUM BORDO", imagen: "forumbordo.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Forum", "colorway bordo/vino", "estilo retro/urbano"], info: "Forum en bordo, ideal para outfits otoño-invierno y looks nocturnos.", momento: "Urbana / tarde / noche / otoño-invierno" },
+            { id: 86, nombre: "ADIFORUM BLACK", imagen: "adiforumblack.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Forum / Adiforum", "colorway negro", "estilo retro/basketball"], info: "Adiforum en negro, el clásico de básquet de Adidas en su versión más oscura.", momento: "Urbana / tarde / noche" },
+            { id: 87, nombre: "FORUM 2000 BLACK", imagen: "forumblack.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adidas Forum 2000", "colorway negro", "estilo retro/urbano"], info: "Forum 2000 en negro, versión actualizada del clásico Forum.", momento: "Urbana / tarde / noche" },
+            { id: 88, nombre: "ADIZERO BLACK", imagen: "adizeroblack.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adizero", "colorway negro", "estilo running/performance"], info: "Adizero en negro, zapatilla de alta performance para running.", momento: "Deporte / running / tarde" },
+            { id: 89, nombre: "DURAMO TOTAL WHITE", imagen: "duramototalwhite.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Duramo", "colorway blanco total", "estilo running/neutro"], info: "Duramo en blanco total, cómoda y versátil para deporte y calle.", momento: "Deporte / urbana / tarde / uso diario" },
+            { id: 90, nombre: "DURAMO BLACK AND WHITE", imagen: "duramoblackandwhite.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Duramo", "colorway negro y blanco", "estilo running/bicolor"], info: "Duramo en negro y blanco, combinación clásica y deportiva.", momento: "Deporte / urbana / tarde" },
+            { id: 91, nombre: "SUPERNOVA ROSA", imagen: "supernovarosa.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Supernova", "colorway rosa", "estilo running/femenino"], info: "Supernova en rosa, cómoda y femenina para deporte y street.", momento: "Deporte / urbana / tarde / uso diario" },
+            { id: 92, nombre: "BOSTON NEGRA", imagen: "bostonnegra.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Boston", "colorway negro", "estilo running/performance"], info: "Boston en negro, zapatilla de alta performance para running.", momento: "Deporte / running / tarde" },
+            { id: 93, nombre: "BOSTON GRIS", imagen: "bostongris.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Boston", "colorway gris", "estilo running/neutro"], info: "Boston en gris, opción neutra de alta performance para running.", momento: "Deporte / running / tarde" },
+            { id: 94, nombre: "BOSTON PINK", imagen: "bostonpink.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Boston", "colorway rosa", "estilo running/femenino"], info: "Boston en rosa, opción femenina de alta performance para running.", momento: "Deporte / running / tarde" },
+            { id: 95, nombre: "ADIZERO BOSTON 13", imagen: "adizeroboston.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Adizero Boston 13", "running de alta performance", "tecnología Adizero"], info: "Adizero Boston 13, la zapatilla de competición de Adidas para runners exigentes.", momento: "Deporte / running / competición" },
+            { id: 96, nombre: "VANS KNU RETRO", imagen: "vansknuretro.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Knu Retro", "estilo retro/chunky", "suela voluminosa"], info: "Vans Knu Retro, modelo chunky retro con mucha presencia visual.", momento: "Urbana / tarde / noche / salidas" },
+            { id: 97, nombre: "VANS UPLAND TOTAL BLACK", imagen: "vansuplandtotalblack.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Upland", "colorway negro total", "estilo urbano/clásico"], info: "Vans Upland en negro total, versátil y combinable con todo.", momento: "Urbana / uso diario / tarde / noche" },
+            { id: 98, nombre: "VANS KNU CLASICA", imagen: "vansknuclasica.png", precio: 35500, precioOriginal: 35500, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Knu Stack clásica", "estilo retro/chunky", "amplia disponibilidad de talles"], info: "Vans Knu clásica, el modelo retro chunky más completo en talles.", momento: "Urbana / tarde / uso diario" },
+            { id: 99, nombre: "VANS KNU TOTAL WHITE", imagen: "vansknutotalwhite.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Knu Stack", "colorway blanco total", "estilo retro/limpio"], info: "Vans Knu en blanco total, look limpio y versátil.", momento: "Urbana / uso diario / tarde" },
+            { id: 100, nombre: "VANS KNU OREO", imagen: "vansknuoreo.png", precio: 34100, precioOriginal: 34100, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Knu Stack", "colorway negro y blanco estilo Oreo", "estilo retro/bicolor"], info: "Vans Knu en Oreo, combinación clásica negro y blanco en versión chunky.", momento: "Urbana / tarde / noche" },
+            { id: 101, nombre: "VANS KNU TOTAL BLACK", imagen: "vansknutotalblack.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Knu Stack", "colorway negro total", "estilo retro/urbano"], info: "Vans Knu en negro total, versátil y combinable con todo.", momento: "Urbana / tarde / noche / uso diario" },
+            { id: 102, nombre: "VANS KNU BOTITA", imagen: "vansknubotita.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Knu botita", "caña alta", "estilo retro/chunky"], info: "Vans Knu botita, mayor soporte y presencia visual con caña alta.", momento: "Urbana / tarde / noche / salidas" },
+            { id: 103, nombre: "VANS HAYLENE BLANCAS", imagen: "vanshayleneblancas.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Haylene", "colorway blanco", "estilo urbano/clásico"], info: "Vans Haylene en blanco, look limpio y versátil para el día a día.", momento: "Urbana / uso diario / tarde" },
+            { id: 104, nombre: "VANS HAYLENE WHITE WHITE", imagen: "vanshaylenewhite.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Haylene", "colorway blanco total (suela blanca)", "estilo urbano/minimalista"], info: "Vans Haylene en blanco total con suela blanca, look ultra limpio y minimalista.", momento: "Urbana / uso diario / tarde" },
+            { id: 105, nombre: "VANS HAYLENE CAFE", imagen: "vanshaylenecafe.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Haylene", "colorway café/marrón", "estilo terroso/urbano"], info: "Vans Haylene en café, tono cálido y terroso muy en tendencia.", momento: "Urbana / tarde / uso diario / otoño-invierno" },
+            { id: 106, nombre: "VANS HAYLENE CREAM", imagen: "vanshaylenecream.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Haylene", "colorway crema", "estilo neutro/minimalista"], info: "Vans Haylene en crema, tono suave que combina con cualquier outfit.", momento: "Urbana / uso diario / tarde" },
+            { id: 107, nombre: "VANS HAYLENE CREAM AND GREY", imagen: "vanshaylenecreamandgrey.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Haylene", "colorway crema y gris", "estilo neutro/bicolor"], info: "Vans Haylene en crema y gris, combinación suave y muy versátil.", momento: "Urbana / uso diario / tarde" },
+            { id: 108, nombre: "VANS HAYLENE MARINO", imagen: "vanshaylenemarino.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Haylene", "colorway azul marino", "estilo urbano/clásico"], info: "Vans Haylene en marino, colorway clásico y versátil.", momento: "Urbana / tarde / noche" },
+            { id: 109, nombre: "VANS HAYLENE GREEN", imagen: "vanshaylenegreen.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Vans Haylene", "colorway verde agua pastel", "estilo urbano/clásico"], info: "Vans Haylene en verde agua pastel, tono suave y urbano.", momento: "Urbana / tarde / noche" },
+            { id: 110, nombre: "PUMA SUEDE XL NEGRA", imagen: "pumasuedenegra.png", precio: 35900, precioOriginal: 35900, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Puma Suede XL", "colorway negro y blanco", "estilo urbano/clásico"], info: "Puma Suede XL en negro, zapatilla versátil y de calidad.", momento: "Urbana / tarde / noche" },
+            { id: 111, nombre: "PUMA SUEDE VERDES", imagen: "pumasuedeverdes.png", precio: 35900, precioOriginal: 35900, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo Puma Suede", "colorway marrón", "estilo urbano/clásico"], info: "Puma Suede en tonos verdes/tierra, zapatilla versátil y moderna.", momento: "Urbana / tarde / noche" },
+            { id: 112, nombre: "NEW BALANCE 9060 WHITE", imagen: "newbalance.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo New Balance 9060", "colorway blanco", "estilo urbano/moderno"], info: "New Balance 9060 en blanco, zapatilla moderna y cómoda para uso diario.", momento: "Urbana / tarde / noche / uso diario" }
         ];
 
         // ✅ Variables GLOBALES para que no se pierdan
         window.cart = [];
-        window.currentCatalog = 'perfumes';  // 'perfumes' o 'calzados'
-        window.currentProducts = window.products;  // Inicializar con perfumes
         window.currentFilter = 'todos';
         window.currentSort = 'default';
         window.currentSearch = '';
         window.currentProduct = null;
         window.itemsDisplayed = 6;
         
-        // Cargar carrito desde localStorage
-        function cargarCarritoDesdeLocalStorage() {
-            const carritoGuardado = localStorage.getItem('cart');
-            if (carritoGuardado) {
-                try {
-                    window.cart = JSON.parse(carritoGuardado);
-                    console.log('✅ Carrito cargado desde localStorage:', window.cart);
-                } catch (error) {
-                    console.warn('⚠️ Error cargando carrito:', error);
-                    window.cart = [];
-                }
-            }
-        }
-        
-        // Llamar a cargar carrito al iniciar
-        cargarCarritoDesdeLocalStorage();
-        
         // ✅ Referencia corta para compatibilidad
         let cart = window.cart;
-        let currentCatalog = window.currentCatalog;
-        let currentProducts = window.currentProducts;
         let currentFilter = window.currentFilter;
         let currentSort = window.currentSort;
         let currentSearch = window.currentSearch;
@@ -3901,31 +3808,30 @@
         let itemsDisplayed = window.itemsDisplayed;
 
         function filterProducts(categoria) {
-            window.currentFilter = categoria;
-            window.itemsDisplayed = 6;
+            currentFilter = categoria;
+            itemsDisplayed = 6;
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
             renderProducts();
         }
 
         function searchProducts(searchTerm) {
-            window.currentSearch = searchTerm;
-            window.itemsDisplayed = 6;
+            currentSearch = searchTerm;
+            itemsDisplayed = 6;
             renderProducts();
         }
 
         function changeSort(sortValue) {
-            window.currentSort = sortValue;
-            window.itemsDisplayed = 6;
+            currentSort = sortValue;
+            itemsDisplayed = 6;
             renderProducts();
         }
 
         function renderProducts() {
             console.log('🎨 [RENDER] ========== INICIANDO renderProducts() ==========');
-            console.log('📦 [RENDER] currentCatalog:', window.currentCatalog);
-            console.log('📦 [RENDER] currentProducts.length:', window.currentProducts?.length || 'UNDEFINED');
-            console.log('🎯 [RENDER] currentFilter:', window.currentFilter);
-            console.log('🔍 [RENDER] currentSearch:', window.currentSearch);
+            console.log('📦 [RENDER] products.length:', products?.length || 'UNDEFINED');
+            console.log('🎯 [RENDER] currentFilter:', currentFilter);
+            console.log('🔍 [RENDER] currentSearch:', currentSearch);
             
             const grid = document.getElementById('products-grid');
             console.log('🎯 [RENDER] Grid DOM encontrado?', !!grid);
@@ -3934,13 +3840,12 @@
                 return;
             }
             
-            // Usar window.currentProducts para filtrar
-            let filtered = window.currentFilter === 'todos' ? window.currentProducts : window.currentProducts.filter(p => p.categoria === window.currentFilter);
+            let filtered = currentFilter === 'todos' ? products : products.filter(p => p.categoria === currentFilter);
             console.log('📊 [RENDER] Productos después de filtro:', filtered?.length || 0);
             
             // Aplicar búsqueda
-            if (window.currentSearch.trim() !== '') {
-                const searchTerm = window.currentSearch.toLowerCase().trim();
+            if (currentSearch.trim() !== '') {
+                const searchTerm = currentSearch.toLowerCase().trim();
                 filtered = filtered.filter(p => 
                     p.nombre.toLowerCase().includes(searchTerm) ||
                     p.caracteristicas.some(c => c.toLowerCase().includes(searchTerm)) ||
@@ -3949,15 +3854,15 @@
             }
             
             // Aplicar ordenamiento
-            if (window.currentSort === 'price-asc') {
+            if (currentSort === 'price-asc') {
                 filtered = [...filtered].sort((a, b) => a.precio - b.precio);
-            } else if (window.currentSort === 'price-desc') {
+            } else if (currentSort === 'price-desc') {
                 filtered = [...filtered].sort((a, b) => b.precio - a.precio);
             }
             
             let html = '';
             
-            for (let i = 0; i < window.itemsDisplayed && i < filtered.length; i++) {
+            for (let i = 0; i < itemsDisplayed && i < filtered.length; i++) {
                 const p = filtered[i];
                 html += `
                 <div class="product-card">
@@ -3981,7 +3886,7 @@
             
             // Mostrar u ocultar botón de "Ver más"
             const paginationSection = document.getElementById('pagination-section');
-            if (window.itemsDisplayed < filtered.length) {
+            if (itemsDisplayed < filtered.length) {
                 paginationSection.style.display = 'flex';
             } else {
                 paginationSection.style.display = 'none';
@@ -3989,7 +3894,7 @@
         }
 
         function loadMoreProducts() {
-            window.itemsDisplayed += 6;
+            itemsDisplayed += 6;
             renderProducts();
             // Scroll suave a los nuevos productos
             setTimeout(() => {
@@ -4022,14 +3927,14 @@
         }
 
         function openDetails(id) {
-            window.currentProduct = window.currentProducts.find(p => p.id === id);
-            document.getElementById('modal-details-image').src = window.currentProduct.imagen;
-            document.getElementById('modal-details-name').textContent = window.currentProduct.nombre;
-            document.getElementById('modal-details-price').textContent = `$${window.currentProduct.precio.toLocaleString()}`;
-            document.getElementById('modal-details-price-original').textContent = `$${window.currentProduct.precioOriginal.toLocaleString()}`;
-            document.getElementById('modal-details-characteristics').innerHTML = window.currentProduct.caracteristicas.map(c => `<li>${c}</li>`).join('');
-            document.getElementById('modal-details-info').textContent = window.currentProduct.info;
-            document.getElementById('modal-details-moment').textContent = window.currentProduct.momento;
+            currentProduct = products.find(p => p.id === id);
+            document.getElementById('modal-details-image').src = currentProduct.imagen;
+            document.getElementById('modal-details-name').textContent = currentProduct.nombre;
+            document.getElementById('modal-details-price').textContent = `$${currentProduct.precio.toLocaleString()}`;
+            document.getElementById('modal-details-price-original').textContent = `$${currentProduct.precioOriginal.toLocaleString()}`;
+            document.getElementById('modal-details-characteristics').innerHTML = currentProduct.caracteristicas.map(c => `<li>${c}</li>`).join('');
+            document.getElementById('modal-details-info').textContent = currentProduct.info;
+            document.getElementById('modal-details-moment').textContent = currentProduct.momento;
             document.getElementById('modal-details').classList.add('active');
         }
 
@@ -4041,22 +3946,22 @@
             if (e.target === document.getElementById('modal-details')) closeDetails();
         }
 
-        window.currentQty = 1;
+        let currentQty = 1;
 
         function openZoomFromDetails() {
             closeDetails();
-            openZoom(window.currentProduct.imagen);
+            openZoom(currentProduct.imagen);
         }
 
         function increaseQty() {
-            window.currentQty++;
-            document.getElementById('qty-display').textContent = window.currentQty;
+            currentQty++;
+            document.getElementById('qty-display').textContent = currentQty;
         }
 
         function decreaseQty() {
-            if (window.currentQty > 1) {
-                window.currentQty--;
-                document.getElementById('qty-display').textContent = window.currentQty;
+            if (currentQty > 1) {
+                currentQty--;
+                document.getElementById('qty-display').textContent = currentQty;
             }
         }
 
@@ -4198,19 +4103,10 @@
             if (!user) return null;
 
             try {
-                // 🎯 DETECTAR CATEGORÍA DEL CARRITO
-                const tieneCalzados = cartItems.some(item => item.tipoProducto === 'calzados');
-                const categoria = tieneCalzados ? 'calzados' : 'perfumes';
-                
                 const pedidoData = {
                     uid: user.uid,
-                    nombre: checkout.nombre,
-                    apellido: checkout.apellido,
                     email: user.email,
-                    telefonoUsuario: checkout.telefono,
                     codigoVendedor: window.currentUser?.codigoVendedor || '',
-                    
-                    // 📍 INFORMACIÓN DEL CLIENTE
                     cliente: {
                         nombre: checkout.nombre,
                         apellido: checkout.apellido,
@@ -4222,53 +4118,24 @@
                         direccion: checkout.direccion,
                         observaciones: checkout.observaciones
                     },
-                    
-                    // 📦 PRODUCTOS
-                    productos: totales.detallesItems,
-                    cantidadProductos: cartItems.reduce((sum, item) => sum + item.cantidad, 0),
-                    
-                    // 💰 TOTALES
-                    subtotal: totales.totalInversion,
-                    ganancia: totales.totalGanancia,
-                    total: totales.totalFinal,
-                    
-                    // 🏷️ CATEGORÍA
-                    categoria: categoria,
-                    
-                    // 📊 ESTADO Y FECHAS
+                    items: totales.detallesItems,
+                    totalInversion: totales.totalInversion,
+                    totalGanancia: totales.totalGanancia,
+                    totalFinal: totales.totalFinal,
                     estado: 'pendiente',
                     fechaCreacion: new Date(),
-                    fechaPago: null,
-                    
-                    // 🔐 REFERENCIAS
-                    referencia: 'order_' + Date.now()
+                    fechaPago: null
                 };
 
-                console.log('💾 [SavePedido] Guardando pedido con categoría:', categoria);
-                console.log('💾 [SavePedido] Estructura completa:', pedidoData);
-
-                // ✅ GUARDAR EN COLECCIÓN GLOBAL DE PEDIDOS (para acceso fácil desde panel administrativo)
-                // También en la subcolección del usuario (para su historial)
-                const batch = firebase.firestore().batch();
-                
-                // 1. Guardar en pedidos/{uid}_{timestamp}
-                const pedidoId = `${user.uid}_${Date.now()}`;
-                const globalPedidoRef = firebase.firestore().collection('pedidos').doc(pedidoId);
-                batch.set(globalPedidoRef, pedidoData);
-                
-                // 2. Guardar también en usuarios/{uid}/pedidos/{pedidoId} para historial del usuario
-                const userPedidoRef = firebase.firestore()
+                // Guardar con ID auto-generado
+                const docRef = await firebase.firestore()
                     .collection('usuarios').doc(user.uid)
-                    .collection('pedidos').doc(pedidoId);
-                batch.set(userPedidoRef, pedidoData);
-                
-                await batch.commit();
-                
-                console.log('✅ [SavePedido] Pedido guardado correctamente en ambas colecciones');
-                return pedidoId;
-                
+                    .collection('pedidos')
+                    .add(pedidoData);
+
+                return docRef.id;
             } catch (error) {
-                console.error('❌ [SavePedido] Error guardando pedido:', error);
+                console.error('Error guardando pedido:', error);
                 return null;
             }
         }
@@ -4368,24 +4235,44 @@
 
             document.getElementById('modal-cart-items').innerHTML = html;
 
+            // Detectar tipo de carrito (perfumes vs zapatillas)
+            const isShoes = cart.length > 0 && cart[0].talle !== undefined;
+            
+            let totalQty = cart.reduce((sum, item) => sum + item.cantidad, 0);
+            let totalPrice = cart.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+            
             // Update summary
-            const subtotal = cart.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+            const subtotal = totalPrice;
             const total = subtotal;
-            const falta = Math.max(0, MIN_ORDER - total);
-
+            
             document.getElementById('cart-subtotal').textContent = `$${subtotal.toLocaleString()}`;
             document.getElementById('cart-total').textContent = `$${total.toLocaleString()}`;
             
             const warningElement = document.getElementById('cart-warning');
             const payButton = document.getElementById('btn-pay');
             
-            if (total < MIN_ORDER) {
-                document.getElementById('cart-falta').textContent = `$${falta.toLocaleString()}`;
-                warningElement.classList.remove('hidden');
-                payButton.disabled = true;
+            if (isShoes) {
+                // Para zapatillas: validar cantidad (mínimo 12 productos)
+                if (totalQty < MIN_ORDER_SHOES_QTY) {
+                    const falta = MIN_ORDER_SHOES_QTY - totalQty;
+                    document.getElementById('cart-falta').textContent = `Falta: ${falta} ${falta === 1 ? 'producto' : 'productos'}`;
+                    warningElement.classList.remove('hidden');
+                    payButton.disabled = true;
+                } else {
+                    warningElement.classList.add('hidden');
+                    payButton.disabled = false;
+                }
             } else {
-                warningElement.classList.add('hidden');
-                payButton.disabled = false;
+                // Para perfumes: validar precio (mínimo $150,000)
+                const falta = Math.max(0, MIN_ORDER_PERFUMES - total);
+                if (falta > 0) {
+                    document.getElementById('cart-falta').textContent = `$${falta.toLocaleString()}`;
+                    warningElement.classList.remove('hidden');
+                    payButton.disabled = true;
+                } else {
+                    warningElement.classList.add('hidden');
+                    payButton.disabled = false;
+                }
             }
         }
 
@@ -4489,118 +4376,17 @@
             abrirLogin();
         }
 
-        // Agregar producto al carrito (genérico para perfumes y calzados)
-        function agregarACarrito(tipoProducto, idProducto) {
-            console.log(`➕ [agregarACarrito] Tipo: ${tipoProducto}, ID: ${idProducto}`);
-            
-            // Validar sesión
-            const currentUser = firebase.auth().currentUser;
-            if (!currentUser) {
-                alert('Debes iniciar sesión para agregar productos al carrito');
-                abrirLogin();
-                return;
-            }
-            
-            // Obtener el producto según el tipo
-            let producto = null;
-            if (tipoProducto === 'perfumes') {
-                producto = window.products.find(p => p.id === idProducto);
-            } else if (tipoProducto === 'calzados') {
-                producto = window.productsCalzados.find(p => p.id === idProducto);
-                
-                // Para calzados, necesitamos seleccionar talle
-                // Por ahora, si no hay modal, usamos el primer talle como default
-                const talleSeleccionado = prompt(`Selecciona un talle para ${producto.nombre}:\n\n${producto.talles.join(', ')}`);
-                if (!talleSeleccionado) return; // Usuario canceló
-                
-                if (!producto.talles.includes(talleSeleccionado)) {
-                    alert('⚠️ Talle inválido');
-                    return;
-                }
-                
-                // Agregar el talle al producto
-                producto = { ...producto, talleSeleccionado };
-            }
-            
-            if (!producto) {
-                alert('⚠️ Producto no encontrado');
-                return;
-            }
-            
-            // Agregar cantidad
-            const cantidad = prompt('¿Cuántas unidades deseas agregar?', '1');
-            if (!cantidad) return; // Usuario canceló
-            
-            const cantidadNum = parseInt(cantidad);
-            if (isNaN(cantidadNum) || cantidadNum < 1) {
-                alert('⚠️ Cantidad inválida');
-                return;
-            }
-            
-            // Buscar si ya existe este producto en el carrito
-            const existingItem = window.cart.find(item => 
-                item.id === producto.id && 
-                (tipoProducto === 'perfumes' || item.talleSeleccionado === producto.talleSeleccionado)
-            );
-            
-            if (existingItem) {
-                existingItem.cantidad += cantidadNum;
-            } else {
-                window.cart.push({ ...producto, cantidad: cantidadNum, tipoProducto });
-            }
-            
-            console.log('✅ Producto agregado. Carrito actual:', window.cart);
-            updateCartCount();
-            updateCartDisplay();
-            
-            // Guardar carrito en localStorage
-            localStorage.setItem('cart', JSON.stringify(window.cart));
-            
-            // Mostrar confirmación
-            alert(`✅ ${cantidadNum} ${producto.nombre} agregado(s) al carrito`);
-            
-            // Mostrar modal del carrito
-            document.getElementById('modal-cart').classList.add('active');
-        }
-
         // ═══════════════════════════════════════════════════════════════════
         // PAGO CON MERCADO PAGO - FLUJO COMPLETO
         // ═══════════════════════════════════════════════════════════════════
         
         // Abrir modal de checkout antes de pagar
         function proceedToPayment() {
-            // Validar que hay productos en el carrito
-            if (!window.cart || window.cart.length === 0) {
-                alert('⚠️ El carrito está vacío');
+            const total = cart.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+            
+            if (total < MIN_ORDER) {
+                alert('⚠️ Pedido mínimo no alcanzado');
                 return;
-            }
-            
-            // Detectar el tipo de productos en el carrito
-            const tieneCalzados = window.cart.some(item => item.tipoProducto === 'calzados');
-            const tienePerfumes = window.cart.some(item => !item.tipoProducto || item.tipoProducto === 'perfumes');
-            
-            // Si tiene calzados, validar cantidad
-            if (tieneCalzados) {
-                const cantidadCalzados = window.cart
-                    .filter(item => item.tipoProducto === 'calzados')
-                    .reduce((sum, item) => sum + item.cantidad, 0);
-                
-                if (cantidadCalzados < MIN_ORDER_CALZADOS) {
-                    alert(`⚠️ El pedido de calzados debe tener como mínimo ${MIN_ORDER_CALZADOS} productos.\nActualmente tienes: ${cantidadCalzados} productos.`);
-                    return;
-                }
-            }
-            
-            // Si tiene perfumes, validar monto
-            if (tienePerfumes) {
-                const totalPerfumes = window.cart
-                    .filter(item => !item.tipoProducto || item.tipoProducto === 'perfumes')
-                    .reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
-                
-                if (totalPerfumes < MIN_ORDER) {
-                    alert(`⚠️ El pedido de perfumes debe ser de mínimo $${MIN_ORDER.toLocaleString('es-ES')}.\nActualmente tienes: $${totalPerfumes.toLocaleString('es-ES')}.`);
-                    return;
-                }
             }
 
             // Mostrar modal de checkout
@@ -4642,7 +4428,7 @@
                 cp: document.getElementById('checkout-cp').value.trim(),
                 direccion: document.getElementById('checkout-direccion').value.trim(),
                 observaciones: document.getElementById('checkout-observaciones').value.trim(),
-                codigoRevendedor: document.getElementById('checkout-codigo-revendedor').value.trim()
+                codigoRevendedor: document.getElementById('checkout-codigo-revendedor').value.trim().replace(/\s+/g, '').toUpperCase()
             };
 
             // VALIDACIONES
@@ -4673,13 +4459,8 @@
             payButton.textContent = 'Procesando...';
 
             try {
-                // ✅ GUARDAR PEDIDO EN FIRESTORE ANTES DE MERCADO PAGO
-                console.log('📝 [Payment] Guardando pedido en Firestore antes de enviar a Mercado Pago...');
+                // Guardar pedido en Firestore ANTES de Mercado Pago
                 const pedidoId = await savePedidoToFirestore(checkout, cart, totales);
-                if (!pedidoId) {
-                    throw new Error('No se pudo guardar el pedido en Firestore');
-                }
-                console.log('✅ [Payment] Pedido guardado con ID:', pedidoId);
                 
                 // Actualizar estadísticas del usuario
                 if (firebase.auth().currentUser) {
@@ -4703,8 +4484,7 @@
                         },
                         address: {
                             street_name: checkout.direccion,
-                            zip_code:,
-                        pedidoId: pedidoId checkout.cp
+                            zip_code: checkout.cp
                         }
                     },
                     metadata: {
@@ -4800,34 +4580,6 @@
             }
         }
 
-        // ✅ NAVEGAR A PANTALLA DE INICIO AL CARGAR/RECARGAR
-        function asegurarPantallaInicio() {
-            // Ocultar todas las secciones principales
-            const mainSections = [
-                'catalogo-section',
-                'perfil-section',
-                'ganancias-section',
-                'ayuda-section'
-            ];
-            
-            mainSections.forEach(section => {
-                const el = document.getElementById(section);
-                if (el) el.style.display = 'none';
-            });
-            
-            // Mostrar la sección de inicio
-            const inicioSection = document.getElementById('inicio-section');
-            if (inicioSection) {
-                inicioSection.style.display = 'block';
-                console.log('✅ [Init] Pantalla de inicio mostrada');
-            }
-        }
-        
-        // Ejecutar al cargar la página
-        window.addEventListener('DOMContentLoaded', asegurarPantallaInicio);
-        // También ejecutar inmediatamente en caso de que el script se cargue después del DOM
-        asegurarPantallaInicio();
-
         // INIT
         console.log('═══════════════════════════════════════════════════════════════════════════');
         console.log('🔍 [DIAGNÓSTICO] INICIALIZANDO...');
@@ -4836,27 +4588,9 @@
         console.log('🎯 [DIAGNÓSTICO] Grid DOM existe?', !!document.getElementById('products-grid'));
         console.log('═══════════════════════════════════════════════════════════════════════════');
         
-        // ⏳ ESPERAR A QUE FIREBASE ESTÉ LISTO ANTES DE INICIALIZAR
-        function iniciarDespuesDeFB() {
-            console.log('✅ [INIT] Firebase está listo. Ejecutando inicialización...');
-            setupSearch();
-            renderProducts();
-            handlePaymentReturn();
-            console.log('✅ [INIT] Inicialización completada');
-        }
-        
-        // Si Firebase ya está listo, iniciar inmediatamente
-        if (window.firebaseReady) {
-            iniciarDespuesDeFB();
-        } else {
-            // Si no, esperar a que esté listo
-            const checkFB = setInterval(() => {
-                if (window.firebaseReady) {
-                    clearInterval(checkFB);
-                    iniciarDespuesDeFB();
-                }
-            }, 50);
-        }
+        setupSearch();
+        renderProducts();
+        handlePaymentReturn();
 
         // ═══════════════════════════════════════════════════════════════════════════
         // 🔐 AUTENTICACIÓN CON FIREBASE
@@ -4958,8 +4692,6 @@
                 }
 
                 // Mostrar modal de confirmación con el código vendedor
-                // También guardar en localStorage para acceso sin login
-                localStorage.setItem('codigoVendedorLocal', codigoVendedor);
                 showRegistrationConfirmation(codigoVendedor, nombre);
                 
             } catch (error) {
@@ -4992,11 +4724,37 @@
                 // El listener onAuthStateChanged() se ejecutará automáticamente
                 const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
                 
-                console.log('🔐 [Login] Usuario autenticado correctamente. Esperando onAuthStateChanged()...');
-                
                 // El usuario ya está autenticado por Firebase
-                // onAuthStateChanged() se disparará automáticamente y cargar los datos
+                // onAuthStateChanged() se disparará automáticamente
                 closeAuthModal();
+                
+                // Guardar en Firestore si no existe (en background, sin bloquear)
+                // IMPORTANTE: NO regenerar el codigoVendedor si ya existe
+                if (userCredential.user) {
+                    firebase.firestore().collection('usuarios').doc(userCredential.user.uid).get()
+                        .then(doc => {
+                            if (!doc.exists) {
+                                // Usuario no en Firestore, crear documento SOLO SI NO EXISTE
+                                // El código se genera UNA SOLA VEZ
+                                const nuevoCodigoVendedor = generarCodigoVendedor();
+                                console.log('🔐 [Login] Usuario NO existe en Firestore. Generando código:', nuevoCodigoVendedor);
+                                
+                                firebase.firestore().collection('usuarios').doc(userCredential.user.uid).set({
+                                    uid: userCredential.user.uid,
+                                    email: userCredential.user.email,
+                                    nombre: userCredential.user.email.split('@')[0],
+                                    codigoVendedor: nuevoCodigoVendedor,
+                                    creado: new Date()
+                                }).catch(err => console.warn('❌ [Login] Error guardando usuario en Firestore:', err.message));
+                            } else {
+                                // Usuario ya existe: NO modificar su código
+                                const docData = doc.data();
+                                console.log('✅ [Login] Usuario EXISTE en Firestore');
+                                console.log('🔑 [Login] Código vendedor existente:', docData?.codigoVendedor || 'NO TIENE CÓDIGO');
+                            }
+                        })
+                        .catch(err => console.warn('❌ [Login] Error verificando usuario en Firestore:', err.message));
+                }
                 
             } catch (error) {
                 showLoginError(error);
@@ -5102,12 +4860,17 @@
         }
         
         function copyCodigoVendedor() {
-            // ✅ FUENTE ÚNICA: window.currentUser (que se carga desde Firestore)
-            const codigo = window.currentUser?.codigoVendedor || '';
+            // Copiar el código directamente desde window.currentUser
+            let codigo = window.currentUser?.codigoVendedor || '';
+            
+            // Si no está disponible, intentar desde localStorage (fallback)
+            if (!codigo) {
+                codigo = localStorage.getItem('codigoVendedorLocal') || '';
+            }
             
             // No copiar si está vacío
             if (!codigo || codigo.trim() === '') {
-                console.warn('⚠️ [Copy] Código no disponible');
+                console.warn('Código no disponible para copiar');
                 alert('Tu código de revendedor aún no está disponible. Por favor intenta más tarde.');
                 return;
             }
@@ -5178,7 +4941,6 @@
             }
 
             console.log('📋 [Profile] Usuario autenticado:', user.uid);
-            console.log('📋 [Profile] === ABRIENDO PERFIL ===');
             console.log('📋 [Profile] window.currentUser:', window.currentUser);
 
             // Mostrar email
@@ -5188,17 +4950,104 @@
             document.getElementById('profileName').textContent = 
                 window.currentUser?.nombre || user.email.split('@')[0];
 
-            // ✅ FUENTE ÚNICA DE VERDAD: window.currentUser (que se carga desde Firestore)
-            const codigoDisplay = document.getElementById('profileCode');
-            if (codigoDisplay) {
-                const codigo = window.currentUser?.codigoVendedor || '';
-                if (codigo && codigo.trim() !== '') {
-                    codigoDisplay.textContent = codigo;
-                    console.log('✅ [Profile] Mostrando código desde window.currentUser:', codigo);
-                } else {
-                    codigoDisplay.textContent = '(Sin código asignado)';
-                    console.log('⚠️ [Profile] Usuario sin codigoVendedor en window.currentUser');
+            // Intentar mostrar código en este orden: localStorage → window.currentUser → Firestore → Generar nuevo
+            let codigoEncontrado = false;
+            let codigoFinal = '';
+            
+            // 1. PRIMER INTENTO: localStorage (más rápido y más confiable)
+            console.log('🔍 [Profile] Intentando obtener código de localStorage...');
+            const codigoLocal = localStorage.getItem('codigoVendedorLocal');
+            if (codigoLocal && codigoLocal.trim() !== '') {
+                document.getElementById('profileCode').textContent = codigoLocal;
+                console.log('✅ [Profile] Código desde localStorage:', codigoLocal);
+                codigoFinal = codigoLocal;
+                codigoEncontrado = true;
+            }
+            
+            // 2. SEGUNDO INTENTO: window.currentUser
+            if (!codigoEncontrado) {
+                console.log('🔍 [Profile] Intentando obtener código de window.currentUser...');
+                if (window.currentUser?.codigoVendedor && window.currentUser.codigoVendedor.trim() !== '') {
+                    document.getElementById('profileCode').textContent = window.currentUser.codigoVendedor;
+                    console.log('✅ [Profile] Código desde window.currentUser:', window.currentUser.codigoVendedor);
+                    codigoFinal = window.currentUser.codigoVendedor;
+                    // Guardar en localStorage también para futuras consultas
+                    localStorage.setItem('codigoVendedorLocal', window.currentUser.codigoVendedor);
+                    codigoEncontrado = true;
                 }
+            }
+            
+            // 3. TERCER INTENTO: Firestore
+            if (!codigoEncontrado) {
+                console.log('🔍 [Profile] Intentando obtener código de Firestore...');
+                document.getElementById('profileCode').textContent = 'Cargando...';
+                try {
+                    const doc = await firebase.firestore().collection('usuarios').doc(user.uid).get();
+                    
+                    if (doc.exists) {
+                        const userData = doc.data();
+                        console.log('📋 [Profile] Datos desde Firestore:', userData);
+                        console.log('🔑 [Profile] codigoVendedor en Firestore:', userData?.codigoVendedor);
+                        
+                        if (userData.codigoVendedor && userData.codigoVendedor.trim() !== '') {
+                            document.getElementById('profileCode').textContent = userData.codigoVendedor;
+                            console.log('✅ [Profile] Código desde Firestore:', userData.codigoVendedor);
+                            codigoFinal = userData.codigoVendedor;
+                            // Guardar en localStorage para futuras consultas
+                            localStorage.setItem('codigoVendedorLocal', userData.codigoVendedor);
+                            // Actualizar window.currentUser
+                            if (window.currentUser) {
+                                window.currentUser.codigoVendedor = userData.codigoVendedor;
+                            }
+                            codigoEncontrado = true;
+                        }
+                        
+                        // Actualizar window.currentUser con datos frescos
+                        if (!window.currentUser || !window.currentUser.codigoVendedor) {
+                            window.currentUser = {
+                                uid: user.uid,
+                                email: user.email,
+                                ...userData
+                            };
+                            console.log('✅ [Profile] window.currentUser actualizado desde Firestore');
+                        }
+                    }
+                } catch (error) {
+                    console.error('❌ Error cargando desde Firestore:', error);
+                }
+            }
+            
+            // 4. ÚLTIMO RECURSO: Si aún no hay código, generar uno
+            if (!codigoEncontrado || !codigoFinal || codigoFinal.trim() === '') {
+                console.warn('⚠️ [Profile] No se encontró código en ningún lado. Generando nuevo...');
+                codigoFinal = generarCodigoVendedor();
+                document.getElementById('profileCode').textContent = codigoFinal;
+                
+                // Guardar en localStorage
+                localStorage.setItem('codigoVendedorLocal', codigoFinal);
+                
+                // Guardar en window.currentUser
+                if (window.currentUser) {
+                    window.currentUser.codigoVendedor = codigoFinal;
+                }
+                
+                // Guardar en Firestore en background
+                firebase.firestore().collection('usuarios').doc(user.uid).update({
+                    codigoVendedor: codigoFinal
+                }).then(() => {
+                    console.log('✅ [Profile] Código nuevo guardado en Firestore:', codigoFinal);
+                }).catch(err => {
+                    // Si falla update, intentar set (por si el documento no existe)
+                    firebase.firestore().collection('usuarios').doc(user.uid).set({
+                        uid: user.uid,
+                        email: user.email,
+                        nombre: window.currentUser?.nombre || user.email.split('@')[0],
+                        codigoVendedor: codigoFinal,
+                        creado: window.currentUser?.creado || new Date()
+                    }).catch(err2 => console.warn('⚠️ Error guardando en Firestore:', err2.message));
+                });
+                
+                console.log('✅ [Profile] ✅ Código generado y guardado:', codigoFinal);
             }
 
             document.getElementById('profileModal').classList.add('active');
@@ -5386,23 +5235,38 @@
             console.log('🔧 [Session] authUser.uid:', authUser.uid);
             console.log('🔧 [Session] authUser.email:', authUser.email);
             console.log('🔧 [Session] userData recibido:', userData);
+            console.log('⚠️⚠️⚠️ CRÍTICO - userData?.codigoVendedor QUE SE RECIBE:', userData?.codigoVendedor || '❌ NO ESTÁ EN userData');
             
-            // Si no hay datos de Firestore, crear objeto mínimo (SIN código)
+            // Verificar si hay código en localStorage
+            const codigoLocalStorage = localStorage.getItem('codigoVendedorLocal');
+            console.log('🔍 [Session] Código en localStorage:', codigoLocalStorage || 'NO ENCONTRADO');
+            
+            // Si no hay datos de Firestore, crear objeto mínimo
             const safeUserData = userData || {
                 nombre: authUser.email.split('@')[0],
-                codigoVendedor: undefined,
+                codigoVendedor: '',
                 creado: new Date()
             };
 
             console.log('🔧 [Session] userData recibido de Firestore:', userData ? JSON.stringify(userData, null, 2) : 'NULL');
+            console.log('⚠️⚠️⚠️ CRÍTICO - codigoVendedor ANTES de asignar a window:', safeUserData?.codigoVendedor || '❌ VACÍO');
 
             // Guardar datos en variables globales para acceso rápido
             console.log('🔧 [Session] === ASIGNANDO window.currentUser ===');
             
-            // ✅ FUENTE ÚNICA DE VERDAD: Firestore
-            // Si userData tiene codigoVendedor, usarlo. Si no, el usuario aún no tiene código.
-            const codigoFinal = safeUserData.codigoVendedor || '';
-            console.log('📍 Usando codigoVendedor desde Firestore:', codigoFinal || '(vacío - usuario sin código)');
+            // ✅ PRIORIDAD: localStorage > Firestore > generar nuevo
+            let codigoFinal = '';
+            if (codigoLocalStorage && codigoLocalStorage.trim() !== '') {
+                codigoFinal = codigoLocalStorage;
+                console.log('📍 Usando código de localStorage:', codigoFinal);
+            } else if (safeUserData.codigoVendedor && safeUserData.codigoVendedor.trim() !== '') {
+                codigoFinal = safeUserData.codigoVendedor;
+                console.log('📍 Usando código de Firestore:', codigoFinal);
+            } else {
+                // ✅ FALLBACK: Generar código si no existe
+                codigoFinal = generarCodigoVendedor();
+                console.log('⚠️ Código no encontrado. Generado nuevo:', codigoFinal);
+            }
             
             window.currentUser = {
                 uid: authUser.uid,
@@ -5412,15 +5276,34 @@
                 creado: safeUserData.creado || new Date()
             };
             
-            // ✅ GUARDAR en localStorage SOLO si existe código
-            if (codigoFinal && codigoFinal.trim() !== '') {
-                localStorage.setItem('codigoVendedorLocal', codigoFinal);
-                console.log('💾 [Session] ✅ Código guardado en localStorage:', codigoFinal);
-            } else {
-                console.log('⚠️ [Session] Usuario sin codigoVendedor. No se guardó en localStorage.');
+            // ✅ CRÍTICO: Guardar codigoVendedor en localStorage SIEMPRE
+            localStorage.setItem('codigoVendedorLocal', window.currentUser.codigoVendedor);
+            console.log('💾 [Session] ✅ Código guardado en localStorage:', window.currentUser.codigoVendedor);
+            
+            // ✅ CRÍTICO: Si se generó código nuevo, actualizar Firestore en background
+            if (!safeUserData.codigoVendedor || safeUserData.codigoVendedor.trim() === '') {
+                if (codigoFinal && codigoFinal.trim() !== '') {
+                    // Actualizar en Firestore sin bloquear
+                    firebase.firestore().collection('usuarios').doc(authUser.uid).update({
+                        codigoVendedor: codigoFinal
+                    }).then(() => {
+                        console.log('✅ [Session] Código nuevo guardado en Firestore:', codigoFinal);
+                    }).catch(err => {
+                        console.warn('⚠️ [Session] Error actualizando Firestore:', err.message);
+                    });
+                }
             }
             
-            console.log('✅ [Session] window.currentUser ASIGNADO:', JSON.stringify(window.currentUser, null, 2));
+            console.log('⚠️⚠️⚠️ CRÍTICO - window.currentUser.codigoVendedor DESPUÉS de asignar:', window.currentUser?.codigoVendedor || '❌ SE PERDIÓ');
+            console.log('🔧 [Session] ✅ window.currentUser COMPLETO:', JSON.stringify(window.currentUser, null, 2));
+            
+            // Verificar inmediatamente que se asignó correctamente
+            setTimeout(() => {
+                console.log('✅ VERIFICACIÓN 100ms después:', {
+                    codigoVendedor: window.currentUser?.codigoVendedor,
+                    fullUser: JSON.parse(JSON.stringify(window.currentUser || {}))
+                });
+            }, 100);
 
             // Cargar carrito desde Firebase
             loadCartFromFirebase().then(cartItems => {
@@ -5446,12 +5329,155 @@
                 }
             }, 5000);
             
+            // ⚠️ VERIFICACIÓN CRÍTICA: Si codigoVendedor está vacío, intentar cargar de nuevo
+            if (!window.currentUser?.codigoVendedor || window.currentUser.codigoVendedor === '') {
+                console.warn('⚠️ [Session] codigoVendedor está VACÍO. Intentando recovery...');
+                console.warn('⚠️ [Session] userData original era:', userData ? 'OBJETO' : 'NULL');
+                
+                // Si userData era null, intentar cargar de Firestore AHORA
+                if (!userData) {
+                    console.warn('⚠️ [Session] userData era NULL. Intentando cargar desde Firestore...');
+                    firebase.firestore().collection('usuarios').doc(authUser.uid).get()
+                        .then(doc => {
+                            if (doc.exists) {
+                                const fullData = doc.data();
+                                console.warn('⚠️ [Session] ✅ Documento encontrado en RECOVERY:', fullData);
+                                
+                                if (fullData.codigoVendedor) {
+                                    console.warn('⚠️ [Session] ✅✅ Actualizando window.currentUser con codigoVendedor:', fullData.codigoVendedor);
+                                    
+                                    window.currentUser = {
+                                        ...window.currentUser,
+                                        ...fullData
+                                    };
+                                    
+                                    console.warn('⚠️ [Session] ✅✅✅ window.currentUser ACTUALIZADO:', JSON.stringify(window.currentUser));
+                                }
+                            } else {
+                                console.warn('⚠️ [Session] ❌ Documento NO EXISTE en recovery');
+                            }
+                        })
+                        .catch(err => console.error('⚠️ [Session] ❌ Error en recovery:', err));
+                }
+            }
+            
             // Mostrar botón "Cerrar sesión" en lugar de "Iniciar sesión"
             const loginBtn = document.querySelector('.login-btn');
             if (loginBtn) {
                 loginBtn.textContent = 'Cerrar sesión';
                 loginBtn.onclick = logoutUser;
             }
+        }
+
+        // ════════════════════════════════════════════════════════════════════════════
+        // FUNCIONES PARA CALZADOS (Zapatillas)
+        // ════════════════════════════════════════════════════════════════════════════
+        
+        window.currentShoesCategory = 'adultos';
+        window.carruselActualShoesAdultos = 0;
+        window.currentCatalog = 'perfumes';  // 'perfumes' o 'calzados'
+        
+        function switchShoesCategory(categoria) {
+            window.currentShoesCategory = categoria;
+            
+            // Actualizar botones de categoría
+            document.querySelectorAll('#shoes-category-selector .category-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Mostrar/ocultar contenedores
+            const adultosContainer = document.getElementById('shoes-adultos-container');
+            const niñosContainer = document.getElementById('shoes-niños-container');
+            
+            if (categoria === 'adultos') {
+                if (adultosContainer) adultosContainer.style.display = 'block';
+                if (niñosContainer) niñosContainer.style.display = 'none';
+                // Inicializar carrusel de adultos
+                setTimeout(() => inicializarCarruselShoesAdultos(), 100);
+            } else {
+                if (adultosContainer) adultosContainer.style.display = 'none';
+                if (niñosContainer) niñosContainer.style.display = 'block';
+            }
+        }
+        
+        function inicializarCarruselShoesAdultos() {
+            const productosCarrusel = window.shoes.slice(0, 6);
+            const wrapper = document.getElementById('carrusel-wrapper-shoes-adultos');
+            const dotsContainer = document.getElementById('carrusel-dots-shoes-adultos');
+            
+            if (!wrapper || !dotsContainer) return;
+            
+            wrapper.innerHTML = '';
+            dotsContainer.innerHTML = '';
+            
+            productosCarrusel.forEach((producto, index) => {
+                const slide = document.createElement('div');
+                slide.className = 'carrusel-slide';
+                slide.innerHTML = `<img src="${producto.imagen}" alt="${producto.nombre}" onerror="this.src='portadauno.png'">`;
+                wrapper.appendChild(slide);
+
+                const dot = document.createElement('button');
+                dot.className = `carrusel-dot ${index === 0 ? 'active' : ''}`;
+                dot.onclick = () => irASlideShoesAdultos(index);
+                dotsContainer.appendChild(dot);
+            });
+            
+            window.carruselActualShoesAdultos = 0;
+            actualizarCarruselShoesAdultos();
+        }
+        
+        function actualizarCarruselShoesAdultos() {
+            const wrapper = document.getElementById('carrusel-wrapper-shoes-adultos');
+            if (wrapper) {
+                const offset = window.carruselActualShoesAdultos * -100;
+                wrapper.style.transform = `translateX(${offset}%)`;
+            }
+
+            document.querySelectorAll('#carrusel-dots-shoes-adultos .carrusel-dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index === window.carruselActualShoesAdultos);
+            });
+        }
+        
+        function carruselAnterior(tipo) {
+            if (tipo === 'shoes-adultos') {
+                const productosCarrusel = window.shoes.slice(0, 6);
+                if (productosCarrusel.length === 0) return;
+                window.carruselActualShoesAdultos = (window.carruselActualShoesAdultos - 1 + productosCarrusel.length) % productosCarrusel.length;
+                actualizarCarruselShoesAdultos();
+            }
+        }
+        
+        function carruselSiguiente(tipo) {
+            if (tipo === 'shoes-adultos') {
+                const productosCarrusel = window.shoes.slice(0, 6);
+                if (productosCarrusel.length === 0) return;
+                window.carruselActualShoesAdultos = (window.carruselActualShoesAdultos + 1) % productosCarrusel.length;
+                actualizarCarruselShoesAdultos();
+            }
+        }
+        
+        function irASlideShoesAdultos(index) {
+            window.carruselActualShoesAdultos = index;
+            actualizarCarruselShoesAdultos();
+        }
+        
+        function abrirModalCodigoCalzados() {
+            const currentUser = firebase.auth().currentUser;
+            if (!currentUser) {
+                showSessionRequiredModal();
+                return;
+            }
+            
+            // Establecer que estamos en catálogo de Calzados
+            window.currentCatalog = 'calzados';
+            
+            // Cambiar a categoría Adultos si está en Niños
+            if (window.currentShoesCategory === 'niños') {
+                switchShoesCategory('adultos');
+            }
+            
+            abrirModalCodigo();
         }
     </script>
 
@@ -5461,44 +5487,18 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
     
     <script>
-        // ✅ FLAG GLOBAL PARA INDICAR QUE FIREBASE ESTÁ LISTO
-        window.firebaseReady = false;
-        
-        // ✅ DEFINIR firebaseConfig DIRECTAMENTE EN ESTE SCRIPT
-        // (No confiar en definiciones previas por problemas de timing)
-        if (!window.firebaseConfig) {
-            window.firebaseConfig = {
-                apiKey: "AIzaSyBRzd3HXbY6xIBIBNkzATo70kredodhKwc",
-                authDomain: "revendeways-auth.firebaseapp.com",
-                projectId: "revendeways-auth",
-                storageBucket: "revendeways-auth.appspot.com",
-                messagingSenderId: "157263733033",
-                appId: "1:157263733033:web:a2b8c3d4e5f6g7h8i9j0k1l"
-            };
-        }
-        
-        // ✅ INICIALIZAR FIREBASE
+        // ✅ INICIALIZAR FIREBASE - Ahora sí está disponible
         console.log('🔧 [Firebase] Inicializando Firebase...');
-        console.log('🔧 [Firebase] window.firebaseConfig:', window.firebaseConfig);
-        
-        if (!firebase.apps.length && window.firebaseConfig) {
-            try {
-                firebase.initializeApp(window.firebaseConfig);
-                window.firebaseReady = true;
-                console.log('✅ Firebase inicializado CORRECTAMENTE');
-            } catch (error) {
-                console.error('❌ Error inicializando Firebase:', error);
-            }
-        } else if (!window.firebaseConfig) {
-            console.error('❌ firebaseConfig no está disponible');
+        if (!firebase.apps.length) {
+            // firebaseConfig debe estar disponible del script anterior
+            firebase.initializeApp(firebaseConfig);
+            console.log('✅ Firebase inicializado CORRECTAMENTE');
         }
         
         // Configurar persistencia de sesión
-        if (firebase.apps.length > 0) {
-            firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-                .then(() => console.log('✅ Persistencia de sesión configurada'))
-                .catch(err => console.error('❌ Error configurando persistencia:', err.message));
-        }
+        firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+            .then(() => console.log('✅ Persistencia de sesión configurada'))
+            .catch(err => console.error('❌ Error configurando persistencia:', err.message));
         
         // SISTEMA DE REINTENTOS PARA FIRESTORE
         async function loadUserDataFromFirestoreWithRetry(uid, maxRetries = 3, delayMs = 500) {
@@ -5528,55 +5528,38 @@
         }
 
         // LISTENER DE AUTENTICACIÓN - MONITOREAR CAMBIOS EN SESIÓN
-        // ⚠️ Solo registrar después de que DOMContentLoaded dispare
-        function setupAuthListener() {
-            firebase.auth().onAuthStateChanged(async (user) => {
-                console.log('════════════════════════════════════════════════════════════════');
-                console.log('👤 [Auth] onAuthStateChanged disparado');
-                console.log('════════════════════════════════════════════════════════════════');
+        firebase.auth().onAuthStateChanged(async (user) => {
+            console.log('════════════════════════════════════════════════════════════════');
+            console.log('👤 [Auth] onAuthStateChanged disparado');
+            console.log('════════════════════════════════════════════════════════════════');
+            
+            if (user) {
+                console.log('👤 [Auth] ✅ Usuario autenticado detectado');
+                console.log('👤 [Auth] Email:', user.email);
+                console.log('👤 [Auth] UID:', user.uid);
                 
-                if (user) {
-                    console.log('👤 [Auth] ✅ Usuario autenticado detectado');
-                    console.log('👤 [Auth] Email:', user.email);
-                    console.log('👤 [Auth] UID:', user.uid);
-                    
-                    // Intentar cargar datos de Firestore CON REINTENTOS
-                    console.log('🔄 [Auth] Llamando a loadUserDataFromFirestoreWithRetry...');
-                    const userData = await loadUserDataFromFirestoreWithRetry(user.uid);
-                    console.log('📦 [Auth] ✅ Datos retornados por loadUserDataFromFirestoreWithRetry:');
-                    console.log('   → userData:', userData ? JSON.stringify(userData, null, 2) : 'NULL');
-                    console.log('   → userData?.codigoVendedor:', userData?.codigoVendedor || 'NO PRESENTE EN DATOS');
-                    
-                    // Inicializar sesión con datos de Firestore o datos mínimos
-                    if (typeof initializeUserSession === 'function') {
-                        initializeUserSession(userData, user);
-                    } else {
-                        console.warn('⚠️ [Auth] initializeUserSession no está disponible');
-                    }
-                    
-                } else {
-                    // Usuario no autenticado: limpiar interfaz
-                    console.log('🔓 [Auth] ❌ No hay usuario autenticado');
-                    window.currentUser = null;
-                    if (typeof updateUIForAuthentication === 'function') {
-                        updateUIForAuthentication(false);
-                    }
-                    const loginBtn = document.querySelector('.login-btn');
-                    if (loginBtn && typeof abrirLogin === 'function') {
-                        loginBtn.textContent = 'Iniciar sesión';
-                        loginBtn.onclick = abrirLogin;
-                    }
+                // Intentar cargar datos de Firestore CON REINTENTOS
+                console.log('🔄 [Auth] Llamando a loadUserDataFromFirestoreWithRetry...');
+                const userData = await loadUserDataFromFirestoreWithRetry(user.uid);
+                console.log('📦 [Auth] ✅ Datos retornados por loadUserDataFromFirestoreWithRetry:');
+                console.log('   → userData:', userData ? JSON.stringify(userData, null, 2) : 'NULL');
+                console.log('   → userData?.codigoVendedor:', userData?.codigoVendedor || 'NO PRESENTE EN DATOS');
+                
+                // Inicializar sesión con datos de Firestore o datos mínimos
+                initializeUserSession(userData, user);
+                
+            } else {
+                // Usuario no autenticado: limpiar interfaz
+                console.log('🔓 [Auth] ❌ No hay usuario autenticado');
+                window.currentUser = null;
+                updateUIForAuthentication(false);
+                const loginBtn = document.querySelector('.login-btn');
+                if (loginBtn) {
+                    loginBtn.textContent = 'Iniciar sesión';
+                    loginBtn.onclick = abrirLogin;
                 }
-            });
-        }
-        
-        // Registrar listener cuando DOM esté listo
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', setupAuthListener);
-        } else {
-            // DOM ya está listo
-            setupAuthListener();
-        }
+            }
+        });
     </script>
 
     <!-- MODAL: VALIDACIÓN CÓDIGO REVENDEDOR -->
@@ -5613,7 +5596,6 @@
     <script>
         // Variables globales para nichos
         window.codigoValidado = false;
-        window.categoriaSeleccionada = 'perfumes';  // ✅ TRACKEAR CATEGORÍA SELECCIONADA
         let carruselActual = 0;
         let productosCarrusel = [];
 
@@ -5622,12 +5604,6 @@
             console.log('🎬 [Carrusel] Iniciando inicializarCarrusel()');
             console.log('🎬 [Carrusel] window.products existe:', !!window.products);
             console.log('🎬 [Carrusel] window.products.length:', window.products ? window.products.length : 0);
-            
-            // Verificar que productos estén disponibles
-            if (!window.products || !Array.isArray(window.products)) {
-                console.error('❌ [Carrusel] window.products no está disponible o no es un array');
-                return;
-            }
             
             // Filtrar productos con precio entre 5000 y 30000
             const productosArabes = window.products.filter(p => 
@@ -5738,45 +5714,71 @@
         function actualizarVistaNichos() {
             const nichosSection = document.getElementById('nichos-section');
             
-            // Primero verificar si hay código validado en localStorage (sin requerir login)
-            const codigoEnSesion = localStorage.getItem('codigoRevendedorValidado');
-            if (codigoEnSesion) {
-                // Código validado (puede ser con o sin usuario logueado): mostrar catálogo
-                window.codigoValidado = true;
+            if (window.currentUser) {
+                // Verificar si ya validó el código (localStorage)
+                const codigoEnSesion = localStorage.getItem('codigoRevendedorValidado');
+                if (codigoEnSesion) {
+                    // Usuario logueado y código validado: mostrar catálogo
+                    window.codigoValidado = true;
+                    mostrarCatalogo();
+                } else {
+                    // Usuario logueado pero sin código validado: mostrar nichos
+                    if (nichosSection) {
+                        nichosSection.classList.remove('hide');
+                    }
+                    // Inicializar carrusel
+                    setTimeout(inicializarCarrusel, 100);
+                }
+            } else {
+                // Usuario NO logueado: mostrar nichos
+                if (nichosSection) {
+                    nichosSection.classList.remove('hide');
+                }
+                // IMPORTANTE: Inicializar carrusel también cuando no hay usuario logueado
+                setTimeout(inicializarCarrusel, 100);
+            }
+        }
+
+        // Abrir modal de validación de código
+        function abrirModalCodigo() {
+            // Si no se especificó catálogo, asumir Perfumes
+            if (!window.currentCatalog) {
+                window.currentCatalog = 'perfumes';
+            }
+            
+            console.log('🔓 [AbrirModalCodigo] Iniciando...');
+            console.log('🔓 [AbrirModalCodigo] Usuario logueado:', !!firebase.auth().currentUser);
+            console.log('🔓 [AbrirModalCodigo] window.codigoValidado:', window.codigoValidado);
+            console.log('🔓 [AbrirModalCodigo] window.currentUser:', window.currentUser);
+            
+            // Si ya validó, mostrar catálogo directamente
+            if (window.codigoValidado) {
+                console.log('✅ [AbrirModalCodigo] Código ya validado. Mostrando catálogo...');
                 mostrarCatalogo();
                 return;
             }
             
-            // No hay código validado: mostrar nichos
-            if (nichosSection) {
-                nichosSection.classList.remove('hide');
-            }
-            // IMPORTANTE: Inicializar carrusel también cuando no hay código validado
-            setTimeout(inicializarCarrusel, 100);
-        }
-
-        // Abrir modal de validación de código
-        function abrirModalCodigo(categoria = 'perfumes') {
-            console.log('🔓 [AbrirModalCodigo] Iniciando para categoría:', categoria);
-            console.log('🔓 [AbrirModalCodigo] Usuario logueado:', !!firebase.auth().currentUser);
-            console.log('🔓 [AbrirModalCodigo] window.codigoValidado:', window.codigoValidado);
-            
-            // ✅ GUARDAR CATEGORÍA SELECCIONADA
-            window.categoriaSeleccionada = categoria;
-            console.log('✅ [AbrirModalCodigo] Categoría guardada:', window.categoriaSeleccionada);
-            
-            // Si ya validó, mostrar catálogo directamente
-            if (window.codigoValidado) {
-                console.log('✅ [AbrirModalCodigo] Código ya validado. Mostrando catálogo:', categoria);
-                if (categoria === 'calzados') {
-                    mostrarCatalogoCombinado('calzados');
-                } else {
-                    mostrarCatalogo();
-                }
+            // Si NO está logueado, abrir login
+            if (!firebase.auth().currentUser) {
+                console.warn('⚠️ [AbrirModalCodigo] Usuario NO logueado. Abriendo login...');
+                alert('Debes iniciar sesión primero para acceder al catálogo de revendedor.');
+                abrirLogin();
                 return;
             }
             
-            // ABRIR MODAL DIRECTAMENTE (sin requerir login)
+            // Si está logueado pero no tiene código, generar uno
+            if (!window.currentUser?.codigoVendedor) {
+                console.warn('⚠️ [AbrirModalCodigo] Usuario logueado pero sin código. Generando...');
+                const nuevoCodigoVendedor = generarCodigoVendedor();
+                window.currentUser.codigoVendedor = nuevoCodigoVendedor;
+                localStorage.setItem('codigoVendedorLocal', nuevoCodigoVendedor);
+                
+                // Actualizar en Firestore en background
+                firebase.firestore().collection('usuarios').doc(firebase.auth().currentUser.uid).update({
+                    codigoVendedor: nuevoCodigoVendedor
+                }).catch(err => console.warn('⚠️ Error actualizando Firestore:', err.message));
+            }
+            
             const modal = document.getElementById('codigo-modal');
             const input = document.getElementById('codigo-input');
             const error = document.getElementById('codigo-error');
@@ -5787,7 +5789,7 @@
                 input.value = '';
                 error.classList.remove('show');
                 error.textContent = '';
-                console.log('✅ [AbrirModalCodigo] Modal de código abierto para:', categoria);
+                console.log('✅ [AbrirModalCodigo] Modal abierto. Código del usuario:', window.currentUser?.codigoVendedor);
             }
         }
 
@@ -5803,11 +5805,11 @@
         async function validarCodigoRevendedor() {
             const codigoInput = document.getElementById('codigo-input');
             const error = document.getElementById('codigo-error');
-            // Solo trim() - sin transformaciones adicionales
-            let codigo = codigoInput.value.trim();
+            // Normalizar: eliminar TODOS los espacios y convertir a MAYÚSCULAS
+            let codigo = codigoInput.value.trim().replace(/\s+/g, '').toUpperCase();
 
             console.log('🔍 [Validación] Código ingresado (raw):', codigoInput.value);
-            console.log('🔍 [Validación] Código ingresado (solo trim):', codigo);
+            console.log('🔍 [Validación] Código ingresado (limpio):', codigo);
             console.log('🔍 [Validación] Longitud:', codigo.length);
             console.log('🔍 [Validación] Usuario actual logueado:', !!firebase.auth().currentUser);
             console.log('🔍 [Validación] window.currentUser:', window.currentUser);
@@ -5830,8 +5832,8 @@
                 const usuarioActual = firebase.auth().currentUser;
                 if (usuarioActual && window.currentUser?.codigoVendedor) {
                     console.log('🔍 [Validación] Usuario logueado. Verificando su código...');
-                    // Solo trim() - igual que el código ingresado
-                    const codigoDelUsuario = window.currentUser.codigoVendedor.trim();
+                    // Normalizar igual: eliminar espacios y MAYÚSCULAS
+                    const codigoDelUsuario = window.currentUser.codigoVendedor.trim().replace(/\s+/g, '').toUpperCase();
                     console.log('🔍 [Validación] Código del usuario:', codigoDelUsuario);
                     
                     if (codigo === codigoDelUsuario) {
@@ -5852,21 +5854,53 @@
 
                 console.log('🔍 [Validación] Buscando en Firestore...');
                 
-                // Buscar exactamente como está en Firestore (sin transformaciones)
+                // ESTRATEGIA 2: Buscar en Firestore (para usuarios no logueados o código no coincide)
                 let resultado = await firebase.firestore()
                     .collection('usuarios')
                     .where('codigoVendedor', '==', codigo)
                     .get();
 
-                console.log('🔍 [Validación] Resultados encontrados:', resultado.size);
+                console.log('🔍 [Validación] Resultados encontrados (búsqueda exacta):', resultado.size);
                 if (resultado.size > 0) {
                     console.log('✅ [Validación] ENCONTRADO:', resultado.docs[0].data());
                 }
 
+                // Si no encuentra, intentar búsquedas alternativas
+                if (resultado.empty) {
+                    console.warn('⚠️ [Validación] No encontrado con búsqueda exacta. Intentando variantes...');
+                    
+                    // Intentar búsqueda 2: convertir a minúsculas
+                    resultado = await firebase.firestore()
+                        .collection('usuarios')
+                        .where('codigoVendedor', '==', codigo.toLowerCase())
+                        .get();
+                    
+                    console.log('🔍 [Validación] Resultados con minúsculas:', resultado.size);
+                    if (resultado.size > 0) {
+                        console.log('✅ [Validación] ENCONTRADO (minúsculas):', resultado.docs[0].data());
+                    }
+                }
+
+                // Intentar búsqueda 3: sin el prefijo "RW-" por si acaso
+                if (resultado.empty && codigo.startsWith('RW-')) {
+                    const codigoSinPrefijo = codigo.substring(3);
+                    console.log('🔍 [Validación] Intentando sin prefijo RW-:', codigoSinPrefijo);
+                    
+                    resultado = await firebase.firestore()
+                        .collection('usuarios')
+                        .where('codigoVendedor', '==', codigoSinPrefijo)
+                        .get();
+                    
+                    console.log('🔍 [Validación] Resultados sin prefijo:', resultado.size);
+                    if (resultado.size > 0) {
+                        console.log('✅ [Validación] ENCONTRADO (sin prefijo):', resultado.docs[0].data());
+                    }
+                }
+
                 if (resultado.empty) {
                     console.error('❌ [Validación] Código NO encontrado en Firestore');
-                    console.warn('⚠️ [Validación] Código ingresado:', codigo);
-                    console.warn('⚠️ [Validación] Verifica que sea exacto como en tu Perfil');
+                    console.warn('⚠️ [Validación] Nota: Si el código es incorrecto, verifica que sea exacto.');
+                    console.warn('⚠️ [Validación] Los códigos son sensibles a mayúsculas/minúsculas y espacios en blanco.');
                     
                     // Código NO válido
                     error.textContent = 'Código de revendedor inválido. Verifica que sea exacto (sin espacios extras) e intenta de nuevo.';
@@ -5887,19 +5921,12 @@
                     window.codigoValidado = true;
                     
                     console.log('💾 [Validación] Código guardado en localStorage');
-                    console.log('📍 [Validación] Categoría seleccionada:', window.categoriaSeleccionada);
                     
                     // Cerrar modal
                     cerrarModalCodigo();
                     
-                    // ✅ MOSTRAR CATÁLOGO SEGÚN CATEGORÍA SELECCIONADA
-                    if (window.categoriaSeleccionada === 'calzados') {
-                        console.log('👟 [Validación] Mostrando catálogo de CALZADOS');
-                        mostrarCatalogoCombinado('calzados');
-                    } else {
-                        console.log('💐 [Validación] Mostrando catálogo de PERFUMES');
-                        mostrarCatalogo();
-                    }
+                    // Mostrar catálogo
+                    mostrarCatalogo();
                 }
             } catch (error) {
                 console.error('❌ [Validación] Error validando código:', error);
@@ -5920,20 +5947,8 @@
             }
         }
 
-        // Mostrar catálogo de PERFUMES árabes
+        // Mostrar catálogo y ocultar nichos
         function mostrarCatalogo() {
-            console.log('💐 [mostrarCatalogo] Abriendo catálogo de PERFUMES');
-            
-            // Cambiar a catálogo de perfumes
-            window.currentCatalog = 'perfumes';
-            window.currentProducts = window.products;
-            
-            // Resetear filtros
-            window.currentFilter = 'todos';
-            window.currentSort = 'default';
-            window.currentSearch = '';
-            window.itemsDisplayed = 6;
-            
             const nichosSection = document.getElementById('nichos-section');
             const filtersContainer = document.getElementById('filters-container');
             const productsContainer = document.getElementById('products-container');
@@ -5942,47 +5957,32 @@
             const revendSection = document.querySelector('.revend-section');
 
             if (nichosSection) nichosSection.classList.add('hide');
-            if (filtersContainer) filtersContainer.classList.remove('hidden');
-            if (productsContainer) productsContainer.classList.remove('hidden');
-            if (paginationSection) paginationSection.classList.remove('hidden');
+            
+            if (window.currentCatalog === 'calzados') {
+                // Mostrar carrusel de Calzados
+                if (filtersContainer) filtersContainer.classList.add('hidden');
+                if (productsContainer) productsContainer.classList.add('hidden');
+                if (paginationSection) paginationSection.classList.add('hidden');
+                
+                // Hacer visible el contenedor de nicho de Calzados
+                const nichoItem = document.querySelector('.nicho-item');
+                if (nichoItem) nichoItem.style.display = 'block';
+                
+                // Inicializar carrusel de Adultos
+                inicializarCarruselShoesAdultos();
+            } else {
+                // Mostrar catálogo de Perfumes (comportamiento original)
+                if (filtersContainer) filtersContainer.classList.remove('hidden');
+                if (productsContainer) productsContainer.classList.remove('hidden');
+                if (paginationSection) paginationSection.classList.remove('hidden');
+                
+                // Renderizar productos si no está hecho
+                renderProducts();
+            }
+            
             if (portadaDosSection) portadaDosSection.style.display = 'block';
             if (revendSection) revendSection.style.display = 'block';
-
-            // Renderizar productos
-            renderProducts();
-            updateCartCount();
-        }
-        
-        // Mostrar catálogo de CALZADOS
-        function mostrarCatalogoCombinado(tipo) {
-            console.log('👟 [mostrarCatalogoCombinado] Abriendo catálogo de CALZADOS');
             
-            // Cambiar a catálogo de calzados
-            window.currentCatalog = 'calzados';
-            window.currentProducts = window.productsCalzados;
-            
-            // Resetear filtros
-            window.currentFilter = 'todos';
-            window.currentSort = 'default';
-            window.currentSearch = '';
-            window.itemsDisplayed = 6;
-            
-            const nichosSection = document.getElementById('nichos-section');
-            const filtersContainer = document.getElementById('filters-container');
-            const productsContainer = document.getElementById('products-container');
-            const paginationSection = document.getElementById('pagination-section');
-            const portadaDosSection = document.getElementById('portada-dos-section');
-            const revendSection = document.querySelector('.revend-section');
-
-            if (nichosSection) nichosSection.classList.add('hide');
-            if (filtersContainer) filtersContainer.classList.remove('hidden');
-            if (productsContainer) productsContainer.classList.remove('hidden');
-            if (paginationSection) paginationSection.classList.remove('hidden');
-            if (portadaDosSection) portadaDosSection.style.display = 'block';
-            if (revendSection) revendSection.style.display = 'block';
-
-            // Renderizar productos
-            renderProducts();
             updateCartCount();
         }
 
@@ -6067,181 +6067,6 @@
             if (modal) {
                 modal.classList.remove('active');
             }
-        }
-
-        // 👟 FUNCIONES PARA CALZADOS
-        
-        // Abrir catálogo de Calzados
-        function abrirCalzados() {
-            console.log('👟 [abrirCalzados] Abriendo catálogo de calzados...');
-            
-            // Si código ya está validado, mostrar catálogo directo
-            if (window.codigoValidado) {
-                console.log('✅ [abrirCalzados] Código ya validado. Abriendo catálogo...');
-                mostrarCatalogoCombinado('calzados');
-                return;
-            }
-            
-            // Si no, pedir código de revendedor (PASAR 'calzados' COMO PARÁMETRO)
-            console.log('🔓 [abrirCalzados] Código no validado. Pidiendo código...');
-            abrirModalCodigo('calzados');
-        }
-        
-        // Filtrar Calzados por categoría (Adultos o Niños)
-        function filtrarCalzadosPorCategoria(categoria) {
-            console.log('👟 [filtrarCalzadosPorCategoria] Filtrando por:', categoria);
-            
-            if (categoria === 'niños') {
-                // Mostrar modal de "Próximamente"
-                mostrarModalNinosProximamente();
-                return;
-            }
-            
-            if (categoria === 'adultos') {
-                // Actualizar botones activos
-                const botonesCategoria = document.querySelectorAll('.categoria-btn');
-                botonesCategoria.forEach(btn => {
-                    btn.classList.remove('activa');
-                    if (btn.textContent.includes('Adultos')) {
-                        btn.classList.add('activa');
-                    }
-                });
-                
-                // Mostrar solo calzados adulto
-                window.calzadosActuales = window.productsCalzados.filter(p => p.tipo === 'adulto');
-                
-                // Reinicializar carrusel
-                inicializarCarruselCalzados();
-            }
-        }
-        
-        // Mostrar modal "Próximamente" para Niños
-        function mostrarModalNinosProximamente() {
-            console.log('👶 [mostrarModalNinosProximamente] Mostrando modal de Niños próximamente...');
-            
-            const modal = document.getElementById('proximamente-modal');
-            const titulo = document.getElementById('proximamente-titulo');
-            
-            if (modal) {
-                titulo.textContent = 'La sección de Calzados Niños estará disponible muy pronto. ¡Gracias por tu interés!';
-                modal.classList.add('active');
-            }
-        }
-        
-        // Inicializar carrusel de Calzados
-        function inicializarCarruselCalzados() {
-            console.log('👟 [inicializarCarruselCalzados] Inicializando carrusel con', window.calzadosActuales?.length || 0, 'productos');
-            
-            if (!window.calzadosActuales || window.calzadosActuales.length === 0) {
-                console.warn('⚠️ Sin productos de calzados para mostrar');
-                return;
-            }
-            
-            const wrapper = document.getElementById('carrusel-calzados-wrapper');
-            if (!wrapper) {
-                console.warn('⚠️ No se encontró carrusel-calzados-wrapper');
-                return;
-            }
-            
-            // Limpiar carrusel anterior
-            wrapper.innerHTML = '';
-            
-            // Agregar cada producto como un slide
-            window.calzadosActuales.forEach((producto, index) => {
-                const slide = document.createElement('div');
-                slide.className = 'carrusel-slide';
-                slide.id = `slide-calzados-${index}`;
-                slide.style.display = index === 0 ? 'flex' : 'none';
-                slide.style.flexDirection = 'column';
-                slide.style.justifyContent = 'center';
-                slide.style.gap = '12px';
-                slide.style.padding = '20px';
-                
-                slide.innerHTML = `
-                    <div style="text-align: center;">
-                        <img src="${producto.imagen || 'placeholder.jpg'}" alt="${producto.nombre}" style="max-width: 100%; max-height: 80px; object-fit: contain; margin-bottom: 10px;">
-                        <div style="font-weight: 600; font-size: 14px; color: var(--text); margin-bottom: 6px; line-height: 1.3;">${producto.nombre}</div>
-                        <div style="font-size: 12px; color: var(--text-light); margin-bottom: 8px;">
-                            <span style="font-weight: 600; color: var(--primary);">$${producto.precio.toLocaleString('es-ES')}</span>
-                        </div>
-                        <div style="font-size: 11px; color: var(--text-light); margin-bottom: 10px;">Talles: ${(producto.talles || []).join(', ')}</div>
-                        <button style="background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; transition: background 0.2s;" onclick="agregarACarrito('calzados', ${producto.id})" onmouseover="this.style.background='var(--primary-dark)'" onmouseout="this.style.background='var(--primary)'">
-                            ➕ Agregar
-                        </button>
-                    </div>
-                `;
-                
-                wrapper.appendChild(slide);
-            });
-            
-            // Inicializar dots de navegación
-            actualizarDotsCalzados();
-            
-            // Mostrar primer slide
-            window.calzadosActualesIndex = 0;
-        }
-        
-        // Actualizar dots (puntos) de navegación
-        function actualizarDotsCalzados() {
-            const dotsContainer = document.querySelector('#carrusel-calzados-container .carrusel-dots');
-            if (!dotsContainer) {
-                console.warn('⚠️ No se encontró contenedor de dots');
-                return;
-            }
-            
-            dotsContainer.innerHTML = '';
-            
-            if (!window.calzadosActuales) return;
-            
-            window.calzadosActuales.forEach((_, index) => {
-                const dot = document.createElement('button');
-                dot.className = 'carousel-dot';
-                if (index === 0) dot.classList.add('active');
-                dot.onclick = () => mostrarSlideCalzados(index);
-                dotsContainer.appendChild(dot);
-            });
-        }
-        
-        // Mostrar slide específico
-        function mostrarSlideCalzados(index) {
-            if (!window.calzadosActuales) return;
-            
-            // Limitar índice
-            if (index < 0) {
-                index = window.calzadosActuales.length - 1;
-            } else if (index >= window.calzadosActuales.length) {
-                index = 0;
-            }
-            
-            window.calzadosActualesIndex = index;
-            
-            // Ocultar todos los slides
-            document.querySelectorAll('#carrusel-calzados-wrapper .carousel-slide').forEach(slide => {
-                slide.style.display = 'none';
-            });
-            
-            // Mostrar slide actual
-            const currentSlide = document.getElementById(`slide-calzados-${index}`);
-            if (currentSlide) {
-                currentSlide.style.display = 'flex';
-            }
-            
-            // Actualizar dots
-            document.querySelectorAll('#carrusel-calzados-container .carousel-dot').forEach((dot, i) => {
-                dot.classList.toggle('active', i === index);
-            });
-        }
-        
-        // Navegar carrusel anterior
-        function carruselCalzadosAnterior() {
-            const newIndex = (window.calzadosActualesIndex || 0) - 1;
-            mostrarSlideCalzados(newIndex);
-        }
-        
-        // Navegar carrusel siguiente
-        function carruselCalzadosSiguiente() {
-            const newIndex = (window.calzadosActualesIndex || 0) + 1;
-            mostrarSlideCalzados(newIndex);
         }
 
         // Verificar sesión al cargar la página
@@ -6357,13 +6182,8 @@
             console.log('%cAbre la consola (F12) y ejecuta: verificarPlataforma()', 'color: #666; font-size: 12px;');
         };
         
-        // NO ejecutar automáticamente - solo manualmente via consola
-        // Evita errores de Firebase no inicializado
+        // Ejecutar verificación automáticamente en carga
+        setTimeout(window.verificarPlataforma, 2000);
     </script>
-
-    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-    <!-- 📦 MÓDULOS REUTILIZABLES - Inicialización de arquitectura modular          -->
-    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-    <script type="module" src="../initialize-modules.js"></script>
 </body>
 </html>
