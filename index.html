@@ -2775,8 +2775,6 @@
             }
         }
     </style>
-    <!-- reCAPTCHA v2 -->
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
     <!-- HEADER TOP BAR -->
@@ -3117,7 +3115,7 @@
                 <form onsubmit="loginUser(event)">
                     <input type="email" id="login-email" placeholder="Correo electrónico" required>
                     <input type="password" id="login-password" placeholder="Contraseña" required>
-                    <div class="g-recaptcha" id="recaptcha-login" data-sitekey="6LeNuM0sAAAAAJ8_Jdv1DhVqhJMsmDZl7KokfCw_" style="margin: 15px 0; display: flex; justify-content: center;"></div>
+                    <div id="recaptcha-login" style="margin: 15px 0; display: flex; justify-content: center;"></div>
                     <button type="submit" class="auth-btn">Ingresar</button>
                 </form>
                 <div class="auth-switch">
@@ -3132,7 +3130,7 @@
                     <input type="text" id="register-nombre" placeholder="Nombre completo" required>
                     <input type="email" id="register-email" placeholder="Correo electrónico" required>
                     <input type="password" id="register-password" placeholder="Contraseña (mín. 6 caracteres)" required minlength="6">
-                    <div class="g-recaptcha" id="recaptcha-register" data-sitekey="6LeNuM0sAAAAAJ8_Jdv1DhVqhJMsmDZl7KokfCw_" style="margin: 15px 0; display: flex; justify-content: center;"></div>
+                    <div id="recaptcha-register" style="margin: 15px 0; display: flex; justify-content: center;"></div>
                     <button type="submit" class="auth-btn">Crear Cuenta</button>
                 </form>
                 <div class="auth-switch">
@@ -4844,8 +4842,9 @@
         async function registerUser(e) {
             e.preventDefault();
             
-            // Validar reCAPTCHA
-            const recaptchaResponse = grecaptcha.getResponse();
+            // Validar reCAPTCHA usando el ID del widget de registro
+            const recaptchaResponse = grecaptcha.getResponse(window.grecaptchaRegisterId);
+            console.log('📋 reCAPTCHA Response:', recaptchaResponse);
             if (!recaptchaResponse) {
                 alert('❌ Por favor, completa el reCAPTCHA');
                 return;
@@ -4913,8 +4912,9 @@
         async function loginUser(e) {
             e.preventDefault();
             
-            // Validar reCAPTCHA
-            const recaptchaResponse = grecaptcha.getResponse();
+            // Validar reCAPTCHA usando el ID del widget de login
+            const recaptchaResponse = grecaptcha.getResponse(window.grecaptchaLoginId);
+            console.log('📋 reCAPTCHA Response:', recaptchaResponse);
             if (!recaptchaResponse) {
                 alert('❌ Por favor, completa el reCAPTCHA');
                 return;
@@ -6465,14 +6465,48 @@
         }, { once: true });
         
         window.verificarPlataforma = function() {
-            // Diagnóstico de la plataforma
-            
-            // 1. FLECHAS DEL CARRUSEL
-            const flechas = document.querySelectorAll('.carrusel-nav');
-            
-            // 2. AUTOPLAY
-            // Diagnóstico del carrusel...;
+            // Diagnóstico de la plataforma (función vacía por ahora)
         };
+        
+        window.grecaptchaLoginId = null;
+        window.grecaptchaRegisterId = null;
+        
+        // Callback para cuando reCAPTCHA esté listo
+        window.onRecaptchaReady = function() {
+            // Renderizar widget de login
+            if (document.getElementById('recaptcha-login')) {
+                try {
+                    window.grecaptchaLoginId = grecaptcha.render('recaptcha-login', {
+                        sitekey: '6LeNuM0sAAAAAJ8_Jdv1DhVqhJMsmDZl7KokfCw_',
+                        theme: 'light'
+                    });
+                    console.log('✅ reCAPTCHA Login renderizado. ID:', window.grecaptchaLoginId);
+                } catch (err) {
+                    console.error('Error renderizando reCAPTCHA Login:', err);
+                }
+            }
+            
+            // Renderizar widget de registro
+            if (document.getElementById('recaptcha-register')) {
+                try {
+                    window.grecaptchaRegisterId = grecaptcha.render('recaptcha-register', {
+                        sitekey: '6LeNuM0sAAAAAJ8_Jdv1DhVqhJMsmDZl7KokfCw_',
+                        theme: 'light'
+                    });
+                    console.log('✅ reCAPTCHA Register renderizado. ID:', window.grecaptchaRegisterId);
+                } catch (err) {
+                    console.error('Error renderizando reCAPTCHA Register:', err);
+                }
+            }
+        };
+        
+        // Ejecutar el callback si grecaptcha ya está disponible
+        if (typeof grecaptcha !== 'undefined' && grecaptcha.render) {
+            window.onRecaptchaReady();
+        }
     </script>
+    
+    <!-- reCAPTCHA: Renderizado manual -->
+    <script src="https://www.google.com/recaptcha/api.js?onload=onRecaptchaReady&render=explicit" async defer></script>
 </body>
 </html>
