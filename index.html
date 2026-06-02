@@ -2786,7 +2786,7 @@
             <div class="header-actions">
                 <button class="login-btn" onclick="abrirLogin()">Iniciar sesión</button>
                 <button class="cart-btn" onclick="toggleCart()">
-                    �
+                    ☑️
                     <span class="cart-count" id="cart-count">0</span>
                 </button>
             </div>
@@ -4594,6 +4594,29 @@
         async function submitCheckoutAndPay() {
             const total = cart.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
             
+            // PRIMERO: Verificar que el usuario esté autenticado
+            const usuarioActual = firebase.auth().currentUser;
+            if (!usuarioActual) {
+                alert('❌ Debes estar autenticado para continuar');
+                return;
+            }
+            
+            // Obtener el código del usuario desde su documento de Firestore (fuente única de verdad)
+            let codigoRevendedorValido = null;
+            try {
+                const docSnap = await firebase.firestore().collection('usuarios').doc(usuarioActual.uid).get();
+                if (docSnap.exists && docSnap.data().codigoVendedor) {
+                    codigoRevendedorValido = docSnap.data().codigoVendedor;
+                } else {
+                    alert('❌ No se encontró código de revendedor en tu perfil');
+                    return;
+                }
+            } catch (error) {
+                console.error('Error obteniendo código de revendedor:', error);
+                alert('❌ Error al validar tu código de revendedor');
+                return;
+            }
+            
             // Obtener datos del formulario
             const checkout = {
                 nombre: document.getElementById('checkout-nombre').value.trim(),
@@ -4605,7 +4628,7 @@
                 cp: document.getElementById('checkout-cp').value.trim(),
                 direccion: document.getElementById('checkout-direccion').value.trim(),
                 observaciones: document.getElementById('checkout-observaciones').value.trim(),
-                codigoRevendedor: document.getElementById('checkout-codigo-revendedor').value.trim().replace(/\s+/g, '').toUpperCase()
+                codigoRevendedor: codigoRevendedorValido
             };
 
             // VALIDACIONES
@@ -4617,14 +4640,6 @@
             if (!checkout.ciudad) { alert('❌ Ciudad requerida'); return; }
             if (!checkout.cp) { alert('❌ Código postal requerido'); return; }
             if (!checkout.direccion) { alert('❌ Dirección requerida'); return; }
-            if (!checkout.codigoRevendedor) { alert('❌ Código de Revendedor requerido'); return; }
-
-            // Validar que el código de revendedor existe en Firebase
-            const codigoValido = await validarCodigoRevendedorEnFirestore(checkout.codigoRevendedor);
-            if (!codigoValido) { 
-                alert('❌ El código ingresado no es de un revendedor'); 
-                return; 
-            }
 
             // Calcular totales y ganancias ANTES de enviar a pago
             const totales = calculateOrderTotals(cart);
