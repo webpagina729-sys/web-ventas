@@ -4672,22 +4672,17 @@
                     console.log('✅ [CHECKOUT] Botón deshabilitado, texto: Procesando...');
                 }
                 
-                // Intentar guardar en Firestore pero NO bloquear el pago si falla
+                // Intentar guardar en Firestore sin bloquear el pago si falla
                 try {
-                    console.log('📝 [CHECKOUT] Guardando pedido en Firestore...');
                     const pedidoId = await savePedidoToFirestore(checkout, cart, totales);
-                    console.log('✅ [CHECKOUT] Pedido guardado con ID:', pedidoId);
-                    
-                    // Actualizar estadísticas del usuario
                     if (firebase.auth().currentUser) {
-                        console.log('📊 [CHECKOUT] Actualizando estadísticas...');
                         await updateUserStatistics(firebase.auth().currentUser.uid);
-                        console.log('✅ [CHECKOUT] Estadísticas actualizadas');
                     }
                 } catch (firestoreError) {
-                    // Firestore falló pero el pago debe continuar igual
-                    console.warn('⚠️ [CHECKOUT] Firestore error (NO bloquea el pago):', firestoreError.message);
-                    console.warn('⚠️ [CHECKOUT] Continuando con Mercado Pago de todas formas...');
+                    console.warn(
+                        'Firestore no disponible, el pago continúa:',
+                        firestoreError.message
+                    );
                 }
                 
                 // Estructura COMPLETA que el Worker espera
