@@ -4336,7 +4336,10 @@
 
         function updateCartCount() {
             const count = cart.reduce((sum, item) => sum + item.cantidad, 0);
-            document.getElementById('cart-count').textContent = count;
+            const cartCountElement = document.getElementById('cart-count');
+            if (cartCountElement) {
+                cartCountElement.textContent = count;
+            }
         }
 
         function updateCartDisplay() {
@@ -4532,6 +4535,8 @@
             if (firebase.auth().currentUser) {
                 const uid = firebase.auth().currentUser.uid;
                 console.log('🔍 [PROCEEDTOPAYMENT] UID al abrir checkout:', uid);
+                console.log('🔍 [PROCEEDTOPAYMENT] Conexión online:', navigator.onLine);
+                
                 try {
                     const docSnap = await firebase.firestore().collection('usuarios').doc(uid).get();
                     console.log('🔍 [PROCEEDTOPAYMENT] Documento encontrado:', docSnap.exists);
@@ -4539,25 +4544,40 @@
                     
                     if (docSnap.exists) {
                         const userData = docSnap.data();
+                        
+                        // Protecciones para elementos
+                        const checkoutNombreEl = document.getElementById('checkout-nombre');
+                        const checkoutEmailEl = document.getElementById('checkout-email');
+                        const checkoutTelefonoEl = document.getElementById('checkout-telefono');
+                        const checkoutProvinciaEl = document.getElementById('checkout-provincia');
+                        const checkoutCiudadEl = document.getElementById('checkout-ciudad');
+                        const checkoutCpEl = document.getElementById('checkout-cp');
+                        const checkoutDireccionEl = document.getElementById('checkout-direccion');
+                        const checkoutCodigoEl = document.getElementById('checkout-codigo-revendedor');
+                        
                         // Rellenar campos del formulario
-                        if (userData.nombre) document.getElementById('checkout-nombre').value = userData.nombre;
-                        if (userData.email) document.getElementById('checkout-email').value = userData.email;
-                        if (userData.telefono) document.getElementById('checkout-telefono').value = userData.telefono || '';
-                        if (userData.provincia) document.getElementById('checkout-provincia').value = userData.provincia || '';
-                        if (userData.ciudad) document.getElementById('checkout-ciudad').value = userData.ciudad || '';
-                        if (userData.cp) document.getElementById('checkout-cp').value = userData.cp || '';
-                        if (userData.direccion) document.getElementById('checkout-direccion').value = userData.direccion || '';
+                        if (userData.nombre && checkoutNombreEl) checkoutNombreEl.value = userData.nombre;
+                        if (userData.email && checkoutEmailEl) checkoutEmailEl.value = userData.email;
+                        if (userData.telefono && checkoutTelefonoEl) checkoutTelefonoEl.value = userData.telefono || '';
+                        if (userData.provincia && checkoutProvinciaEl) checkoutProvinciaEl.value = userData.provincia || '';
+                        if (userData.ciudad && checkoutCiudadEl) checkoutCiudadEl.value = userData.ciudad || '';
+                        if (userData.cp && checkoutCpEl) checkoutCpEl.value = userData.cp || '';
+                        if (userData.direccion && checkoutDireccionEl) checkoutDireccionEl.value = userData.direccion || '';
+                        
                         // IMPORTANTE: Rellenar código de revendedor desde Firebase
-                        if (userData.codigoVendedor) {
+                        if (userData.codigoVendedor && checkoutCodigoEl) {
                             console.log('✅ [PROCEEDTOPAYMENT] Código pre-llenado:', userData.codigoVendedor);
-                            document.getElementById('checkout-codigo-revendedor').value = userData.codigoVendedor;
+                            checkoutCodigoEl.value = userData.codigoVendedor;
                         } else {
                             console.warn('⚠️ [PROCEEDTOPAYMENT] codigoVendedor no existe en documento');
                         }
+                    } else {
+                        console.warn('⚠️ [PROCEEDTOPAYMENT] Documento no existe');
                     }
                 } catch (error) {
                     console.error('❌ [PROCEEDTOPAYMENT] Error cargando datos del usuario:', error);
                     console.error('❌ [PROCEEDTOPAYMENT] Código de error:', error.code);
+                    console.error('❌ [PROCEEDTOPAYMENT] Mensaje:', error.message);
                 }
             } else {
                 console.warn('⚠️ [PROCEEDTOPAYMENT] No hay usuario autenticado');
@@ -4608,9 +4628,16 @@
             const usuarioActual = firebase.auth().currentUser;
             console.log('🔍 [CHECKOUT] Usuario autenticado:', usuarioActual);
             console.log('🔍 [CHECKOUT] UID:', usuarioActual?.uid);
+            console.log('🔍 [CHECKOUT] Firestore inicializado:', !!firebase.firestore());
+            console.log('🔍 [CHECKOUT] Conexión online:', navigator.onLine);
             
             if (!usuarioActual) {
                 alert('❌ Debes estar autenticado para continuar');
+                return;
+            }
+            
+            if (!navigator.onLine) {
+                alert('❌ Sin conexión a internet. Por favor verifica tu conexión y vuelve a intentar');
                 return;
             }
             
@@ -4635,8 +4662,16 @@
                 console.error('❌ [CHECKOUT] Error real de Firestore:', error);
                 console.error('❌ [CHECKOUT] Código de error:', error.code);
                 console.error('❌ [CHECKOUT] Mensaje:', error.message);
-                alert('❌ Error al validar tu código de revendedor\n\nDetalle: ' + error.message);
-                return;
+                
+                // Ofrecer alternativa: usar código de localStorage
+                const codigoLocal = localStorage.getItem('codigoVendedorLocal');
+                if (codigoLocal) {
+                    console.log('⚠️ [CHECKOUT] Usando código de localStorage:', codigoLocal);
+                    codigoRevendedorValido = codigoLocal;
+                } else {
+                    alert('❌ Error al validar tu código de revendedor\n\nDetalle: ' + error.message + '\n\nPor favor verifica tu conexión y vuelve a intentar');
+                    return;
+                }
             }
             
             // Obtener datos del formulario
@@ -5153,12 +5188,21 @@
             const user = firebase.auth().currentUser;
             if (!user) return;
 
+            // Protecciones para elementos
+            const profileEmailEl = document.getElementById('profileEmail');
+            const profileNameEl = document.getElementById('profileName');
+            const profileCodeEl = document.getElementById('profileCode');
+            
             // Mostrar email
-            document.getElementById('profileEmail').textContent = user.email;
+            if (profileEmailEl) {
+                profileEmailEl.textContent = user.email;
+            }
 
             // Mostrar nombre
-            document.getElementById('profileName').textContent = 
-                window.currentUser?.nombre || user.email.split('@')[0];
+            if (profileNameEl) {
+                profileNameEl.textContent = 
+                    window.currentUser?.nombre || user.email.split('@')[0];
+            }
 
             // Intentar mostrar código en este orden: localStorage → window.currentUser → Firestore → Generar nuevo
             let codigoEncontrado = false;
@@ -5167,18 +5211,20 @@
             // 1. PRIMER INTENTO: localStorage (más rápido y más confiable)
             const codigoLocal = localStorage.getItem('codigoVendedorLocal');
             if (codigoLocal && codigoLocal.trim() !== '') {
-                document.getElementById('profileCode').textContent = codigoLocal;
+                if (profileCodeEl) {
+                    profileCodeEl.textContent = codigoLocal;
+                }
                 codigoFinal = codigoLocal;
                 codigoEncontrado = true;
             }
             
             // 2. SEGUNDO INTENTO: window.currentUser
             if (!codigoEncontrado) {
-            // 2. SEGUNDO INTENTO: window.currentUser
                 if (window.currentUser?.codigoVendedor && window.currentUser.codigoVendedor.trim() !== '') {
-                    document.getElementById('profileCode').textContent = window.currentUser.codigoVendedor;
+                    if (profileCodeEl) {
+                        profileCodeEl.textContent = window.currentUser.codigoVendedor;
+                    }
                     codigoFinal = window.currentUser.codigoVendedor;
-                    // Guardar en localStorage también para futuras consultas
                     localStorage.setItem('codigoVendedorLocal', window.currentUser.codigoVendedor);
                     codigoEncontrado = true;
                 }
@@ -5186,7 +5232,9 @@
             
             // 3. TERCER INTENTO: Firestore
             if (!codigoEncontrado) {
-                document.getElementById('profileCode').textContent = 'Cargando...';
+                if (profileCodeEl) {
+                    profileCodeEl.textContent = 'Cargando...';
+                }
                 try {
                     const doc = await firebase.firestore().collection('usuarios').doc(user.uid).get();
                     
@@ -5194,18 +5242,17 @@
                         const userData = doc.data();
                         
                         if (userData.codigoVendedor && userData.codigoVendedor.trim() !== '') {
-                            document.getElementById('profileCode').textContent = userData.codigoVendedor;
+                            if (profileCodeEl) {
+                                profileCodeEl.textContent = userData.codigoVendedor;
+                            }
                             codigoFinal = userData.codigoVendedor;
-                            // Guardar en localStorage para futuras consultas
                             localStorage.setItem('codigoVendedorLocal', userData.codigoVendedor);
-                            // Actualizar window.currentUser
                             if (window.currentUser) {
                                 window.currentUser.codigoVendedor = userData.codigoVendedor;
                             }
                             codigoEncontrado = true;
                         }
                         
-                        // Actualizar window.currentUser con datos frescos
                         if (!window.currentUser || !window.currentUser.codigoVendedor) {
                             window.currentUser = {
                                 uid: user.uid,
@@ -5215,36 +5262,36 @@
                         }
                     }
                 } catch (error) {
-                    // Error silencioso
+                    console.error('Error cargando código de Firestore:', error);
                 }
             }
             
             // 4. ÚLTIMO RECURSO: Si aún no hay código, generar uno
             if (!codigoEncontrado || !codigoFinal || codigoFinal.trim() === '') {
                 codigoFinal = generarCodigoVendedor();
-                document.getElementById('profileCode').textContent = codigoFinal;
-                
-                // Guardar en localStorage
-                localStorage.setItem('codigoVendedorLocal', codigoFinal);
-                
-                // Guardar en window.currentUser
-                if (window.currentUser) {
-                    window.currentUser.codigoVendedor = codigoFinal;
+                if (profileCodeEl) {
+                    profileCodeEl.textContent = codigoFinal;
                 }
                 
-                // Guardar en Firestore en background
+                localStorage.setItem('codigoVendedorLocal', codigoFinal);
+                
+                if (!window.currentUser) {
+                    window.currentUser = {};
+                }
+                window.currentUser.codigoVendedor = codigoFinal;
+                
                 firebase.firestore().collection('usuarios').doc(user.uid).update({
                     codigoVendedor: codigoFinal
                 }).catch(err => {
-                    // Si falla update, intentar set (por si el documento no existe)
                     firebase.firestore().collection('usuarios').doc(user.uid).set({
                         uid: user.uid,
                         email: user.email,
                         nombre: window.currentUser?.nombre || user.email.split('@')[0],
                         codigoVendedor: codigoFinal,
                         creado: window.currentUser?.creado || new Date()
-                    }).catch(err2 => {});
+                    }).catch(err2 => console.error('Error guardando código:', err2));
                 });
+            }
             }
 
             document.getElementById('profileModal').classList.add('active');
@@ -6014,13 +6061,19 @@
             // Si está logueado pero no tiene código, generar uno
             if (!window.currentUser?.codigoVendedor) {
                 const nuevoCodigoVendedor = generarCodigoVendedor();
+                
+                // Protección: asegurar que window.currentUser existe
+                if (!window.currentUser) {
+                    window.currentUser = {};
+                }
+                
                 window.currentUser.codigoVendedor = nuevoCodigoVendedor;
                 localStorage.setItem('codigoVendedorLocal', nuevoCodigoVendedor);
                 
                 // Actualizar en Firestore en background
                 firebase.firestore().collection('usuarios').doc(firebase.auth().currentUser.uid).update({
                     codigoVendedor: nuevoCodigoVendedor
-                }).catch(err => {});
+                }).catch(err => console.error('Error al guardar código:', err));
             }
             
             const modal = document.getElementById('codigo-modal');
