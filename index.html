@@ -4684,43 +4684,145 @@
                     console.log('✅ [CHECKOUT] Estadísticas actualizadas');
                 }
                 
-                // Estructura EXACTA que el Worker espera
+                // Estructura COMPLETA que el Worker espera
+                // Incluye TODOS los datos para facturación, procesamiento de pedido y webhook
                 const requestBody = {
-                    items: cart.map(item => ({
-                        title: item.nombre,
-                        quantity: item.cantidad,
-                        unit_price: Number(item.precio),
-                        currency_id: 'ARS'
-                    })),
-                    payer: {
-                        name: checkout.nombre,
-                        surname: checkout.apellido,
+                    // ═══════════════════════════════════════════════════════════════════════════
+                    // DATOS DEL CLIENTE (para facturación)
+                    // ═══════════════════════════════════════════════════════════════════════════
+                    cliente: {
+                        uid: firebase.auth().currentUser?.uid || 'guest',
+                        nombre: checkout.nombre,
+                        apellido: checkout.apellido,
                         email: checkout.email,
-                        phone: {
-                            number: checkout.telefono
+                        telefono: checkout.telefono,
+                        codigoRevendedor: codigoRevendedorValido
+                    },
+
+                    // ═══════════════════════════════════════════════════════════════════════════
+                    // DATOS DE ENVÍO (para facturación y procesamiento de pedido)
+                    // ═══════════════════════════════════════════════════════════════════════════
+                    envio: {
+                        direccion: checkout.direccion,
+                        ciudad: checkout.ciudad,
+                        provincia: checkout.provincia,
+                        codigoPostal: checkout.cp,
+                        observaciones: checkout.observaciones || ''
+                    },
+
+                    // ═══════════════════════════════════════════════════════════════════════════
+                    // PRODUCTOS Y CANTIDAD (para facturación)
+                    // ═══════════════════════════════════════════════════════════════════════════
+                    items: cart.map(item => ({
+                        id: item.id,
+                        nombre: item.nombre,
+                        categoria: item.categoria || 'productos',
+                        cantidad: item.cantidad,
+                        precioUnitario: Number(item.precio),
+                        precioTotal: Number(item.precio) * item.cantidad,
+                        talle: item.talle || null,
+                        imagen: item.imagen,
+                        caracteristicas: item.caracteristicas || []
+                    })),
+
+                    // ═══════════════════════════════════════════════════════════════════════════
+                    // TOTALES DEL PEDIDO (para facturación y Mercado Pago)
+                    // ═══════════════════════════════════════════════════════════════════════════
+                    totales: {
+                        subTotal: Number(totales.subTotal || 0),
+                        descuento: Number(totales.descuento || 0),
+                        total: Number(totales.total || 0),
+                        gananciaTotal: Number(totales.gananciaTotal || 0),
+                        moneda: 'ARS'
+                    },
+
+                    // ═══════════════════════════════════════════════════════════════════════════
+                    // FORMATO PARA MERCADO PAGO (requerido por su API)
+                    // ═══════════════════════════════════════════════════════════════════════════
+                    mercadoPago: {
+                        items: cart.map(item => ({
+                            title: item.nombre,
+                            quantity: item.cantidad,
+                            unit_price: Number(item.precio),
+                            currency_id: 'ARS'
+                        })),
+                        payer: {
+                            name: checkout.nombre,
+                            surname: checkout.apellido,
+                            email: checkout.email,
+                            phone: {
+                                number: checkout.telefono
+                            },
+                            address: {
+                                street_name: checkout.direccion,
+                                zip_code: checkout.cp,
+                                city_name: checkout.ciudad,
+                                state_name: checkout.provincia
+                            }
                         },
-                        address: {
-                            street_name: checkout.direccion,
-                            zip_code: checkout.cp
-                        }
+                        back_urls: {
+                            success: window.location.origin + '?status=success',
+                            failure: window.location.origin + '?status=failure',
+                            pending: window.location.origin + '?status=pending'
+                        },
+                        auto_return: 'approved',
+                        external_reference: 'order_' + Date.now()
                     },
+
+                    // ═══════════════════════════════════════════════════════════════════════════
+                    // METADATA Y REFERENCIAS (para tracking y webhook)
+                    // ═══════════════════════════════════════════════════════════════════════════
                     metadata: {
-                        cliente: checkout,
-                        carrito: cart
-                    },
-                    back_urls: {
-                        success: window.location.origin + '?status=success',
-                        failure: window.location.origin + '?status=failure',
-                        pending: window.location.origin + '?status=pending'
-                    },
-                    auto_return: 'approved',
-                    external_reference: 'order_' + Date.now()
+                        pedidoId: 'order_' + Date.now(),
+                        usuarioUid: firebase.auth().currentUser?.uid || 'guest',
+                        timestamp: new Date().toISOString(),
+                        tipoProducto: cart.length > 0 && cart[0].talle ? 'calzados' : 'perfumes'
+                    }
                 };
 
-                console.log('🌐 [CHECKOUT] Llamando Worker en:', WORKER_URL + MP_ENDPOINT);
-                console.log('📦 [CHECKOUT] Body:', JSON.stringify(requestBody, null, 2));
+                console.log('🌐 [CHECKOUT] ════════════════════════════════════════════════════════════');
+                console.log('🌐 [CHECKOUT] ENVIANDO AL WORKER - Estructura Completa');
+                console.log('🌐 [CHECKOUT] ════════════════════════════════════════════════════════════');
                 
-                // FETCH EXACTO
+                console.log('👤 [CHECKOUT] DATOS DEL CLIENTE:');
+                console.log('   ├─ UID:', requestBody.cliente.uid);
+                console.log('   ├─ Nombre:', requestBody.cliente.nombre, requestBody.cliente.apellido);
+                console.log('   ├─ Email:', requestBody.cliente.email);
+                console.log('   ├─ Teléfono:', requestBody.cliente.telefono);
+                console.log('   └─ Código Revendedor:', requestBody.cliente.codigoRevendedor);
+                
+                console.log('📮 [CHECKOUT] DATOS DE ENVÍO:');
+                console.log('   ├─ Dirección:', requestBody.envio.direccion);
+                console.log('   ├─ Ciudad:', requestBody.envio.ciudad);
+                console.log('   ├─ Provincia:', requestBody.envio.provincia);
+                console.log('   ├─ Código Postal:', requestBody.envio.codigoPostal);
+                console.log('   └─ Observaciones:', requestBody.envio.observaciones || '(vacío)');
+                
+                console.log('📦 [CHECKOUT] PRODUCTOS (' + requestBody.items.length + ' item(s)):');
+                requestBody.items.forEach((item, idx) => {
+                    console.log(`   ├─ [${idx + 1}] ${item.nombre}`);
+                    console.log(`   │  ├─ Cantidad: ${item.cantidad}`);
+                    console.log(`   │  ├─ Precio unitario: $${item.precioUnitario}`);
+                    console.log(`   │  └─ Precio total: $${item.precioTotal}`);
+                });
+                
+                console.log('💰 [CHECKOUT] TOTALES:');
+                console.log('   ├─ Subtotal: $' + requestBody.totales.subTotal);
+                console.log('   ├─ Descuento: $' + requestBody.totales.descuento);
+                console.log('   ├─ Total: $' + requestBody.totales.total);
+                console.log('   ├─ Ganancia: $' + requestBody.totales.gananciaTotal);
+                console.log('   └─ Moneda: ' + requestBody.totales.moneda);
+                
+                console.log('🔗 [CHECKOUT] METADATA:');
+                console.log('   ├─ Pedido ID:', requestBody.metadata.pedidoId);
+                console.log('   ├─ Usuario UID:', requestBody.metadata.usuarioUid);
+                console.log('   ├─ Tipo de producto:', requestBody.metadata.tipoProducto);
+                console.log('   └─ Timestamp:', requestBody.metadata.timestamp);
+                
+                console.log('🌐 [CHECKOUT] URL del Worker:', WORKER_URL + MP_ENDPOINT);
+                console.log('🌐 [CHECKOUT] ════════════════════════════════════════════════════════════');
+                
+                // FETCH EXACTO AL WORKER
                 const response = await fetch(WORKER_URL + MP_ENDPOINT, {
                     method: 'POST',
                     headers: {
@@ -4729,20 +4831,28 @@
                     body: JSON.stringify(requestBody)
                 });
 
-                console.log('📬 [CHECKOUT] Respuesta del Worker - Status:', response.status);
+                console.log('📬 [CHECKOUT] ════════════════════════════════════════════════════════════');
+                console.log('📬 [CHECKOUT] RESPUESTA DEL WORKER');
+                console.log('📬 [CHECKOUT] ════════════════════════════════════════════════════════════');
+                console.log('📬 [CHECKOUT] HTTP Status:', response.status);
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    console.error('❌ [CHECKOUT] Error del Worker:', errorData);
+                    console.error('❌ [CHECKOUT] Error del Worker:', JSON.stringify(errorData, null, 2));
                     throw new Error(errorData.error || 'Error al procesar el pago (Worker respondió con error)');
                 }
 
                 const data = await response.json();
-                console.log('✅ [CHECKOUT] Datos del Worker:', data);
+                console.log('✅ [CHECKOUT] Respuesta exitosa:');
+                console.log('   ├─ Preferencia ID:', data.preferenciaId);
+                console.log('   ├─ Init Point (producción):', data.init_point);
+                console.log('   └─ Sandbox Init Point (pruebas):', data.sandbox_init_point);
+                console.log('📬 [CHECKOUT] ════════════════════════════════════════════════════════════');
 
-                // REDIRECCIÓN FINAL
+                // REDIRECCIÓN FINAL A MERCADO PAGO
                 if (data.init_point) {
-                    console.log('🎯 [CHECKOUT] Redirigiendo a Mercado Pago:', data.init_point);
+                    console.log('🎯 [CHECKOUT] REDIRIGIENDO A MERCADO PAGO...');
+                    console.log('🎯 [CHECKOUT] URL:', data.init_point);
                     window.location.href = data.init_point;
                 } else {
                     throw new Error('No se obtuvo la URL de pago de Mercado Pago. Respuesta: ' + JSON.stringify(data));
