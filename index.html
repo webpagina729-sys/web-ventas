@@ -4672,16 +4672,22 @@
                     console.log('✅ [CHECKOUT] Botón deshabilitado, texto: Procesando...');
                 }
                 
-                // Guardar pedido en Firestore ANTES de Mercado Pago
-                console.log('📝 [CHECKOUT] Guardando pedido en Firestore...');
-                const pedidoId = await savePedidoToFirestore(checkout, cart, totales);
-                console.log('✅ [CHECKOUT] Pedido guardado con ID:', pedidoId);
-                
-                // Actualizar estadísticas del usuario
-                if (firebase.auth().currentUser) {
-                    console.log('📊 [CHECKOUT] Actualizando estadísticas...');
-                    await updateUserStatistics(firebase.auth().currentUser.uid);
-                    console.log('✅ [CHECKOUT] Estadísticas actualizadas');
+                // Intentar guardar en Firestore pero NO bloquear el pago si falla
+                try {
+                    console.log('📝 [CHECKOUT] Guardando pedido en Firestore...');
+                    const pedidoId = await savePedidoToFirestore(checkout, cart, totales);
+                    console.log('✅ [CHECKOUT] Pedido guardado con ID:', pedidoId);
+                    
+                    // Actualizar estadísticas del usuario
+                    if (firebase.auth().currentUser) {
+                        console.log('📊 [CHECKOUT] Actualizando estadísticas...');
+                        await updateUserStatistics(firebase.auth().currentUser.uid);
+                        console.log('✅ [CHECKOUT] Estadísticas actualizadas');
+                    }
+                } catch (firestoreError) {
+                    // Firestore falló pero el pago debe continuar igual
+                    console.warn('⚠️ [CHECKOUT] Firestore error (NO bloquea el pago):', firestoreError.message);
+                    console.warn('⚠️ [CHECKOUT] Continuando con Mercado Pago de todas formas...');
                 }
                 
                 // Estructura COMPLETA que el Worker espera
@@ -4933,25 +4939,21 @@
 
         // GENERAR CÓDIGO VENDEDOR ÚNICO
         function generarCodigoVendedor() {
-            // Código DETERMINISTA basado en el usuario actual o UID
-            // De esta forma, el código será siempre el mismo para un usuario
-            if (window.currentUser && window.currentUser.uid) {
-                // Si ya hay usuario, usar su UID
-                const uid = window.currentUser.uid;
-                const hash = uid.substring(0, 5).toUpperCase();
-                const timestamp = Math.floor(Date.now() / 10000000).toString().padStart(5, '0');
-                return `RW-${(parseInt(hash.charCodeAt(0)) + parseInt(hash.charCodeAt(1))).toString().padStart(5, '0')}`;
-            } else {
-                // Para nuevo registro, usar email como base
-                const email = document.getElementById('register-email')?.value || Date.now().toString();
-                const emailHash = email.substring(0, 3).toUpperCase();
-                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-                let codigo = 'RW-' + emailHash;
-                for (let i = 0; i < 2; i++) {
-                    codigo += chars.charAt(Math.floor(Math.random() * chars.length));
-                }
-                return codigo;
+            // Siempre basado en el UID para que sea determinista (NUNCA random)
+            const uid = (window.currentUser && window.currentUser.uid)
+                ? window.currentUser.uid
+                : (firebase.auth().currentUser ? firebase.auth().currentUser.uid : null);
+
+            if (uid) {
+                // Tomar 8 caracteres del UID y convertirlos a mayúsculas
+                const parte = uid.replace(/[^a-zA-Z0-9]/g, '').substring(0, 8).toUpperCase();
+                return 'RW-' + parte;
             }
+
+            // Solo para registro nuevo (uid todavía no existe): usar email
+            const email = document.getElementById('register-email')?.value || Date.now().toString();
+            const base = email.replace(/[^a-zA-Z0-9]/g, '').substring(0, 8).toUpperCase();
+            return 'RW-' + base;
         }
 
         // ABRIR MODAL LOGIN
@@ -5575,7 +5577,9 @@
             };
             
             // ✅ CRÍTICO: Guardar codigoVendedor en localStorage SIEMPRE
-            localStorage.setItem('codigoVendedorLocal', window.currentUser.codigoVendedor);
+            if (window.currentUser && window.currentUser.codigoVendedor) {
+                localStorage.setItem('codigoVendedorLocal', window.currentUser.codigoVendedor);
+            }
             
             // ✅ CRÍTICO: Si se generó código nuevo, actualizar Firestore en background
             if (!safeUserData.codigoVendedor || safeUserData.codigoVendedor.trim() === '') {
@@ -6132,7 +6136,7 @@
             }
             
             // Si está logueado pero no tiene código, generar uno
-            if (!window.currentUser?.codigoVendedor) {
+            if (window.currentUser && !window.currentUser.codigoVendedor) {
                 const nuevoCodigoVendedor = generarCodigoVendedor();
                 window.currentUser.codigoVendedor = nuevoCodigoVendedor;
                 localStorage.setItem('codigoVendedorLocal', nuevoCodigoVendedor);
