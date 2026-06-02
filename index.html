@@ -6153,6 +6153,9 @@
 
         // Cerrar modal de validación
         function cerrarModalCodigo() {
+            // Limpiar todos los timers cuando se cierra el modal
+            if (window.cleanupAllTimers) window.cleanupAllTimers();
+            
             const modal = document.getElementById('codigo-modal');
             if (modal) {
                 modal.classList.remove('active');
@@ -6311,12 +6314,17 @@
                     
                     const filterBtns = document.querySelectorAll('.filter-btn');
                     
-                    // Remover listeners previos de todos los botones
-                    filterBtns.forEach(btn => {
-                        if (window.shoeFilterHandler) {
-                            btn.removeEventListener('click', window.shoeFilterHandler);
-                        }
-                    });
+                    // Limpiar referencia anterior si existe
+                    if (window.shoeFilterHandlers) {
+                        filterBtns.forEach((btn, idx) => {
+                            if (window.shoeFilterHandlers[idx]) {
+                                btn.removeEventListener('click', window.shoeFilterHandlers[idx]);
+                            }
+                        });
+                    }
+                    
+                    // Crear array para guardar referencias de handlers
+                    window.shoeFilterHandlers = [];
                     
                     // Actualizar texto y agregar listener una sola vez por botón
                     filterBtns.forEach((btn, idx) => {
@@ -6325,11 +6333,12 @@
                         else if (idx === 2) btn.textContent = 'Niños';
                         else btn.style.display = 'none';
                         
-                        // Crear handler con closure para cada botón
-                        const shoeFilterHandler = function(e) {
+                        // Crear handler con closure para cada botón y guardar referencia
+                        const handler = function(e) {
                             filterShoesProducts(e.target.textContent.toLowerCase());
                         };
-                        btn.addEventListener('click', shoeFilterHandler);
+                        window.shoeFilterHandlers[idx] = handler;
+                        btn.addEventListener('click', handler);
                     });
                     
                     const sortSelect = document.getElementById('sort-select');
@@ -6360,12 +6369,17 @@
                     
                     const filterBtns = document.querySelectorAll('.filter-btn');
                     
-                    // Remover listeners previos de todos los botones
-                    filterBtns.forEach(btn => {
-                        if (window.perfumeFilterHandler) {
-                            btn.removeEventListener('click', window.perfumeFilterHandler);
-                        }
-                    });
+                    // Limpiar referencia anterior si existe
+                    if (window.perfumeFilterHandlers) {
+                        filterBtns.forEach((btn, idx) => {
+                            if (window.perfumeFilterHandlers[idx]) {
+                                btn.removeEventListener('click', window.perfumeFilterHandlers[idx]);
+                            }
+                        });
+                    }
+                    
+                    // Crear array para guardar referencias de handlers
+                    window.perfumeFilterHandlers = [];
                     
                     // Actualizar texto y agregar listener una sola vez por botón
                     filterBtns.forEach((btn, idx) => {
@@ -6375,11 +6389,12 @@
                         else if (idx === 3) btn.textContent = 'Unisex';
                         btn.style.display = 'inline-block';
                         
-                        // Crear handler con closure para cada botón
-                        const perfumeFilterHandler = function(e) {
+                        // Crear handler con closure para cada botón y guardar referencia
+                        const handler = function(e) {
                             filterProducts(e.target.textContent.toLowerCase());
                         };
-                        btn.addEventListener('click', perfumeFilterHandler);
+                        window.perfumeFilterHandlers[idx] = handler;
+                        btn.addEventListener('click', handler);
                     });
                     
                     const sortSelect = document.getElementById('sort-select');
@@ -6437,6 +6452,29 @@
 
         // Mostrar sección de nichos (Inicio)
         function mostrarInicio() {
+            // Limpiar todos los timers y listeners cuando se regresa a inicio
+            if (window.cleanupAllTimers) window.cleanupAllTimers();
+            
+            // Remover listeners de filtros
+            if (window.shoeFilterHandlers && window.shoeFilterHandlers.length > 0) {
+                const filterBtns = document.querySelectorAll('.filter-btn');
+                filterBtns.forEach((btn, idx) => {
+                    if (window.shoeFilterHandlers[idx]) {
+                        btn.removeEventListener('click', window.shoeFilterHandlers[idx]);
+                    }
+                });
+                window.shoeFilterHandlers = [];
+            }
+            if (window.perfumeFilterHandlers && window.perfumeFilterHandlers.length > 0) {
+                const filterBtns = document.querySelectorAll('.filter-btn');
+                filterBtns.forEach((btn, idx) => {
+                    if (window.perfumeFilterHandlers[idx]) {
+                        btn.removeEventListener('click', window.perfumeFilterHandlers[idx]);
+                    }
+                });
+                window.perfumeFilterHandlers = [];
+            }
+            
             const nichosSection = document.getElementById('nichos-section');
             const filtersContainer = document.getElementById('filters-container');
             const productsContainer = document.getElementById('products-container');
@@ -6569,6 +6607,35 @@
         }
 
         // Verificar expiración cada 5 minutos - Almacenar en variable para poder limpiarlo
+        // FUNCIÓN PARA LIMPIAR TODOS LOS INTERVALS Y TIMEOUTS
+        window.cleanupAllTimers = function() {
+            if (window.verificarExpiracionInterval) {
+                clearInterval(window.verificarExpiracionInterval);
+                window.verificarExpiracionInterval = null;
+            }
+            if (window.carruselAutoplay) {
+                clearInterval(window.carruselAutoplay);
+                window.carruselAutoplay = null;
+            }
+            if (window.carruselAutoplayShoesPreview) {
+                clearInterval(window.carruselAutoplayShoesPreview);
+                window.carruselAutoplayShoesPreview = null;
+            }
+            if (window.carruselInterval) {
+                clearInterval(window.carruselInterval);
+                window.carruselInterval = null;
+            }
+            if (window.searchProductsTimeout) {
+                clearTimeout(window.searchProductsTimeout);
+                window.searchProductsTimeout = null;
+            }
+            if (window.searchShoesProductsTimeout) {
+                clearTimeout(window.searchShoesProductsTimeout);
+                window.searchShoesProductsTimeout = null;
+            }
+        };
+        
+        // Crear interval solo si no existe
         if (!window.verificarExpiracionInterval) {
             window.verificarExpiracionInterval = setInterval(verificarExpiracionCodigo, 5 * 60 * 1000);
         }
@@ -6585,6 +6652,9 @@
             
             // Esperar a que Firebase esté listo
             setTimeout(() => {
+                // Limpiar cualquier timer previo
+                window.cleanupAllTimers();
+                
                 // Inicializar carruseles de nichos
                 inicializarCarrusel();
                 inicializarCarruselShoesPreview();
