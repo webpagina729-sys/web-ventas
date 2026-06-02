@@ -4044,13 +4044,15 @@
 
         function increaseQty() {
             currentQty++;
-            document.getElementById('qty-display').textContent = currentQty;
+            const qtyDisplay = document.getElementById('qty-display');
+            if (qtyDisplay) qtyDisplay.textContent = currentQty;
         }
 
         function decreaseQty() {
             if (currentQty > 1) {
                 currentQty--;
-                document.getElementById('qty-display').textContent = currentQty;
+                const qtyDisplay = document.getElementById('qty-display');
+                if (qtyDisplay) qtyDisplay.textContent = currentQty;
             }
         }
 
@@ -4329,12 +4331,14 @@
             closeDetails();
             document.getElementById('modal-cart').classList.add('active');
             currentQty = 1;
-            document.getElementById('qty-display').textContent = '1';
+            const qtyDisplay = document.getElementById('qty-display');
+            if (qtyDisplay) qtyDisplay.textContent = '1';
         }
 
         function updateCartCount() {
             const count = cart.reduce((sum, item) => sum + item.cantidad, 0);
-            document.getElementById('cart-count').textContent = count;
+            const cartCountEl = document.getElementById('cart-count');
+            if (cartCountEl) cartCountEl.textContent = count;
         }
 
         function updateCartDisplay() {
@@ -4377,8 +4381,10 @@
             const subtotal = totalPrice;
             const total = subtotal;
             
-            document.getElementById('cart-subtotal').textContent = `$${subtotal.toLocaleString()}`;
-            document.getElementById('cart-total').textContent = `$${total.toLocaleString()}`;
+            const cartSubtotalEl = document.getElementById('cart-subtotal');
+            const cartTotalEl = document.getElementById('cart-total');
+            if (cartSubtotalEl) cartSubtotalEl.textContent = `$${subtotal.toLocaleString()}`;
+            if (cartTotalEl) cartTotalEl.textContent = `$${total.toLocaleString()}`;
             
             const warningElement = document.getElementById('cart-warning');
             const payButton = document.getElementById('btn-pay');
@@ -4387,23 +4393,25 @@
                 // Para zapatillas: validar cantidad (mínimo 12 productos)
                 if (totalQty < MIN_ORDER_SHOES_QTY) {
                     const falta = MIN_ORDER_SHOES_QTY - totalQty;
-                    document.getElementById('cart-falta').textContent = `Falta: ${falta} ${falta === 1 ? 'producto' : 'productos'}`;
-                    warningElement.classList.remove('hidden');
-                    payButton.disabled = true;
+                    const cartFaltaEl = document.getElementById('cart-falta');
+                    if (cartFaltaEl) cartFaltaEl.textContent = `Falta: ${falta} ${falta === 1 ? 'producto' : 'productos'}`;
+                    if (warningElement) warningElement.classList.remove('hidden');
+                    if (payButton) payButton.disabled = true;
                 } else {
-                    warningElement.classList.add('hidden');
-                    payButton.disabled = false;
+                    if (warningElement) warningElement.classList.add('hidden');
+                    if (payButton) payButton.disabled = false;
                 }
             } else {
                 // Para perfumes: validar precio (mínimo $150,000)
                 const falta = Math.max(0, MIN_ORDER_PERFUMES - total);
                 if (falta > 0) {
-                    document.getElementById('cart-falta').textContent = `$${falta.toLocaleString()}`;
-                    warningElement.classList.remove('hidden');
-                    payButton.disabled = true;
+                    const cartFaltaEl = document.getElementById('cart-falta');
+                    if (cartFaltaEl) cartFaltaEl.textContent = `$${falta.toLocaleString()}`;
+                    if (warningElement) warningElement.classList.remove('hidden');
+                    if (payButton) payButton.disabled = true;
                 } else {
-                    warningElement.classList.add('hidden');
-                    payButton.disabled = false;
+                    if (warningElement) warningElement.classList.add('hidden');
+                    if (payButton) payButton.disabled = false;
                 }
             }
         }
@@ -4590,72 +4598,90 @@
 
         // Procesar pago una vez rellenado el formulario
         async function submitCheckoutAndPay() {
-            const total = cart.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+            const payButton = document.getElementById('btn-checkout-pay');
+            const originalButtonText = payButton ? payButton.textContent : 'Comprar Ahora';
             
-            // PRIMERO: Verificar que el usuario esté autenticado
-            const usuarioActual = firebase.auth().currentUser;
-            if (!usuarioActual) {
-                alert('❌ Debes estar autenticado para continuar');
-                return;
-            }
-            
-            // Obtener el código del usuario desde su documento de Firestore (fuente única de verdad)
-            let codigoRevendedorValido = null;
             try {
-                const docSnap = await firebase.firestore().collection('usuarios').doc(usuarioActual.uid).get();
+                console.log('🚀 [CHECKOUT] Iniciando proceso de compra...');
+                const total = cart.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
                 
-                if (docSnap.exists && docSnap.data().codigoVendedor) {
-                    codigoRevendedorValido = docSnap.data().codigoVendedor;
-                } else {
-                    alert('❌ No se encontró código de revendedor en tu perfil');
-                    return;
+                // PRIMERO: Verificar que el usuario esté autenticado
+                const usuarioActual = firebase.auth().currentUser;
+                console.log('🔍 [CHECKOUT] Usuario autenticado:', !!usuarioActual);
+                console.log('🔍 [CHECKOUT] UID:', usuarioActual?.uid);
+                console.log('🔍 [CHECKOUT] Conexión en línea:', navigator.onLine);
+                
+                if (!usuarioActual) {
+                    throw new Error('Debes estar autenticado para continuar');
                 }
-            } catch (error) {
-                console.error('Error obteniendo código de revendedor:', error);
-                alert('❌ Error al validar tu código de revendedor');
-                return;
-            }
-            
-            // Obtener datos del formulario
-            const checkout = {
-                nombre: document.getElementById('checkout-nombre').value.trim(),
-                apellido: document.getElementById('checkout-apellido').value.trim(),
-                email: document.getElementById('checkout-email').value.trim(),
-                telefono: document.getElementById('checkout-telefono').value.trim(),
-                provincia: document.getElementById('checkout-provincia').value.trim(),
-                ciudad: document.getElementById('checkout-ciudad').value.trim(),
-                cp: document.getElementById('checkout-cp').value.trim(),
-                direccion: document.getElementById('checkout-direccion').value.trim(),
-                observaciones: document.getElementById('checkout-observaciones').value.trim(),
-                codigoRevendedor: codigoRevendedorValido
-            };
+                
+                // Obtener el código del usuario desde su documento de Firestore (fuente única de verdad)
+                let codigoRevendedorValido = null;
+                console.log('🔍 [CHECKOUT] Buscando código en Firestore para UID:', usuarioActual.uid);
+                
+                try {
+                    const docSnap = await firebase.firestore().collection('usuarios').doc(usuarioActual.uid).get();
+                    console.log('🔍 [CHECKOUT] Documento existe:', docSnap.exists);
+                    
+                    if (docSnap.exists && docSnap.data().codigoVendedor) {
+                        codigoRevendedorValido = docSnap.data().codigoVendedor;
+                        console.log('✅ [CHECKOUT] Código obtenido de Firestore:', codigoRevendedorValido);
+                    } else {
+                        throw new Error('No se encontró código de revendedor en tu perfil. Contacta a soporte.');
+                    }
+                } catch (firebaseError) {
+                    console.error('❌ [CHECKOUT] Error Firestore:', firebaseError);
+                    console.error('Código de error:', firebaseError.code);
+                    throw new Error('Error al obtener código: ' + firebaseError.code);
+                }
+                
+                // Obtener datos del formulario
+                const checkout = {
+                    nombre: document.getElementById('checkout-nombre').value.trim(),
+                    apellido: document.getElementById('checkout-apellido').value.trim(),
+                    email: document.getElementById('checkout-email').value.trim(),
+                    telefono: document.getElementById('checkout-telefono').value.trim(),
+                    provincia: document.getElementById('checkout-provincia').value.trim(),
+                    ciudad: document.getElementById('checkout-ciudad').value.trim(),
+                    cp: document.getElementById('checkout-cp').value.trim(),
+                    direccion: document.getElementById('checkout-direccion').value.trim(),
+                    observaciones: document.getElementById('checkout-observaciones').value.trim(),
+                    codigoRevendedor: codigoRevendedorValido
+                };
 
-            // VALIDACIONES
-            if (!checkout.nombre) { alert('❌ Nombre requerido'); return; }
-            if (!checkout.apellido) { alert('❌ Apellido requerido'); return; }
-            if (!checkout.email) { alert('❌ Email requerido'); return; }
-            if (!checkout.telefono) { alert('❌ Teléfono requerido'); return; }
-            if (!checkout.provincia) { alert('❌ Provincia requerida'); return; }
-            if (!checkout.ciudad) { alert('❌ Ciudad requerida'); return; }
-            if (!checkout.cp) { alert('❌ Código postal requerido'); return; }
-            if (!checkout.direccion) { alert('❌ Dirección requerida'); return; }
+                // VALIDACIONES
+                if (!checkout.nombre) throw new Error('Nombre requerido');
+                if (!checkout.apellido) throw new Error('Apellido requerido');
+                if (!checkout.email) throw new Error('Email requerido');
+                if (!checkout.telefono) throw new Error('Teléfono requerido');
+                if (!checkout.provincia) throw new Error('Provincia requerida');
+                if (!checkout.ciudad) throw new Error('Ciudad requerida');
+                if (!checkout.cp) throw new Error('Código postal requerido');
+                if (!checkout.direccion) throw new Error('Dirección requerida');
+                
+                console.log('✅ [CHECKOUT] Validaciones pasadas');
 
             // Calcular totales y ganancias ANTES de enviar a pago
-            const totales = calculateOrderTotals(cart);
+                const totales = calculateOrderTotals(cart);
+                console.log('✅ [CHECKOUT] Totales calculados:', totales);
 
-            // Mostrar estado de carga
-            const payButton = document.getElementById('btn-checkout-pay');
-            const originalText = payButton.textContent;
-            payButton.disabled = true;
-            payButton.textContent = 'Procesando...';
-
-            try {
+                // Mostrar estado de carga
+                if (payButton) {
+                    payButton.disabled = true;
+                    payButton.textContent = 'Procesando...';
+                    console.log('✅ [CHECKOUT] Botón deshabilitado, texto: Procesando...');
+                }
+                
                 // Guardar pedido en Firestore ANTES de Mercado Pago
+                console.log('📝 [CHECKOUT] Guardando pedido en Firestore...');
                 const pedidoId = await savePedidoToFirestore(checkout, cart, totales);
+                console.log('✅ [CHECKOUT] Pedido guardado con ID:', pedidoId);
                 
                 // Actualizar estadísticas del usuario
                 if (firebase.auth().currentUser) {
+                    console.log('📊 [CHECKOUT] Actualizando estadísticas...');
                     await updateUserStatistics(firebase.auth().currentUser.uid);
+                    console.log('✅ [CHECKOUT] Estadísticas actualizadas');
                 }
                 
                 // Estructura EXACTA que el Worker espera
@@ -4691,6 +4717,9 @@
                     external_reference: 'order_' + Date.now()
                 };
 
+                console.log('🌐 [CHECKOUT] Llamando Worker en:', WORKER_URL + MP_ENDPOINT);
+                console.log('📦 [CHECKOUT] Body:', JSON.stringify(requestBody, null, 2));
+                
                 // FETCH EXACTO
                 const response = await fetch(WORKER_URL + MP_ENDPOINT, {
                     method: 'POST',
@@ -4700,23 +4729,29 @@
                     body: JSON.stringify(requestBody)
                 });
 
+                console.log('📬 [CHECKOUT] Respuesta del Worker - Status:', response.status);
+
                 if (!response.ok) {
                     const errorData = await response.json();
-                    console.error('Error al procesar pago:', errorData);
-                    throw new Error(errorData.error || 'Error al procesar el pago');
+                    console.error('❌ [CHECKOUT] Error del Worker:', errorData);
+                    throw new Error(errorData.error || 'Error al procesar el pago (Worker respondió con error)');
                 }
 
                 const data = await response.json();
+                console.log('✅ [CHECKOUT] Datos del Worker:', data);
 
                 // REDIRECCIÓN FINAL
                 if (data.init_point) {
+                    console.log('🎯 [CHECKOUT] Redirigiendo a Mercado Pago:', data.init_point);
                     window.location.href = data.init_point;
                 } else {
-                    throw new Error('No se obtuvo la URL de pago de Mercado Pago');
+                    throw new Error('No se obtuvo la URL de pago de Mercado Pago. Respuesta: ' + JSON.stringify(data));
                 }
 
             } catch (error) {
-                console.error('Error al pagar:', error.message);
+                console.error('❌ [CHECKOUT] ERROR COMPLETO:', error);
+                console.error('Mensaje:', error.message);
+                console.error('Stack:', error.stack);
                 
                 alert(
                     '❌ Error al procesar el pago\n\n' +
@@ -4725,10 +4760,14 @@
                     'Endpoint: ' + MP_ENDPOINT + '\n\n' +
                     'Abre DevTools (F12) → Console para más detalles'
                 );
-                
-                payButton.disabled = false;
-                payButton.textContent = originalText;
-            }
+            } finally {
+                // SIEMPRE restaurar el botón, sin excepciones
+                console.log('🔄 [CHECKOUT] Restaurando estado del botón...');
+                if (payButton) {
+                    payButton.disabled = false;
+                    payButton.textContent = originalButtonText;
+                    console.log('✅ [CHECKOUT] Botón restaurado:', originalButtonText);
+                }
         }
 
         function closeCheckout() {
