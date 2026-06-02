@@ -3367,10 +3367,6 @@
 
     <script>
         // Verificar que los elementos críticos existan en el DOM
-        document.addEventListener('DOMContentLoaded', () => {
-            // DOM cargado
-        });
-        
         // ═══════════════════════════════════════════════════════════════════════════
         // 🔧 CONFIGURACIÓN - FIREBASE AUTHENTICATION
         // ═══════════════════════════════════════════════════════════════════════════
@@ -4031,14 +4027,6 @@
             document.getElementById('modal-details-info').textContent = currentProduct.info;
             document.getElementById('modal-details-moment').textContent = currentProduct.momento;
             document.getElementById('modal-details').classList.add('active');
-        }
-
-        function closeDetails() {
-            document.getElementById('modal-details').classList.remove('active');
-        }
-
-        function closeDetailsIfClickBackground(e) {
-            if (e.target === document.getElementById('modal-details')) closeDetails();
         }
 
         function closeDetails() {
@@ -5778,27 +5766,30 @@
         }
 
         // LISTENER DE AUTENTICACIÓN - MONITOREAR CAMBIOS EN SESIÓN
-        firebase.auth().onAuthStateChanged(async (user) => {
-            
-            if (user) {
+        if (!window.authListenerRegistered) {
+            window.authListenerRegistered = true;
+            firebase.auth().onAuthStateChanged(async (user) => {
                 
-                // Intentar cargar datos de Firestore CON REINTENTOS
-                const userData = await loadUserDataFromFirestoreWithRetry(user.uid);
-                
-                // Inicializar sesión con datos de Firestore o datos mínimos
-                initializeUserSession(userData, user);
-                
-            } else {
-                // Usuario no autenticado: limpiar interfaz
-                window.currentUser = null;
-                updateUIForAuthentication(false);
-                const loginBtn = document.querySelector('.login-btn');
-                if (loginBtn) {
-                    loginBtn.textContent = 'Iniciar sesión';
-                    loginBtn.onclick = abrirLogin;
+                if (user) {
+                    
+                    // Intentar cargar datos de Firestore CON REINTENTOS
+                    const userData = await loadUserDataFromFirestoreWithRetry(user.uid);
+                    
+                    // Inicializar sesión con datos de Firestore o datos mínimos
+                    initializeUserSession(userData, user);
+                    
+                } else {
+                    // Usuario no autenticado: limpiar interfaz
+                    window.currentUser = null;
+                    updateUIForAuthentication(false);
+                    const loginBtn = document.querySelector('.login-btn');
+                    if (loginBtn) {
+                        loginBtn.textContent = 'Iniciar sesión';
+                        loginBtn.onclick = abrirLogin;
+                    }
                 }
-            }
-        });
+            });
+        }
     </script>
 
     <!-- MODAL: VALIDACIÓN CÓDIGO REVENDEDOR -->
@@ -5907,30 +5898,20 @@
         }
 
         // Auto-deslizar carrusel cada 5 segundos
-        let carruselInterval = null;
+        window.carruselInterval = null;
         function iniciarAutoDesliz() {
-            if (carruselInterval) clearInterval(carruselInterval);
-            carruselInterval = setInterval(() => {
+            if (window.carruselInterval) clearInterval(window.carruselInterval);
+            window.carruselInterval = setInterval(() => {
                 if (productosCarrusel.length > 1) {
                     carruselSiguiente();
                 }
             }, 5000);
         }
         function detenerAutoDesliz() {
-            if (carruselInterval) clearInterval(carruselInterval);
+            if (window.carruselInterval) clearInterval(window.carruselInterval);
         }
 
-        // Agregar listeners para pausar en hover
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(() => {
-                const container = document.getElementById('carrusel-container');
-                if (container) {
-                    container.addEventListener('mouseenter', detenerAutoDesliz);
-                    container.addEventListener('mouseleave', iniciarAutoDesliz);
-                    iniciarAutoDesliz();
-                }
-            }, 50);  // Reducido de 100 a 50
-        });
+        // Agregar listeners para pausar en hover - Se agregará en el DOMContentLoaded consolidado
 
         // Verificar si ya está logueado y mostrar sección de nichos
         function actualizarVistaNichos() {
@@ -5940,7 +5921,7 @@
             if (!window.isChangingCatalog) {
                 if (window.carruselAutoplay) clearInterval(window.carruselAutoplay);
                 if (window.carruselAutoplayShoesPreview) clearInterval(window.carruselAutoplayShoesPreview);
-                if (typeof carruselInterval !== 'undefined' && carruselInterval) clearInterval(carruselInterval);
+                if (window.carruselInterval) clearInterval(window.carruselInterval);
             }
             
             if (window.currentUser) {
@@ -6178,19 +6159,26 @@
                     }
                     
                     const filterBtns = document.querySelectorAll('.filter-btn');
+                    
+                    // Remover listeners previos de todos los botones
+                    filterBtns.forEach(btn => {
+                        if (window.shoeFilterHandler) {
+                            btn.removeEventListener('click', window.shoeFilterHandler);
+                        }
+                    });
+                    
+                    // Actualizar texto y agregar listener una sola vez por botón
                     filterBtns.forEach((btn, idx) => {
                         if (idx === 0) btn.textContent = 'Todo';
                         else if (idx === 1) btn.textContent = 'Adultos';
                         else if (idx === 2) btn.textContent = 'Niños';
                         else btn.style.display = 'none';
                         
-                        if (window.shoeFilterHandler) {
-                            btn.removeEventListener('click', window.shoeFilterHandler);
-                        }
-                        window.shoeFilterHandler = function(e) {
+                        // Crear handler con closure para cada botón
+                        const shoeFilterHandler = function(e) {
                             filterShoesProducts(e.target.textContent.toLowerCase());
                         };
-                        btn.addEventListener('click', window.shoeFilterHandler);
+                        btn.addEventListener('click', shoeFilterHandler);
                     });
                     
                     const sortSelect = document.getElementById('sort-select');
@@ -6220,6 +6208,15 @@
                     }
                     
                     const filterBtns = document.querySelectorAll('.filter-btn');
+                    
+                    // Remover listeners previos de todos los botones
+                    filterBtns.forEach(btn => {
+                        if (window.perfumeFilterHandler) {
+                            btn.removeEventListener('click', window.perfumeFilterHandler);
+                        }
+                    });
+                    
+                    // Actualizar texto y agregar listener una sola vez por botón
                     filterBtns.forEach((btn, idx) => {
                         if (idx === 0) btn.textContent = 'Todos';
                         else if (idx === 1) btn.textContent = 'Hombre';
@@ -6227,13 +6224,11 @@
                         else if (idx === 3) btn.textContent = 'Unisex';
                         btn.style.display = 'inline-block';
                         
-                        if (window.perfumeFilterHandler) {
-                            btn.removeEventListener('click', window.perfumeFilterHandler);
-                        }
-                        window.perfumeFilterHandler = function(e) {
+                        // Crear handler con closure para cada botón
+                        const perfumeFilterHandler = function(e) {
                             filterProducts(e.target.textContent.toLowerCase());
                         };
-                        btn.addEventListener('click', window.perfumeFilterHandler);
+                        btn.addEventListener('click', perfumeFilterHandler);
                     });
                     
                     const sortSelect = document.getElementById('sort-select');
@@ -6337,6 +6332,22 @@
                 if (portadaDosSection) portadaDosSection.style.display = 'none';
                 if (revendSection) revendSection.style.display = 'none';
                 
+                // Limpiar timeouts de búsqueda pendientes
+                if (window.searchProductsTimeout) {
+                    clearTimeout(window.searchProductsTimeout);
+                    window.searchProductsTimeout = null;
+                }
+                if (window.searchShoesProductsTimeout) {
+                    clearTimeout(window.searchShoesProductsTimeout);
+                    window.searchShoesProductsTimeout = null;
+                }
+                
+                // Limpiar intervalo del carrusel principal
+                if (window.carruselInterval) {
+                    clearInterval(window.carruselInterval);
+                    window.carruselInterval = null;
+                }
+                
                 // Reinicializar catálogo
                 window.currentCatalog = null;
                 
@@ -6368,14 +6379,7 @@
             }
         }
 
-        // Verificar sesión al cargar la página
-        document.addEventListener('DOMContentLoaded', function() {
-            // Esperar a que Firebase esté listo
-            setTimeout(() => {
-                actualizarVistaNichos();
-                actualizarBotonesRevend();
-            }, 300);  // Reducido de 500 a 300
-        });
+        // DOMContentLoaded consolidado - Se ejecutará una única vez
 
         // También actualizar cuando el usuario se loguea/desloguea
         // Interceptar el initializeUserSession existente
@@ -6413,12 +6417,46 @@
             }
         }
 
-        // Verificar expiración cada 5 minutos
-        setInterval(verificarExpiracionCodigo, 5 * 60 * 1000);
+        // Verificar expiración cada 5 minutos - Almacenar en variable para poder limpiarlo
+        if (!window.verificarExpiracionInterval) {
+            window.verificarExpiracionInterval = setInterval(verificarExpiracionCodigo, 5 * 60 * 1000);
+        }
 
         // ════════════════════════════════════════════════
         // SCRIPT DE VERIFICACIÓN PARA USUARIO
         // ════════════════════════════════════════════════
+        
+        // DOMContentLoaded único y consolidado
+        document.addEventListener('DOMContentLoaded', function(event) {
+            // Ejecutar solo una vez
+            if (window.domLoaded) return;
+            window.domLoaded = true;
+            
+            // Esperar a que Firebase esté listo
+            setTimeout(() => {
+                // Inicializar carruseles de nichos
+                inicializarCarrusel();
+                inicializarCarruselShoesPreview();
+                
+                // Actualizar vista de nichos
+                actualizarVistaNichos();
+                actualizarBotonesRevend();
+                
+                // Agregar listeners para carrusel principal
+                const container = document.getElementById('carrusel-container');
+                if (container) {
+                    // Remover listeners previos si existen (por si acaso)
+                    container.removeEventListener('mouseenter', detenerAutoDesliz);
+                    container.removeEventListener('mouseleave', iniciarAutoDesliz);
+                    
+                    // Agregar nuevos listeners
+                    container.addEventListener('mouseenter', detenerAutoDesliz);
+                    container.addEventListener('mouseleave', iniciarAutoDesliz);
+                    iniciarAutoDesliz();
+                }
+            }, 300);
+        }, { once: true });
+        
         window.verificarPlataforma = function() {
             // Diagnóstico de la plataforma
             
