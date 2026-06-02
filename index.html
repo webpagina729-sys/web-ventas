@@ -2978,32 +2978,31 @@
     <!-- MODAL DETALLES PERFUMES -->
     <div class="modal-details" id="modal-details" onclick="closeDetailsIfClickBackground(event)">
         <div class="modal-details-content">
-            <button class="modal-details-close" onclick="closeDetails()">✕</button>
-            <div style="width: 100%; display: flex; flex-direction: column;">
+            <div style="width: 100%; display: flex; flex-direction: column; align-items: center; text-align: center;">
                 <div style="width: 100%; margin-bottom: 20px;">
                     <img id="modal-details-image" src="" alt="Producto" style="width: 100%; border-radius: 8px; object-fit: cover;">
                 </div>
-                <div style="width: 100%;">
-                    <div class="modal-details-name" id="modal-details-name" style="font-size: 24px; font-weight: 600; margin-bottom: 15px; color: var(--text);"></div>
-                    <div class="modal-details-price" style="margin-bottom: 15px;">
+                <div style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+                    <div class="modal-details-name" id="modal-details-name" style="font-size: 24px; font-weight: 600; margin-bottom: 15px; color: var(--text); width: 100%;"></div>
+                    <div class="modal-details-price" style="margin-bottom: 20px; width: 100%;">
                         <div class="price-current" id="modal-details-price" style="font-size: 28px; font-weight: 700; color: var(--primary); margin-bottom: 5px;"></div>
                         <div class="price-original" id="modal-details-price-original" style="font-size: 14px; color: var(--text-light); text-decoration: line-through;"></div>
                     </div>
-                    <div class="modal-details-section" style="margin-bottom: 15px;">
+                    <div class="modal-details-section" style="margin-bottom: 15px; width: 100%; text-align: left;">
                         <div class="modal-details-section-title" style="font-weight: 600; margin-bottom: 10px; color: var(--text);">Características</div>
                         <ul class="characteristics-list" id="modal-details-characteristics" style="margin: 0; padding-left: 20px; color: var(--text-light);"></ul>
                     </div>
-                    <div class="modal-details-section" style="margin-bottom: 15px;">
+                    <div class="modal-details-section" style="margin-bottom: 15px; width: 100%; text-align: left;">
                         <div class="modal-details-section-title" style="font-weight: 600; margin-bottom: 10px; color: var(--text);">Información</div>
                         <div class="modal-details-section-content" id="modal-details-info" style="color: var(--text); line-height: 1.5;"></div>
                     </div>
-                    <div class="modal-details-section" style="margin-bottom: 20px;">
+                    <div class="modal-details-section" style="margin-bottom: 25px; width: 100%; text-align: left;">
                         <div class="modal-details-section-title" style="font-weight: 600; margin-bottom: 10px; color: var(--text);">Momento Ideal</div>
                         <div class="modal-details-section-content" id="modal-details-moment" style="color: var(--text-light); font-size: 12px; font-style: italic;"></div>
                     </div>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="add-to-cart-modal" onclick="addToCartFromModal()" style="flex: 1; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Agregar al Carrito</button>
-                        <button class="btn-secondary" onclick="closeDetails()" style="flex: 1; padding: 12px; background: var(--border); color: var(--text); border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Cerrar</button>
+                    <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 300px;">
+                        <button class="add-to-cart-modal" onclick="addToCartFromModal()" style="width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Agregar Producto</button>
+                        <button class="btn-secondary" onclick="closeDetails()" style="width: 100%; padding: 12px; background: var(--border); color: var(--text); border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Cerrar</button>
                     </div>
                 </div>
             </div>
@@ -3013,7 +3012,6 @@
     <!-- MODAL DETALLES ZAPATILLAS -->
     <div class="modal-details modal-details-shoes" id="modal-details-shoes" onclick="closeDetailsShoesIfClickBackground(event)">
         <div class="modal-details-content">
-            <button class="modal-details-close" onclick="closeDetailsShoes()">✕</button>
             <div id="details-content-shoes"></div>
         </div>
     </div>
@@ -5616,29 +5614,29 @@
             }
             
             detailsContent.innerHTML = `
-                <div style="width: 100%; display: flex; flex-direction: column;">
+                <div style="width: 100%; display: flex; flex-direction: column; align-items: center; text-align: center;">
                     <div style="width: 100%; margin-bottom: 20px;">
                         <img src="${BASE_IMAGE_URL}${product.imagen}" alt="${product.nombre}" style="width: 100%; border-radius: 8px; object-fit: cover;" onerror="this.src='portadauno.png'">
                     </div>
-                    <div style="width: 100%;">
-                        <h2 style="margin: 0 0 15px 0; color: var(--text); font-size: 24px;">${product.nombre}</h2>
+                    <div style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+                        <h2 style="margin: 0 0 15px 0; color: var(--text); font-size: 24px; width: 100%;">${product.nombre}</h2>
                         
-                        <div style="margin: 20px 0;">
+                        <div style="margin: 20px 0; width: 100%;">
                             <div style="font-size: 28px; font-weight: 700; color: var(--primary); margin-bottom: 5px;">$${product.precio.toLocaleString()}</div>
                             <div style="font-size: 14px; color: var(--text-light); text-decoration: line-through;">$${product.precioOriginal.toLocaleString()}</div>
                         </div>
                         
                         ${caracteristicasHtml}
                         
-                        <div style="background: var(--gray-light); padding: 15px; border-radius: 8px; margin: 20px 0;">
+                        <div style="background: var(--gray-light); padding: 15px; border-radius: 8px; margin: 20px 0; width: 100%; text-align: left;">
                             <p style="margin: 0; color: var(--text); line-height: 1.5;">${product.info}</p>
                         </div>
                         
                         ${tallesHtml}
                         
-                        <div style="margin-top: 30px; display: flex; gap: 10px;">
-                            <button class="btn-primary" onclick="addToCart(${product.id})" style="flex: 1; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Agregar al carrito</button>
-                            <button class="btn-secondary" onclick="closeDetailsShoes()" style="flex: 1; padding: 12px; background: var(--border); color: var(--text); border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Cerrar</button>
+                        <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 300px;">
+                            <button class="btn-primary" onclick="addToCart(${product.id})" style="width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Agregar Producto</button>
+                            <button class="btn-secondary" onclick="closeDetailsShoes()" style="width: 100%; padding: 12px; background: var(--border); color: var(--text); border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Cerrar</button>
                         </div>
                     </div>
                 </div>
