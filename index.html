@@ -3794,6 +3794,13 @@
             { id: 112, nombre: "NEW BALANCE 9060 WHITE", imagen: "newbalance.png", precio: 37000, precioOriginal: 37000, talle: ["38", "39", "40", "41", "42", "43"], caracteristicas: ["zapatilla brasilera adulto", "modelo New Balance 9060", "colorway blanco", "estilo urbano/moderno"], info: "New Balance 9060 en blanco, zapatilla moderna y cómoda para uso diario.", momento: "Urbana / tarde / noche / uso diario" }
         ];
 
+        // Agregar categoría 'adultos' a todos los productos de zapatillas
+        window.shoes.forEach(shoe => {
+            if (!shoe.categoria) {
+                shoe.categoria = 'adultos';
+            }
+        });
+
         // ✅ Variables GLOBALES para que no se pierdan
         window.cart = [];
         window.currentFilter = 'todos';
@@ -3804,7 +3811,7 @@
         
         // Variables para ZAPATILLAS
         window.currentShoesCategory = 'adultos';
-        window.currentShoesFilter = 'todos';
+        window.currentShoesFilter = 'todo';
         window.currentShoesSort = 'default';
         window.currentShoesSearch = '';
         window.shoesItemsDisplayed = 6;
@@ -3841,8 +3848,8 @@
         }
 
         function changeSort(sortValue) {
-            currentSort = sortValue;
-            itemsDisplayed = 6;
+            window.currentSort = sortValue;
+            window.itemsDisplayed = 6;
             renderProducts();
         }
 
@@ -3919,6 +3926,11 @@
             
             // Filtrar por categoría (Adultos/Niños)
             let filtered = window.shoes || [];
+            
+            // Si hay un filtro activo (que no sea 'todo'), aplicarlo
+            if (window.currentShoesFilter && window.currentShoesFilter !== 'todo') {
+                filtered = filtered.filter(p => p.categoria === window.currentShoesFilter);
+            }
             
             // Aplicar búsqueda
             if (window.currentShoesSearch.trim() !== '') {
@@ -4574,6 +4586,22 @@
                 console.error('Error validando código de revendedor:', error);
                 return false;
             }
+        }
+
+        // Función centralizada para obtener el código de revendedor del usuario logueado desde Firestore
+        async function getCodigoVendedorActual() {
+            const usuarioActual = firebase.auth().currentUser;
+            if (!usuarioActual) return null;
+            
+            try {
+                const doc = await firebase.firestore().collection('usuarios').doc(usuarioActual.uid).get();
+                if (doc.exists) {
+                    return doc.data().codigoVendedor || null;
+                }
+            } catch (error) {
+                console.error('Error obteniendo código de revendedor:', error);
+            }
+            return null;
         }
 
         // Procesar pago una vez rellenado el formulario
@@ -5563,9 +5591,9 @@
                 tallesHtml = `
                     <div style="margin-top: 20px;">
                         <label style="display: block; margin-bottom: 10px; font-weight: 600; color: var(--text);">Seleccionar talle:</label>
-                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <div style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px;">
                             ${product.talle.map((talle, idx) => `
-                                <button class="size-btn" onclick="selectTalle(this, '${talle}')" style="padding: 8px 15px; border: 2px solid var(--border); border-radius: 4px; background: white; cursor: pointer; font-weight: 600; color: var(--text);">
+                                <button class="size-btn" onclick="selectTalle(this, '${talle}')" style="padding: 8px 15px; border: 2px solid var(--border); border-radius: 4px; background: white; cursor: pointer; font-weight: 600; color: var(--text); flex-shrink: 0;">
                                     ${talle}
                                 </button>
                             `).join('')}
@@ -6030,24 +6058,28 @@
             btnValidar.disabled = true;
 
             try {
-                // ESTRATEGIA 1: Si el usuario está logueado, verificar su código directo
+                // ESTRATEGIA 1: Si el usuario está logueado, verificar su código directo desde Firestore
                 const usuarioActual = firebase.auth().currentUser;
-                if (usuarioActual && window.currentUser?.codigoVendedor) {
-                    // Normalizar igual: eliminar espacios y MAYÚSCULAS
-                    const codigoDelUsuario = window.currentUser.codigoVendedor.trim().replace(/\s+/g, '').toUpperCase();
+                if (usuarioActual) {
+                    const codigoDelFirestore = await getCodigoVendedorActual();
                     
-                    if (codigo === codigoDelUsuario) {
-                        error.classList.remove('show');
+                    // Normalizar igual: eliminar espacios y MAYÚSCULAS
+                    if (codigoDelFirestore) {
+                        const codigoDelUsuario = codigoDelFirestore.trim().replace(/\s+/g, '').toUpperCase();
                         
-                        // Guardar en localStorage
-                        localStorage.setItem('codigoRevendedorValidado', codigo);
-                        localStorage.setItem('codigoRevendedorValidadoFecha', new Date().getTime());
-                        
-                        window.codigoValidado = true;
-                        
-                        cerrarModalCodigo();
-                        mostrarCatalogo();
-                        return;
+                        if (codigo === codigoDelUsuario) {
+                            error.classList.remove('show');
+                            
+                            // Guardar en localStorage
+                            localStorage.setItem('codigoRevendedorValidado', codigo);
+                            localStorage.setItem('codigoRevendedorValidadoFecha', new Date().getTime());
+                            
+                            window.codigoValidado = true;
+                            
+                            cerrarModalCodigo();
+                            mostrarCatalogo();
+                            return;
+                        }
                     }
                 }
 
@@ -6148,7 +6180,12 @@
                     }
                     
                     const filterBtns = document.querySelectorAll('.filter-btn');
-                    filterBtns.forEach(btn => {
+                    filterBtns.forEach((btn, idx) => {
+                        if (idx === 0) btn.textContent = 'Todo';
+                        else if (idx === 1) btn.textContent = 'Adultos';
+                        else if (idx === 2) btn.textContent = 'Niños';
+                        else btn.style.display = 'none';
+                        
                         if (window.shoeFilterHandler) {
                             btn.removeEventListener('click', window.shoeFilterHandler);
                         }
@@ -6185,7 +6222,13 @@
                     }
                     
                     const filterBtns = document.querySelectorAll('.filter-btn');
-                    filterBtns.forEach(btn => {
+                    filterBtns.forEach((btn, idx) => {
+                        if (idx === 0) btn.textContent = 'Todos';
+                        else if (idx === 1) btn.textContent = 'Hombre';
+                        else if (idx === 2) btn.textContent = 'Mujer';
+                        else if (idx === 3) btn.textContent = 'Unisex';
+                        btn.style.display = 'inline-block';
+                        
                         if (window.perfumeFilterHandler) {
                             btn.removeEventListener('click', window.perfumeFilterHandler);
                         }
