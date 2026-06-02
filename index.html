@@ -3803,9 +3803,10 @@
         window.currentShoesSort = 'default';
         window.currentShoesSearch = '';
         window.shoesItemsDisplayed = 6;
-        window.currentCatalog = 'perfumes';  // 'perfumes' o 'calzados'
+        window.currentCatalog = null;  // null = mostrar NICHOS, 'perfumes' o 'calzados' = mostrar catálogo
         window.carruselAutoplay = null;  // Para autoplay del carrusel
         window.carruselIndex = 0;
+        window.isChangingCatalog = false;  // Flag para evitar cambios concurrentes
         
         // ✅ Referencia corta para compatibilidad
         let cart = window.cart;
@@ -5970,17 +5971,19 @@
                     container.addEventListener('mouseleave', iniciarAutoDesliz);
                     iniciarAutoDesliz();
                 }
-            }, 100);
+            }, 50);  // Reducido de 100 a 50
         });
 
         // Verificar si ya está logueado y mostrar sección de nichos
         function actualizarVistaNichos() {
             const nichosSection = document.getElementById('nichos-section');
             
-            // Limpiar intervalos antes de reinicializar
-            if (window.carruselAutoplay) clearInterval(window.carruselAutoplay);
-            if (window.carruselAutoplayShoesPreview) clearInterval(window.carruselAutoplayShoesPreview);
-            if (carruselInterval) clearInterval(carruselInterval);
+            // Limpiar intervalos antes de reinicializar (solo si no hay cambio en progreso)
+            if (!window.isChangingCatalog) {
+                if (window.carruselAutoplay) clearInterval(window.carruselAutoplay);
+                if (window.carruselAutoplayShoesPreview) clearInterval(window.carruselAutoplayShoesPreview);
+                if (typeof carruselInterval !== 'undefined' && carruselInterval) clearInterval(carruselInterval);
+            }
             
             if (window.currentUser) {
                 // Verificar si ya validó el código (localStorage)
@@ -5995,8 +5998,8 @@
                         nichosSection.classList.remove('hide');
                     }
                     // Inicializar carruseles
-                    setTimeout(inicializarCarrusel, 100);
-                    setTimeout(inicializarCarruselShoesPreview, 150);
+                    setTimeout(inicializarCarrusel, 50);
+                    setTimeout(inicializarCarruselShoesPreview, 100);
                 }
             } else {
                 // Usuario NO logueado: mostrar nichos
@@ -6004,17 +6007,23 @@
                     nichosSection.classList.remove('hide');
                 }
                 // IMPORTANTE: Inicializar carruseles también cuando no hay usuario logueado
-                setTimeout(inicializarCarrusel, 100);
-                setTimeout(inicializarCarruselShoesPreview, 150);
+                setTimeout(inicializarCarrusel, 50);
+                setTimeout(inicializarCarruselShoesPreview, 100);
             }
         }
 
         // Abrir modal de validación de código
         function abrirModalCodigo() {
-            // Si no se especificó catálogo, mantener en nichos (no asumir perfumes)
-            // if (!window.currentCatalog) {
-            //     window.currentCatalog = 'perfumes';
-            // }
+            // Evitar llamadas concurrentes
+            if (window.isChangingCatalog) {
+                console.warn('⚠️ [AbrirModalCodigo] Cambio en progreso. Ignorando llamada.');
+                return;
+            }
+            
+            // Establecer catálogo de Perfumes si no está establecido
+            if (!window.currentCatalog) {
+                window.currentCatalog = 'perfumes';
+            }
             
             console.log('🔓 [AbrirModalCodigo] Iniciando...');
             console.log('🔓 [AbrirModalCodigo] Usuario logueado:', !!firebase.auth().currentUser);
@@ -6055,10 +6064,11 @@
             
             if (modal) {
                 modal.classList.add('active');
-                input.focus();
-                input.value = '';
-                error.classList.remove('show');
-                error.textContent = '';
+                if (input) {
+                    input.focus();
+                    input.value = '';
+                }
+                if (error) error.classList.remove('show');
                 console.log('✅ [AbrirModalCodigo] Modal abierto. Código del usuario:', window.currentUser?.codigoVendedor);
             }
         }
@@ -6069,6 +6079,17 @@
             if (modal) {
                 modal.classList.remove('active');
             }
+        }
+        
+        // Función para volver a nichos sin perder sesión
+        function volverANichos() {
+            if (window.isChangingCatalog) {
+                console.warn('⚠️ Ya hay un cambio en progreso');
+                return;
+            }
+            window.currentCatalog = null;
+            ocultarCatalogo();
+            cerrarModalCodigo();
         }
 
         // Validar código de revendedor
@@ -6219,82 +6240,96 @@
 
         // Mostrar catálogo y ocultar nichos
         function mostrarCatalogo() {
-            const nichosSection = document.getElementById('nichos-section');
-            const filtersContainer = document.getElementById('filters-container');
-            const productsContainer = document.getElementById('products-container');
-            const paginationSection = document.getElementById('pagination-section');
-            const portadaDosSection = document.getElementById('portada-dos-section');
-            const revendSection = document.querySelector('.revend-section');
-            const shoesCategorySection = document.getElementById('shoes-category-section');
-
-            if (nichosSection) nichosSection.classList.add('hide');
-            
-            if (window.currentCatalog === 'calzados') {
-                // Mostrar catálogo de Calzados con interfaz similar a Perfumes
-                if (shoesCategorySection) shoesCategorySection.style.display = 'block';
-                if (filtersContainer) filtersContainer.classList.remove('hidden');
-                if (productsContainer) productsContainer.classList.remove('hidden');
-                if (paginationSection) paginationSection.classList.remove('hidden');
-                
-                // Cambiar placeholder de búsqueda
-                const searchInput = document.getElementById('products-search');
-                if (searchInput) {
-                    searchInput.placeholder = 'Buscar zapatillas...';
-                    searchInput.onkeyup = (e) => searchShoesProducts(e.target.value);
-                }
-                
-                // Actualizar botones de filtro
-                const filterBtns = document.querySelectorAll('.filter-btn');
-                filterBtns.forEach(btn => {
-                    btn.onclick = function() {
-                        filterShoesProducts(this.textContent.toLowerCase());
-                    };
-                });
-                
-                // Actualizar select de ordenamiento
-                const sortSelect = document.getElementById('sort-select');
-                if (sortSelect) {
-                    sortSelect.onchange = (e) => changeShoesSort(e.target.value);
-                }
-                
-                // Renderizar productos de zapatillas
-                renderShoesProducts();
-            } else {
-                // Mostrar catálogo de Perfumes (comportamiento original)
-                if (shoesCategorySection) shoesCategorySection.style.display = 'none';
-                if (filtersContainer) filtersContainer.classList.remove('hidden');
-                if (productsContainer) productsContainer.classList.remove('hidden');
-                if (paginationSection) paginationSection.classList.remove('hidden');
-                
-                // Cambiar placeholder de búsqueda
-                const searchInput = document.getElementById('products-search');
-                if (searchInput) {
-                    searchInput.placeholder = 'Buscar perfumes...';
-                    searchInput.onkeyup = (e) => searchProducts(e.target.value);
-                }
-                
-                // Actualizar botones de filtro
-                const filterBtns = document.querySelectorAll('.filter-btn');
-                filterBtns.forEach(btn => {
-                    btn.onclick = function() {
-                        filterProducts(this.textContent.toLowerCase());
-                    };
-                });
-                
-                // Actualizar select de ordenamiento
-                const sortSelect = document.getElementById('sort-select');
-                if (sortSelect) {
-                    sortSelect.onchange = (e) => changeSort(e.target.value);
-                }
-                
-                // Renderizar productos si no está hecho
-                renderProducts();
+            // Evitar cambios concurrentes
+            if (window.isChangingCatalog) {
+                console.warn('⚠️ [mostrarCatalogo] Ya hay un cambio en progreso. Ignorando llamada concurrente.');
+                return;
             }
+            window.isChangingCatalog = true;
             
-            if (portadaDosSection) portadaDosSection.style.display = 'block';
-            if (revendSection) revendSection.style.display = 'block';
-            
-            updateCartCount();
+            try {
+                const nichosSection = document.getElementById('nichos-section');
+                const filtersContainer = document.getElementById('filters-container');
+                const productsContainer = document.getElementById('products-container');
+                const paginationSection = document.getElementById('pagination-section');
+                const portadaDosSection = document.getElementById('portada-dos-section');
+                const revendSection = document.querySelector('.revend-section');
+                const shoesCategorySection = document.getElementById('shoes-category-section');
+
+                if (nichosSection) nichosSection.classList.add('hide');
+                
+                if (window.currentCatalog === 'calzados') {
+                    // Mostrar catálogo de Calzados con interfaz similar a Perfumes
+                    if (shoesCategorySection) shoesCategorySection.style.display = 'block';
+                    if (filtersContainer) filtersContainer.classList.remove('hidden');
+                    if (productsContainer) productsContainer.classList.remove('hidden');
+                    if (paginationSection) paginationSection.classList.remove('hidden');
+                    
+                    // Cambiar placeholder de búsqueda
+                    const searchInput = document.getElementById('products-search');
+                    if (searchInput) {
+                        searchInput.placeholder = 'Buscar zapatillas...';
+                        searchInput.onkeyup = (e) => searchShoesProducts(e.target.value);
+                    }
+                    
+                    // Actualizar botones de filtro
+                    const filterBtns = document.querySelectorAll('.filter-btn');
+                    filterBtns.forEach(btn => {
+                        btn.onclick = function() {
+                            filterShoesProducts(this.textContent.toLowerCase());
+                        };
+                    });
+                    
+                    // Actualizar select de ordenamiento
+                    const sortSelect = document.getElementById('sort-select');
+                    if (sortSelect) {
+                        sortSelect.onchange = (e) => changeShoesSort(e.target.value);
+                    }
+                    
+                    // Renderizar productos de zapatillas
+                    renderShoesProducts();
+                } else if (window.currentCatalog === 'perfumes') {
+                    // Mostrar catálogo de Perfumes (comportamiento original)
+                    if (shoesCategorySection) shoesCategorySection.style.display = 'none';
+                    if (filtersContainer) filtersContainer.classList.remove('hidden');
+                    if (productsContainer) productsContainer.classList.remove('hidden');
+                    if (paginationSection) paginationSection.classList.remove('hidden');
+                    
+                    // Cambiar placeholder de búsqueda
+                    const searchInput = document.getElementById('products-search');
+                    if (searchInput) {
+                        searchInput.placeholder = 'Buscar perfumes...';
+                        searchInput.onkeyup = (e) => searchProducts(e.target.value);
+                    }
+                    
+                    // Actualizar botones de filtro
+                    const filterBtns = document.querySelectorAll('.filter-btn');
+                    filterBtns.forEach(btn => {
+                        btn.onclick = function() {
+                            filterProducts(this.textContent.toLowerCase());
+                        };
+                    });
+                    
+                    // Actualizar select de ordenamiento
+                    const sortSelect = document.getElementById('sort-select');
+                    if (sortSelect) {
+                        sortSelect.onchange = (e) => changeSort(e.target.value);
+                    }
+                    
+                    // Renderizar productos si no está hecho
+                    renderProducts();
+                }
+                
+                if (portadaDosSection) portadaDosSection.style.display = 'block';
+                if (revendSection) revendSection.style.display = 'block';
+                
+                updateCartCount();
+                console.log('✅ [mostrarCatalogo] Catálogo mostrado:', window.currentCatalog);
+            } catch (error) {
+                console.error('❌ [mostrarCatalogo] Error:', error);
+            } finally {
+                window.isChangingCatalog = false;
+            }
         }
 
         // Manejar click del botón "Quiero mi tienda" / "Recibir ideas"
@@ -6346,28 +6381,51 @@
 
         // Ocultar catálogo y mostrar nichos
         function ocultarCatalogo() {
-            // Limpiar intervalos del carrusel
-            if (window.carruselAutoplay) clearInterval(window.carruselAutoplay);
-            if (window.carruselAutoplayShoesPreview) clearInterval(window.carruselAutoplayShoesPreview);
-            if (carruselInterval) clearInterval(carruselInterval);
+            // Evitar cambios concurrentes
+            if (window.isChangingCatalog) {
+                console.warn('⚠️ [ocultarCatalogo] Ya hay un cambio en progreso. Ignorando.');
+                return;
+            }
+            window.isChangingCatalog = true;
             
-            const nichosSection = document.getElementById('nichos-section');
-            const filtersContainer = document.getElementById('filters-container');
-            const productsContainer = document.getElementById('products-container');
-            const paginationSection = document.getElementById('pagination-section');
-            const portadaDosSection = document.getElementById('portada-dos-section');
-            const revendSection = document.querySelector('.revend-section');
+            try {
+                // Limpiar intervalos de forma segura
+                if (window.carruselAutoplay) {
+                    clearInterval(window.carruselAutoplay);
+                    window.carruselAutoplay = null;
+                }
+                if (window.carruselAutoplayShoesPreview) {
+                    clearInterval(window.carruselAutoplayShoesPreview);
+                    window.carruselAutoplayShoesPreview = null;
+                }
+                
+                const nichosSection = document.getElementById('nichos-section');
+                const filtersContainer = document.getElementById('filters-container');
+                const productsContainer = document.getElementById('products-container');
+                const paginationSection = document.getElementById('pagination-section');
+                const portadaDosSection = document.getElementById('portada-dos-section');
+                const revendSection = document.querySelector('.revend-section');
 
-            if (nichosSection) nichosSection.classList.remove('hide');
-            if (filtersContainer) filtersContainer.classList.add('hidden');
-            if (productsContainer) productsContainer.classList.add('hidden');
-            if (paginationSection) paginationSection.classList.add('hidden');
-            if (portadaDosSection) portadaDosSection.style.display = 'none';
-            if (revendSection) revendSection.style.display = 'none';
-            
-            // Re-inicializar carruseles de nichos
-            setTimeout(inicializarCarrusel, 100);
-            setTimeout(inicializarCarruselShoesPreview, 150);
+                if (nichosSection) nichosSection.classList.remove('hide');
+                if (filtersContainer) filtersContainer.classList.add('hidden');
+                if (productsContainer) productsContainer.classList.add('hidden');
+                if (paginationSection) paginationSection.classList.add('hidden');
+                if (portadaDosSection) portadaDosSection.style.display = 'none';
+                if (revendSection) revendSection.style.display = 'none';
+                
+                // Reinicializar catálogo
+                window.currentCatalog = null;
+                
+                // Re-inicializar carruseles de nichos
+                setTimeout(inicializarCarrusel, 50);
+                setTimeout(inicializarCarruselShoesPreview, 100);
+                
+                console.log('✅ [ocultarCatalogo] Volviendo a nichos');
+            } catch (error) {
+                console.error('❌ [ocultarCatalogo] Error:', error);
+            } finally {
+                window.isChangingCatalog = false;
+            }
         }
 
         // Abrir modal "Próximamente"
@@ -6395,7 +6453,7 @@
             setTimeout(() => {
                 actualizarVistaNichos();
                 actualizarBotonesRevend();
-            }, 500);
+            }, 300);  // Reducido de 500 a 300
         });
 
         // También actualizar cuando el usuario se loguea/desloguea
@@ -6414,6 +6472,7 @@
             window.codigoValidado = false;
             localStorage.removeItem('codigoRevendedorValidado');
             localStorage.removeItem('codigoRevendedorValidadoFecha');
+            window.currentCatalog = null;  // Volver a nichos
             ocultarCatalogo();
             actualizarBotonesRevend();
         };
