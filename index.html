@@ -4531,8 +4531,12 @@
             // Cargar automáticamente datos del usuario desde Firebase
             if (firebase.auth().currentUser) {
                 const uid = firebase.auth().currentUser.uid;
+                console.log('🔍 [PROCEEDTOPAYMENT] UID al abrir checkout:', uid);
                 try {
                     const docSnap = await firebase.firestore().collection('usuarios').doc(uid).get();
+                    console.log('🔍 [PROCEEDTOPAYMENT] Documento encontrado:', docSnap.exists);
+                    console.log('🔍 [PROCEEDTOPAYMENT] Datos:', docSnap.data());
+                    
                     if (docSnap.exists) {
                         const userData = docSnap.data();
                         // Rellenar campos del formulario
@@ -4545,12 +4549,18 @@
                         if (userData.direccion) document.getElementById('checkout-direccion').value = userData.direccion || '';
                         // IMPORTANTE: Rellenar código de revendedor desde Firebase
                         if (userData.codigoVendedor) {
+                            console.log('✅ [PROCEEDTOPAYMENT] Código pre-llenado:', userData.codigoVendedor);
                             document.getElementById('checkout-codigo-revendedor').value = userData.codigoVendedor;
+                        } else {
+                            console.warn('⚠️ [PROCEEDTOPAYMENT] codigoVendedor no existe en documento');
                         }
                     }
                 } catch (error) {
-                    console.error('❌ Error cargando datos del usuario:', error);
+                    console.error('❌ [PROCEEDTOPAYMENT] Error cargando datos del usuario:', error);
+                    console.error('❌ [PROCEEDTOPAYMENT] Código de error:', error.code);
                 }
+            } else {
+                console.warn('⚠️ [PROCEEDTOPAYMENT] No hay usuario autenticado');
             }
         }
 
@@ -4596,6 +4606,9 @@
             
             // PRIMERO: Verificar que el usuario esté autenticado
             const usuarioActual = firebase.auth().currentUser;
+            console.log('🔍 [CHECKOUT] Usuario autenticado:', usuarioActual);
+            console.log('🔍 [CHECKOUT] UID:', usuarioActual?.uid);
+            
             if (!usuarioActual) {
                 alert('❌ Debes estar autenticado para continuar');
                 return;
@@ -4604,16 +4617,25 @@
             // Obtener el código del usuario desde su documento de Firestore (fuente única de verdad)
             let codigoRevendedorValido = null;
             try {
+                console.log('🔍 [CHECKOUT] Buscando documento: usuarios/' + usuarioActual.uid);
                 const docSnap = await firebase.firestore().collection('usuarios').doc(usuarioActual.uid).get();
+                
+                console.log('🔍 [CHECKOUT] ¿Documento existe?', docSnap.exists);
+                console.log('🔍 [CHECKOUT] Datos del documento:', docSnap.data());
+                
                 if (docSnap.exists && docSnap.data().codigoVendedor) {
                     codigoRevendedorValido = docSnap.data().codigoVendedor;
+                    console.log('✅ [CHECKOUT] Código obtenido:', codigoRevendedorValido);
                 } else {
+                    console.warn('❌ [CHECKOUT] Documento no existe o codigoVendedor no existe');
                     alert('❌ No se encontró código de revendedor en tu perfil');
                     return;
                 }
             } catch (error) {
-                console.error('Error obteniendo código de revendedor:', error);
-                alert('❌ Error al validar tu código de revendedor');
+                console.error('❌ [CHECKOUT] Error real de Firestore:', error);
+                console.error('❌ [CHECKOUT] Código de error:', error.code);
+                console.error('❌ [CHECKOUT] Mensaje:', error.message);
+                alert('❌ Error al validar tu código de revendedor\n\nDetalle: ' + error.message);
                 return;
             }
             
