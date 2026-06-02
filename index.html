@@ -3827,7 +3827,12 @@
         function searchProducts(searchTerm) {
             currentSearch = searchTerm;
             itemsDisplayed = 6;
-            renderProducts();
+            
+            // Debounce: esperar 300ms antes de renderizar
+            clearTimeout(window.searchProductsTimeout);
+            window.searchProductsTimeout = setTimeout(() => {
+                renderProducts();
+            }, 300);
         }
 
         function changeSort(sortValue) {
@@ -3848,20 +3853,10 @@
         }
 
         function renderPerfumesProducts() {
-            console.log('🎨 [RENDER] ========== INICIANDO renderProducts() ==========');
-            console.log('📦 [RENDER] products.length:', products?.length || 'UNDEFINED');
-            console.log('🎯 [RENDER] currentFilter:', window.currentFilter);
-            console.log('🔍 [RENDER] currentSearch:', window.currentSearch);
-            
             const grid = document.getElementById('products-grid');
-            console.log('🎯 [RENDER] Grid DOM encontrado?', !!grid);
-            if (!grid) {
-                console.error('❌ [RENDER] NO ENCONTRÉ EL GRID DOM!');
-                return;
-            }
+            if (!grid) return;
             
             let filtered = window.currentFilter === 'todos' ? products : products.filter(p => p.categoria === window.currentFilter);
-            console.log('📊 [RENDER] Productos después de filtro:', filtered?.length || 0);
             
             // Aplicar búsqueda
             if (window.currentSearch.trim() !== '') {
@@ -3914,14 +3909,8 @@
         }
 
         function renderShoesProducts() {
-            console.log('👟 [RENDER SHOES] Iniciando renderShoesProducts()');
-            console.log('👟 [RENDER SHOES] Categoría:', window.currentShoesCategory);
-            
             const grid = document.getElementById('products-grid');
-            if (!grid) {
-                console.error('❌ [RENDER SHOES] NO ENCONTRÉ EL GRID DOM!');
-                return;
-            }
+            if (!grid) return;
             
             // Filtrar por categoría (Adultos/Niños)
             let filtered = window.shoes || [];
@@ -4501,7 +4490,6 @@
                         // IMPORTANTE: Rellenar código de revendedor desde Firebase
                         if (userData.codigoVendedor) {
                             document.getElementById('checkout-codigo-revendedor').value = userData.codigoVendedor;
-                            console.log('✅ [Checkout] Código de revendedor cargado desde Firebase:', userData.codigoVendedor);
                         }
                     }
                 } catch (error) {
@@ -4698,12 +4686,6 @@
         }
 
         // INIT
-        console.log('═══════════════════════════════════════════════════════════════════════════');
-        console.log('🔍 [DIAGNÓSTICO] INICIALIZANDO...');
-        console.log('📦 [DIAGNÓSTICO] Total de productos en array:', products?.length || 0);
-        console.log('📦 [DIAGNÓSTICO] Array productos vacío?', products?.length === 0);
-        console.log('🎯 [DIAGNÓSTICO] Grid DOM existe?', !!document.getElementById('products-grid'));
-        console.log('═══════════════════════════════════════════════════════════════════════════');
         
         setupSearch();
         renderProducts();
@@ -4808,31 +4790,22 @@
 
                 // ✅ Guardar código en localStorage PRIMERO (antes de Firestore)
                 localStorage.setItem('codigoVendedorLocal', codigoVendedor);
-                console.log('💾 [Register] ✅ Código guardado en localStorage:', codigoVendedor);
 
-                if (!firebase.firestore) {
-                    console.warn("Firebase Firestore no disponible");
-                } else {
+                if (firebase.firestore) {
                     const usuariosCollection = firebase.firestore().collection('usuarios');
                     
                     // Guardar en Firestore sin bloquear el flujo
                     // Esto permite que el registro continúe incluso si Firestore falla
-                    console.log('💾 [Register] Guardando en Firestore:', userData);
-                    console.log('💾 [Register] codigoVendedor a guardar:', userData.codigoVendedor);
-                    
                     usuariosCollection.doc(user.uid).set(userData)
-                        .then(() => {
-                            console.log('✅ [Register] Usuario guardado en Firestore');
-                            console.log('✅ [Register] Datos guardados correctamente con codigoVendedor:', userData.codigoVendedor);
-                        })
-                        .catch(err => console.warn('❌ [Register] Firestore Error: ' + err.message));
+                        .catch(err => {
+                            // Error silencioso
+                        });
                 }
 
                 // Mostrar modal de confirmación con el código vendedor
                 showRegistrationConfirmation(codigoVendedor, nombre);
                 
             } catch (error) {
-                console.error("Error en registro:", error?.message);
                 
                 // FALLBACK: Si el usuario se creó en Firebase pero falló Firestore,
                 // mostrar el modal de todas formas
@@ -4840,7 +4813,6 @@
                     try {
                         showRegistrationConfirmation(codigoVendedor, nombre);
                     } catch (modalError) {
-                        console.error("Error al mostrar modal:", modalError);
                         showRegistrationError(error);
                     }
                 } else {
@@ -4881,7 +4853,6 @@
                                 // Usuario no en Firestore, crear documento SOLO SI NO EXISTE
                                 // El código se genera UNA SOLA VEZ
                                 const nuevoCodigoVendedor = generarCodigoVendedor();
-                                console.log('🔐 [Login] Usuario NO existe en Firestore. Generando código:', nuevoCodigoVendedor);
                                 
                                 firebase.firestore().collection('usuarios').doc(userCredential.user.uid).set({
                                     uid: userCredential.user.uid,
@@ -4889,15 +4860,10 @@
                                     nombre: userCredential.user.email.split('@')[0],
                                     codigoVendedor: nuevoCodigoVendedor,
                                     creado: new Date()
-                                }).catch(err => console.warn('❌ [Login] Error guardando usuario en Firestore:', err.message));
-                            } else {
-                                // Usuario ya existe: NO modificar su código
-                                const docData = doc.data();
-                                console.log('✅ [Login] Usuario EXISTE en Firestore');
-                                console.log('🔑 [Login] Código vendedor existente:', docData?.codigoVendedor || 'NO TIENE CÓDIGO');
+                                }).catch(err => {});
                             }
                         })
-                        .catch(err => console.warn('❌ [Login] Error verificando usuario en Firestore:', err.message));
+                        .catch(err => {});
                 }
                 
             } catch (error) {
@@ -5014,7 +4980,6 @@
             
             // No copiar si está vacío
             if (!codigo || codigo.trim() === '') {
-                console.warn('Código no disponible para copiar');
                 alert('Tu código de revendedor aún no está disponible. Por favor intenta más tarde.');
                 return;
             }
@@ -5034,9 +4999,7 @@
                         feedback.classList.remove('show');
                     }, 2000);
                 }
-                console.log('✅ Código de revendedor copiado:', codigo);
             }).catch(err => {
-                console.error('Error al copiar código:', err);
                 alert('No se pudo copiar el código. Intenta de nuevo.');
             });
         }
@@ -5079,13 +5042,7 @@
 
         async function openProfileModal() {
             const user = firebase.auth().currentUser;
-            if (!user) {
-                console.error('No hay usuario autenticado');
-                return;
-            }
-
-            console.log('📋 [Profile] Usuario autenticado:', user.uid);
-            console.log('📋 [Profile] window.currentUser:', window.currentUser);
+            if (!user) return;
 
             // Mostrar email
             document.getElementById('profileEmail').textContent = user.email;
@@ -5099,21 +5056,18 @@
             let codigoFinal = '';
             
             // 1. PRIMER INTENTO: localStorage (más rápido y más confiable)
-            console.log('🔍 [Profile] Intentando obtener código de localStorage...');
             const codigoLocal = localStorage.getItem('codigoVendedorLocal');
             if (codigoLocal && codigoLocal.trim() !== '') {
                 document.getElementById('profileCode').textContent = codigoLocal;
-                console.log('✅ [Profile] Código desde localStorage:', codigoLocal);
                 codigoFinal = codigoLocal;
                 codigoEncontrado = true;
             }
             
             // 2. SEGUNDO INTENTO: window.currentUser
             if (!codigoEncontrado) {
-                console.log('🔍 [Profile] Intentando obtener código de window.currentUser...');
+            // 2. SEGUNDO INTENTO: window.currentUser
                 if (window.currentUser?.codigoVendedor && window.currentUser.codigoVendedor.trim() !== '') {
                     document.getElementById('profileCode').textContent = window.currentUser.codigoVendedor;
-                    console.log('✅ [Profile] Código desde window.currentUser:', window.currentUser.codigoVendedor);
                     codigoFinal = window.currentUser.codigoVendedor;
                     // Guardar en localStorage también para futuras consultas
                     localStorage.setItem('codigoVendedorLocal', window.currentUser.codigoVendedor);
@@ -5123,19 +5077,15 @@
             
             // 3. TERCER INTENTO: Firestore
             if (!codigoEncontrado) {
-                console.log('🔍 [Profile] Intentando obtener código de Firestore...');
                 document.getElementById('profileCode').textContent = 'Cargando...';
                 try {
                     const doc = await firebase.firestore().collection('usuarios').doc(user.uid).get();
                     
                     if (doc.exists) {
                         const userData = doc.data();
-                        console.log('📋 [Profile] Datos desde Firestore:', userData);
-                        console.log('🔑 [Profile] codigoVendedor en Firestore:', userData?.codigoVendedor);
                         
                         if (userData.codigoVendedor && userData.codigoVendedor.trim() !== '') {
                             document.getElementById('profileCode').textContent = userData.codigoVendedor;
-                            console.log('✅ [Profile] Código desde Firestore:', userData.codigoVendedor);
                             codigoFinal = userData.codigoVendedor;
                             // Guardar en localStorage para futuras consultas
                             localStorage.setItem('codigoVendedorLocal', userData.codigoVendedor);
@@ -5153,17 +5103,15 @@
                                 email: user.email,
                                 ...userData
                             };
-                            console.log('✅ [Profile] window.currentUser actualizado desde Firestore');
                         }
                     }
                 } catch (error) {
-                    console.error('❌ Error cargando desde Firestore:', error);
+                    // Error silencioso
                 }
             }
             
             // 4. ÚLTIMO RECURSO: Si aún no hay código, generar uno
             if (!codigoEncontrado || !codigoFinal || codigoFinal.trim() === '') {
-                console.warn('⚠️ [Profile] No se encontró código en ningún lado. Generando nuevo...');
                 codigoFinal = generarCodigoVendedor();
                 document.getElementById('profileCode').textContent = codigoFinal;
                 
@@ -5178,8 +5126,6 @@
                 // Guardar en Firestore en background
                 firebase.firestore().collection('usuarios').doc(user.uid).update({
                     codigoVendedor: codigoFinal
-                }).then(() => {
-                    console.log('✅ [Profile] Código nuevo guardado en Firestore:', codigoFinal);
                 }).catch(err => {
                     // Si falla update, intentar set (por si el documento no existe)
                     firebase.firestore().collection('usuarios').doc(user.uid).set({
@@ -5188,10 +5134,8 @@
                         nombre: window.currentUser?.nombre || user.email.split('@')[0],
                         codigoVendedor: codigoFinal,
                         creado: window.currentUser?.creado || new Date()
-                    }).catch(err2 => console.warn('⚠️ Error guardando en Firestore:', err2.message));
+                    }).catch(err2 => {});
                 });
-                
-                console.log('✅ [Profile] ✅ Código generado y guardado:', codigoFinal);
             }
 
             document.getElementById('profileModal').classList.add('active');
@@ -5370,21 +5314,8 @@
 
         // Reconstruye la interfaz completa del usuario desde los datos cargados
         function initializeUserSession(userData, authUser) {
-            if (!authUser) {
-                console.error('❌ [Session] initializeUserSession llamado SIN authUser');
-                return;
-            }
+            if (!authUser) return;
 
-            console.log('🔧 [Session] === INICIANDO initializeUserSession ===');
-            console.log('🔧 [Session] authUser.uid:', authUser.uid);
-            console.log('🔧 [Session] authUser.email:', authUser.email);
-            console.log('🔧 [Session] userData recibido:', userData);
-            console.log('⚠️⚠️⚠️ CRÍTICO - userData?.codigoVendedor QUE SE RECIBE:', userData?.codigoVendedor || '❌ NO ESTÁ EN userData');
-            
-            // Verificar si hay código en localStorage
-            const codigoLocalStorage = localStorage.getItem('codigoVendedorLocal');
-            console.log('🔍 [Session] Código en localStorage:', codigoLocalStorage || 'NO ENCONTRADO');
-            
             // Si no hay datos de Firestore, crear objeto mínimo
             const safeUserData = userData || {
                 nombre: authUser.email.split('@')[0],
@@ -5392,24 +5323,18 @@
                 creado: new Date()
             };
 
-            console.log('🔧 [Session] userData recibido de Firestore:', userData ? JSON.stringify(userData, null, 2) : 'NULL');
-            console.log('⚠️⚠️⚠️ CRÍTICO - codigoVendedor ANTES de asignar a window:', safeUserData?.codigoVendedor || '❌ VACÍO');
+            // Verificar si hay código en localStorage
+            const codigoLocalStorage = localStorage.getItem('codigoVendedorLocal');
 
-            // Guardar datos en variables globales para acceso rápido
-            console.log('🔧 [Session] === ASIGNANDO window.currentUser ===');
-            
             // ✅ PRIORIDAD: localStorage > Firestore > generar nuevo
             let codigoFinal = '';
             if (codigoLocalStorage && codigoLocalStorage.trim() !== '') {
                 codigoFinal = codigoLocalStorage;
-                console.log('📍 Usando código de localStorage:', codigoFinal);
             } else if (safeUserData.codigoVendedor && safeUserData.codigoVendedor.trim() !== '') {
                 codigoFinal = safeUserData.codigoVendedor;
-                console.log('📍 Usando código de Firestore:', codigoFinal);
             } else {
                 // ✅ FALLBACK: Generar código si no existe
                 codigoFinal = generarCodigoVendedor();
-                console.log('⚠️ Código no encontrado. Generado nuevo:', codigoFinal);
             }
             
             window.currentUser = {
@@ -5422,7 +5347,6 @@
             
             // ✅ CRÍTICO: Guardar codigoVendedor en localStorage SIEMPRE
             localStorage.setItem('codigoVendedorLocal', window.currentUser.codigoVendedor);
-            console.log('💾 [Session] ✅ Código guardado en localStorage:', window.currentUser.codigoVendedor);
             
             // ✅ CRÍTICO: Si se generó código nuevo, actualizar Firestore en background
             if (!safeUserData.codigoVendedor || safeUserData.codigoVendedor.trim() === '') {
@@ -5430,24 +5354,11 @@
                     // Actualizar en Firestore sin bloquear
                     firebase.firestore().collection('usuarios').doc(authUser.uid).update({
                         codigoVendedor: codigoFinal
-                    }).then(() => {
-                        console.log('✅ [Session] Código nuevo guardado en Firestore:', codigoFinal);
                     }).catch(err => {
-                        console.warn('⚠️ [Session] Error actualizando Firestore:', err.message);
+                        // Silencioso en background
                     });
                 }
             }
-            
-            console.log('⚠️⚠️⚠️ CRÍTICO - window.currentUser.codigoVendedor DESPUÉS de asignar:', window.currentUser?.codigoVendedor || '❌ SE PERDIÓ');
-            console.log('🔧 [Session] ✅ window.currentUser COMPLETO:', JSON.stringify(window.currentUser, null, 2));
-            
-            // Verificar inmediatamente que se asignó correctamente
-            setTimeout(() => {
-                console.log('✅ VERIFICACIÓN 100ms después:', {
-                    codigoVendedor: window.currentUser?.codigoVendedor,
-                    fullUser: JSON.parse(JSON.stringify(window.currentUser || {}))
-                });
-            }, 100);
 
             // Cargar carrito desde Firebase
             loadCartFromFirebase().then(cartItems => {
@@ -5468,40 +5379,28 @@
                     if (modal && !modal.classList.contains('active')) {
                         modal.classList.add('active');
                         preventBodyScroll(true);
-                        console.log('📧 [Session] Modal de confirmación de email mostrado');
                     }
                 }
             }, 5000);
             
             // ⚠️ VERIFICACIÓN CRÍTICA: Si codigoVendedor está vacío, intentar cargar de nuevo
             if (!window.currentUser?.codigoVendedor || window.currentUser.codigoVendedor === '') {
-                console.warn('⚠️ [Session] codigoVendedor está VACÍO. Intentando recovery...');
-                console.warn('⚠️ [Session] userData original era:', userData ? 'OBJETO' : 'NULL');
-                
                 // Si userData era null, intentar cargar de Firestore AHORA
                 if (!userData) {
-                    console.warn('⚠️ [Session] userData era NULL. Intentando cargar desde Firestore...');
                     firebase.firestore().collection('usuarios').doc(authUser.uid).get()
                         .then(doc => {
                             if (doc.exists) {
                                 const fullData = doc.data();
-                                console.warn('⚠️ [Session] ✅ Documento encontrado en RECOVERY:', fullData);
                                 
                                 if (fullData.codigoVendedor) {
-                                    console.warn('⚠️ [Session] ✅✅ Actualizando window.currentUser con codigoVendedor:', fullData.codigoVendedor);
-                                    
                                     window.currentUser = {
                                         ...window.currentUser,
                                         ...fullData
                                     };
-                                    
-                                    console.warn('⚠️ [Session] ✅✅✅ window.currentUser ACTUALIZADO:', JSON.stringify(window.currentUser));
                                 }
-                            } else {
-                                console.warn('⚠️ [Session] ❌ Documento NO EXISTE en recovery');
                             }
                         })
-                        .catch(err => console.error('⚠️ [Session] ❌ Error en recovery:', err));
+                        .catch(err => {});
                 }
             }
             
@@ -5570,7 +5469,12 @@
         function searchShoesProducts(searchTerm) {
             window.currentShoesSearch = searchTerm;
             window.shoesItemsDisplayed = 6;
-            renderShoesProducts();
+            
+            // Debounce: esperar 300ms antes de renderizar
+            clearTimeout(window.searchShoesProductsTimeout);
+            window.searchShoesProductsTimeout = setTimeout(() => {
+                renderShoesProducts();
+            }, 300);
         }
         
         function changeShoesSort(sortValue) {
@@ -5752,69 +5656,48 @@
     
     <script>
         // ✅ INICIALIZAR FIREBASE - Ahora sí está disponible
-        console.log('🔧 [Firebase] Inicializando Firebase...');
         if (!firebase.apps.length) {
             // firebaseConfig debe estar disponible del script anterior
             firebase.initializeApp(firebaseConfig);
-            console.log('✅ Firebase inicializado CORRECTAMENTE');
         }
         
         // Configurar persistencia de sesión
         firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-            .then(() => console.log('✅ Persistencia de sesión configurada'))
-            .catch(err => console.error('❌ Error configurando persistencia:', err.message));
+            .catch(err => {
+                // Error silencioso
+            });
         
         // SISTEMA DE REINTENTOS PARA FIRESTORE
         async function loadUserDataFromFirestoreWithRetry(uid, maxRetries = 3, delayMs = 500) {
-            console.log('🔍 [Firestore] Intentando cargar usuario con UID:', uid);
-            
             for (let attempt = 1; attempt <= maxRetries; attempt++) {
                 try {
                     const userDoc = await firebase.firestore().collection('usuarios').doc(uid).get();
                     if (userDoc.exists) {
-                        const data = userDoc.data();
-                        console.log('✅ [Firestore] Documento EXISTE en intento', attempt);
-                        console.log('📦 [Firestore] Datos completos del documento:', data);
-                        console.log('🔑 [Firestore] codigoVendedor en documento:', data?.codigoVendedor || 'NO EXISTE EN DOCUMENTO');
-                        return data;
+                        return userDoc.data();
                     }
-                    console.log('⚠️ [Firestore] Usuario NO EXISTE en intento', attempt);
                     return null;
                 } catch (error) {
-                    console.warn(`⚠️ [Firestore] Error en intento ${attempt}:`, error.message);
                     if (attempt < maxRetries) {
                         await new Promise(resolve => setTimeout(resolve, delayMs * attempt));
                     }
                 }
             }
-            console.log('❌ [Firestore] Falló después de', maxRetries, 'intentos');
             return null;
         }
 
         // LISTENER DE AUTENTICACIÓN - MONITOREAR CAMBIOS EN SESIÓN
         firebase.auth().onAuthStateChanged(async (user) => {
-            console.log('════════════════════════════════════════════════════════════════');
-            console.log('👤 [Auth] onAuthStateChanged disparado');
-            console.log('════════════════════════════════════════════════════════════════');
             
             if (user) {
-                console.log('👤 [Auth] ✅ Usuario autenticado detectado');
-                console.log('👤 [Auth] Email:', user.email);
-                console.log('👤 [Auth] UID:', user.uid);
                 
                 // Intentar cargar datos de Firestore CON REINTENTOS
-                console.log('🔄 [Auth] Llamando a loadUserDataFromFirestoreWithRetry...');
                 const userData = await loadUserDataFromFirestoreWithRetry(user.uid);
-                console.log('📦 [Auth] ✅ Datos retornados por loadUserDataFromFirestoreWithRetry:');
-                console.log('   → userData:', userData ? JSON.stringify(userData, null, 2) : 'NULL');
-                console.log('   → userData?.codigoVendedor:', userData?.codigoVendedor || 'NO PRESENTE EN DATOS');
                 
                 // Inicializar sesión con datos de Firestore o datos mínimos
                 initializeUserSession(userData, user);
                 
             } else {
                 // Usuario no autenticado: limpiar interfaz
-                console.log('🔓 [Auth] ❌ No hay usuario autenticado');
                 window.currentUser = null;
                 updateUIForAuthentication(false);
                 const loginBtn = document.querySelector('.login-btn');
@@ -5865,34 +5748,19 @@
 
         // INICIALIZAR CARRUSEL CON IMÁGENES DE PRODUCTOS
         function inicializarCarrusel() {
-            console.log('🎬 [Carrusel] Iniciando inicializarCarrusel()');
-            console.log('🎬 [Carrusel] window.products existe:', !!window.products);
-            console.log('🎬 [Carrusel] window.products.length:', window.products ? window.products.length : 0);
-            
             // Filtrar productos con precio entre 5000 y 30000
             const productosArabes = window.products.filter(p => 
                 p.precio >= 5000 && p.precio <= 30000 && p.imagen && p.categoria
             );
-            console.log('🎬 [Carrusel] Productos filtrados (5000-30000):', productosArabes.length);
-            console.log('🎬 [Carrusel] Primeros productos filtrados:', productosArabes.slice(0, 3));
             
             productosCarrusel = productosArabes;
 
-            if (productosCarrusel.length === 0) {
-                console.warn('⚠️ [Carrusel] NO HAY PRODUCTOS para mostrar en carrusel');
-                return;
-            }
+            if (productosCarrusel.length === 0) return;
 
             const wrapper = document.getElementById('carrusel-wrapper');
             const dotsContainer = document.getElementById('carrusel-dots');
 
-            console.log('🎬 [Carrusel] wrapper existe:', !!wrapper);
-            console.log('🎬 [Carrusel] dotsContainer existe:', !!dotsContainer);
-
-            if (!wrapper || !dotsContainer) {
-                console.error('❌ [Carrusel] wrapper o dotsContainer NO EXISTEN');
-                return;
-            }
+            if (!wrapper || !dotsContainer) return;
 
             // Limpiar
             wrapper.innerHTML = '';
@@ -5911,8 +5779,6 @@
                 dot.onclick = () => irASlide(index);
                 dotsContainer.appendChild(dot);
             });
-
-            console.log('✅ [Carrusel] Carrusel inicializado con', productosCarrusel.length, 'productos');
             
             carruselActual = 0;
             actualizarCarrusel();
@@ -6015,31 +5881,21 @@
         // Abrir modal de validación de código
         function abrirModalCodigo() {
             // Evitar llamadas concurrentes
-            if (window.isChangingCatalog) {
-                console.warn('⚠️ [AbrirModalCodigo] Cambio en progreso. Ignorando llamada.');
-                return;
-            }
+            if (window.isChangingCatalog) return;
             
             // Establecer catálogo de Perfumes si no está establecido
             if (!window.currentCatalog) {
                 window.currentCatalog = 'perfumes';
             }
             
-            console.log('🔓 [AbrirModalCodigo] Iniciando...');
-            console.log('🔓 [AbrirModalCodigo] Usuario logueado:', !!firebase.auth().currentUser);
-            console.log('🔓 [AbrirModalCodigo] window.codigoValidado:', window.codigoValidado);
-            console.log('🔓 [AbrirModalCodigo] window.currentUser:', window.currentUser);
-            
             // Si ya validó, mostrar catálogo directamente
             if (window.codigoValidado) {
-                console.log('✅ [AbrirModalCodigo] Código ya validado. Mostrando catálogo...');
                 mostrarCatalogo();
                 return;
             }
             
             // Si NO está logueado, abrir login
             if (!firebase.auth().currentUser) {
-                console.warn('⚠️ [AbrirModalCodigo] Usuario NO logueado. Abriendo login...');
                 alert('Debes iniciar sesión primero para acceder al catálogo de revendedor.');
                 abrirLogin();
                 return;
@@ -6047,7 +5903,6 @@
             
             // Si está logueado pero no tiene código, generar uno
             if (!window.currentUser?.codigoVendedor) {
-                console.warn('⚠️ [AbrirModalCodigo] Usuario logueado pero sin código. Generando...');
                 const nuevoCodigoVendedor = generarCodigoVendedor();
                 window.currentUser.codigoVendedor = nuevoCodigoVendedor;
                 localStorage.setItem('codigoVendedorLocal', nuevoCodigoVendedor);
@@ -6055,7 +5910,7 @@
                 // Actualizar en Firestore en background
                 firebase.firestore().collection('usuarios').doc(firebase.auth().currentUser.uid).update({
                     codigoVendedor: nuevoCodigoVendedor
-                }).catch(err => console.warn('⚠️ Error actualizando Firestore:', err.message));
+                }).catch(err => {});
             }
             
             const modal = document.getElementById('codigo-modal');
@@ -6069,7 +5924,6 @@
                     input.value = '';
                 }
                 if (error) error.classList.remove('show');
-                console.log('✅ [AbrirModalCodigo] Modal abierto. Código del usuario:', window.currentUser?.codigoVendedor);
             }
         }
 
@@ -6083,10 +5937,7 @@
         
         // Función para volver a nichos sin perder sesión
         function volverANichos() {
-            if (window.isChangingCatalog) {
-                console.warn('⚠️ Ya hay un cambio en progreso');
-                return;
-            }
+            if (window.isChangingCatalog) return;
             window.currentCatalog = null;
             ocultarCatalogo();
             cerrarModalCodigo();
@@ -6098,12 +5949,6 @@
             const error = document.getElementById('codigo-error');
             // Normalizar: eliminar TODOS los espacios y convertir a MAYÚSCULAS
             let codigo = codigoInput.value.trim().replace(/\s+/g, '').toUpperCase();
-
-            console.log('🔍 [Validación] Código ingresado (raw):', codigoInput.value);
-            console.log('🔍 [Validación] Código ingresado (limpio):', codigo);
-            console.log('🔍 [Validación] Longitud:', codigo.length);
-            console.log('🔍 [Validación] Usuario actual logueado:', !!firebase.auth().currentUser);
-            console.log('🔍 [Validación] window.currentUser:', window.currentUser);
 
             // Validar que no esté vacío
             if (!codigo) {
@@ -6122,13 +5967,10 @@
                 // ESTRATEGIA 1: Si el usuario está logueado, verificar su código directo
                 const usuarioActual = firebase.auth().currentUser;
                 if (usuarioActual && window.currentUser?.codigoVendedor) {
-                    console.log('🔍 [Validación] Usuario logueado. Verificando su código...');
                     // Normalizar igual: eliminar espacios y MAYÚSCULAS
                     const codigoDelUsuario = window.currentUser.codigoVendedor.trim().replace(/\s+/g, '').toUpperCase();
-                    console.log('🔍 [Validación] Código del usuario:', codigoDelUsuario);
                     
                     if (codigo === codigoDelUsuario) {
-                        console.log('✅ [Validación] Código VÁLIDO (match directo con usuario logueado)');
                         error.classList.remove('show');
                         
                         // Guardar en localStorage
@@ -6143,64 +5985,37 @@
                     }
                 }
 
-                console.log('🔍 [Validación] Buscando en Firestore...');
-                
                 // ESTRATEGIA 2: Buscar en Firestore (para usuarios no logueados o código no coincide)
                 let resultado = await firebase.firestore()
                     .collection('usuarios')
                     .where('codigoVendedor', '==', codigo)
                     .get();
 
-                console.log('🔍 [Validación] Resultados encontrados (búsqueda exacta):', resultado.size);
-                if (resultado.size > 0) {
-                    console.log('✅ [Validación] ENCONTRADO:', resultado.docs[0].data());
-                }
-
                 // Si no encuentra, intentar búsquedas alternativas
                 if (resultado.empty) {
-                    console.warn('⚠️ [Validación] No encontrado con búsqueda exacta. Intentando variantes...');
-                    
                     // Intentar búsqueda 2: convertir a minúsculas
                     resultado = await firebase.firestore()
                         .collection('usuarios')
                         .where('codigoVendedor', '==', codigo.toLowerCase())
                         .get();
-                    
-                    console.log('🔍 [Validación] Resultados con minúsculas:', resultado.size);
-                    if (resultado.size > 0) {
-                        console.log('✅ [Validación] ENCONTRADO (minúsculas):', resultado.docs[0].data());
-                    }
                 }
 
                 // Intentar búsqueda 3: sin el prefijo "RW-" por si acaso
                 if (resultado.empty && codigo.startsWith('RW-')) {
                     const codigoSinPrefijo = codigo.substring(3);
-                    console.log('🔍 [Validación] Intentando sin prefijo RW-:', codigoSinPrefijo);
                     
                     resultado = await firebase.firestore()
                         .collection('usuarios')
                         .where('codigoVendedor', '==', codigoSinPrefijo)
                         .get();
-                    
-                    console.log('🔍 [Validación] Resultados sin prefijo:', resultado.size);
-                    if (resultado.size > 0) {
-                        console.log('✅ [Validación] ENCONTRADO (sin prefijo):', resultado.docs[0].data());
-                    }
                 }
 
                 if (resultado.empty) {
-                    console.error('❌ [Validación] Código NO encontrado en Firestore');
-                    console.warn('⚠️ [Validación] Nota: Si el código es incorrecto, verifica que sea exacto.');
-                    console.warn('⚠️ [Validación] Los códigos son sensibles a mayúsculas/minúsculas y espacios en blanco.');
-                    
                     // Código NO válido
                     error.textContent = 'Código de revendedor inválido. Verifica que sea exacto (sin espacios extras) e intenta de nuevo.';
                     error.classList.add('show');
                 } else {
-                    console.log('✅ [Validación] Código VÁLIDO encontrado');
                     const usuarioDoc = resultado.docs[0];
-                    console.log('✅ [Validación] Usuario encontrado (UID):', usuarioDoc.id);
-                    console.log('✅ [Validación] Datos del usuario:', usuarioDoc.data());
                     
                     // Código VÁLIDO
                     error.classList.remove('show');
@@ -6211,8 +6026,6 @@
                     
                     window.codigoValidado = true;
                     
-                    console.log('💾 [Validación] Código guardado en localStorage');
-                    
                     // Cerrar modal
                     cerrarModalCodigo();
                     
@@ -6220,9 +6033,6 @@
                     mostrarCatalogo();
                 }
             } catch (error) {
-                console.error('❌ [Validación] Error validando código:', error);
-                console.error('❌ [Validación] Mensaje de error:', error.message);
-                console.error('❌ [Validación] Code:', error.code);
                 
                 // Mostrar error específico de Firestore si existe
                 if (error.code === 'permission-denied') {
@@ -6241,10 +6051,7 @@
         // Mostrar catálogo y ocultar nichos
         function mostrarCatalogo() {
             // Evitar cambios concurrentes
-            if (window.isChangingCatalog) {
-                console.warn('⚠️ [mostrarCatalogo] Ya hay un cambio en progreso. Ignorando llamada concurrente.');
-                return;
-            }
+            if (window.isChangingCatalog) return;
             window.isChangingCatalog = true;
             
             try {
@@ -6259,64 +6066,78 @@
                 if (nichosSection) nichosSection.classList.add('hide');
                 
                 if (window.currentCatalog === 'calzados') {
-                    // Mostrar catálogo de Calzados con interfaz similar a Perfumes
                     if (shoesCategorySection) shoesCategorySection.style.display = 'block';
                     if (filtersContainer) filtersContainer.classList.remove('hidden');
                     if (productsContainer) productsContainer.classList.remove('hidden');
                     if (paginationSection) paginationSection.classList.remove('hidden');
                     
-                    // Cambiar placeholder de búsqueda
                     const searchInput = document.getElementById('products-search');
                     if (searchInput) {
                         searchInput.placeholder = 'Buscar zapatillas...';
-                        searchInput.onkeyup = (e) => searchShoesProducts(e.target.value);
+                        if (window.shoeSearchHandler) {
+                            searchInput.removeEventListener('keyup', window.shoeSearchHandler);
+                        }
+                        window.shoeSearchHandler = (e) => searchShoesProducts(e.target.value);
+                        searchInput.addEventListener('keyup', window.shoeSearchHandler);
                     }
                     
-                    // Actualizar botones de filtro
                     const filterBtns = document.querySelectorAll('.filter-btn');
                     filterBtns.forEach(btn => {
-                        btn.onclick = function() {
-                            filterShoesProducts(this.textContent.toLowerCase());
+                        if (window.shoeFilterHandler) {
+                            btn.removeEventListener('click', window.shoeFilterHandler);
+                        }
+                        window.shoeFilterHandler = function(e) {
+                            filterShoesProducts(e.target.textContent.toLowerCase());
                         };
+                        btn.addEventListener('click', window.shoeFilterHandler);
                     });
                     
-                    // Actualizar select de ordenamiento
                     const sortSelect = document.getElementById('sort-select');
                     if (sortSelect) {
-                        sortSelect.onchange = (e) => changeShoesSort(e.target.value);
+                        if (window.shoeSortHandler) {
+                            sortSelect.removeEventListener('change', window.shoeSortHandler);
+                        }
+                        window.shoeSortHandler = (e) => changeShoesSort(e.target.value);
+                        sortSelect.addEventListener('change', window.shoeSortHandler);
                     }
                     
-                    // Renderizar productos de zapatillas
                     renderShoesProducts();
                 } else if (window.currentCatalog === 'perfumes') {
-                    // Mostrar catálogo de Perfumes (comportamiento original)
                     if (shoesCategorySection) shoesCategorySection.style.display = 'none';
                     if (filtersContainer) filtersContainer.classList.remove('hidden');
                     if (productsContainer) productsContainer.classList.remove('hidden');
                     if (paginationSection) paginationSection.classList.remove('hidden');
                     
-                    // Cambiar placeholder de búsqueda
                     const searchInput = document.getElementById('products-search');
                     if (searchInput) {
                         searchInput.placeholder = 'Buscar perfumes...';
-                        searchInput.onkeyup = (e) => searchProducts(e.target.value);
+                        if (window.perfumeSearchHandler) {
+                            searchInput.removeEventListener('keyup', window.perfumeSearchHandler);
+                        }
+                        window.perfumeSearchHandler = (e) => searchProducts(e.target.value);
+                        searchInput.addEventListener('keyup', window.perfumeSearchHandler);
                     }
                     
-                    // Actualizar botones de filtro
                     const filterBtns = document.querySelectorAll('.filter-btn');
                     filterBtns.forEach(btn => {
-                        btn.onclick = function() {
-                            filterProducts(this.textContent.toLowerCase());
+                        if (window.perfumeFilterHandler) {
+                            btn.removeEventListener('click', window.perfumeFilterHandler);
+                        }
+                        window.perfumeFilterHandler = function(e) {
+                            filterProducts(e.target.textContent.toLowerCase());
                         };
+                        btn.addEventListener('click', window.perfumeFilterHandler);
                     });
                     
-                    // Actualizar select de ordenamiento
                     const sortSelect = document.getElementById('sort-select');
                     if (sortSelect) {
-                        sortSelect.onchange = (e) => changeSort(e.target.value);
+                        if (window.perfumeSortHandler) {
+                            sortSelect.removeEventListener('change', window.perfumeSortHandler);
+                        }
+                        window.perfumeSortHandler = (e) => changeSort(e.target.value);
+                        sortSelect.addEventListener('change', window.perfumeSortHandler);
                     }
                     
-                    // Renderizar productos si no está hecho
                     renderProducts();
                 }
                 
@@ -6324,9 +6145,8 @@
                 if (revendSection) revendSection.style.display = 'block';
                 
                 updateCartCount();
-                console.log('✅ [mostrarCatalogo] Catálogo mostrado:', window.currentCatalog);
             } catch (error) {
-                console.error('❌ [mostrarCatalogo] Error:', error);
+                // Error silencioso
             } finally {
                 window.isChangingCatalog = false;
             }
@@ -6382,10 +6202,7 @@
         // Ocultar catálogo y mostrar nichos
         function ocultarCatalogo() {
             // Evitar cambios concurrentes
-            if (window.isChangingCatalog) {
-                console.warn('⚠️ [ocultarCatalogo] Ya hay un cambio en progreso. Ignorando.');
-                return;
-            }
+            if (window.isChangingCatalog) return;
             window.isChangingCatalog = true;
             
             try {
@@ -6419,10 +6236,7 @@
                 // Re-inicializar carruseles de nichos
                 setTimeout(inicializarCarrusel, 50);
                 setTimeout(inicializarCarruselShoesPreview, 100);
-                
-                console.log('✅ [ocultarCatalogo] Volviendo a nichos');
             } catch (error) {
-                console.error('❌ [ocultarCatalogo] Error:', error);
             } finally {
                 window.isChangingCatalog = false;
             }
@@ -6499,70 +6313,14 @@
         // SCRIPT DE VERIFICACIÓN PARA USUARIO
         // ════════════════════════════════════════════════
         window.verificarPlataforma = function() {
-            console.clear();
-            console.log('%c═════ VERIFICACIÓN DE PLATAFORMA ═════', 'color: #0066ff; font-weight: bold; font-size: 14px;');
+            // Diagnóstico de la plataforma
             
             // 1. FLECHAS DEL CARRUSEL
-            console.log('\n%c✓ FLECHAS DEL CARRUSEL', 'color: #2BA84F; font-weight: bold;');
             const flechas = document.querySelectorAll('.carrusel-nav');
-            console.log(`  Cantidad: ${flechas.length} (debe ser 2)`);
-            if (flechas.length > 0) {
-                const styles = window.getComputedStyle(flechas[0]);
-                console.log(`  Color: ${styles.color}`);
-                console.log(`  Background: ${styles.background}`);
-                console.log(`  Box-shadow: ${styles.boxShadow}`);
-                console.log(`  Outline: ${styles.outline}`);
-            }
             
             // 2. AUTOPLAY
-            console.log('\n%c✓ AUTOPLAY DEL CARRUSEL', 'color: #2BA84F; font-weight: bold;');
-            console.log(`  Intervalo activo: ${carruselInterval ? '✅ SÍ' : '❌ NO'}`);
-            console.log(`  Productos en carrusel: ${productosCarrusel.length}`);
-            console.log(`  Slide actual: ${carruselActual}`);
-            
-            // 3. PORTADA
-            console.log('\n%c✓ PORTADA DEL BANNER VERDE', 'color: #2BA84F; font-weight: bold;');
-            const portada = document.querySelector('.revend-section-inner img');
-            if (portada) {
-                const portadaStyles = window.getComputedStyle(portada);
-                console.log(`  Ancho: ${portadaStyles.width}`);
-                console.log(`  Max-width: ${portadaStyles.maxWidth}`);
-                console.log(`  Origen: ${portada.src}`);
-            }
-            
-            // 4. EMAIL CONFIRMATION
-            console.log('\n%c✓ CONFIRMACIÓN POR EMAIL', 'color: #2BA84F; font-weight: bold;');
-            const emailConfirmado = localStorage.getItem('emailConfirmado');
-            console.log(`  Estado: ${emailConfirmado ? '✅ Confirmado' : '⏳ Pendiente'}`);
-            
-            // 5. CÓDIGO DE REVENDEDOR
-            console.log('\n%c✓ CÓDIGO DE REVENDEDOR', 'color: #2BA84F; font-weight: bold;');
-            console.log(`  window.currentUser: ${window.currentUser ? '✅ Cargado' : '❌ No cargado'}`);
-            if (window.currentUser?.codigoVendedor) {
-                console.log(`    Código: ${window.currentUser.codigoVendedor}`);
-            }
-            const codigoLocal = localStorage.getItem('codigoVendedorLocal');
-            if (codigoLocal) {
-                console.log(`  localStorage: ✅ ${codigoLocal}`);
-            }
-            
-            // 6. PRODUCTOS
-            console.log('\n%c✓ PRODUCTOS', 'color: #2BA84F; font-weight: bold;');
-            console.log(`  Total en catálogo: ${window.products ? window.products.length : 0}`);
-            console.log(`  En carrusel (5000-30000): ${productosCarrusel.length}`);
-            
-            // 7. USUARIO AUTENTICADO
-            console.log('\n%c✓ AUTENTICACIÓN', 'color: #2BA84F; font-weight: bold;');
-            const user = firebase.auth().currentUser;
-            console.log(`  Usuario: ${user ? user.email : 'NO LOGUEADO'}`);
-            console.log(`  UID: ${user ? user.uid : '-'}`);
-            
-            console.log('\n%c═════════════════════════════════════════════', 'color: #0066ff; font-weight: bold;');
-            console.log('%cAbre la consola (F12) y ejecuta: verificarPlataforma()', 'color: #666; font-size: 12px;');
+            // Diagnóstico del carrusel...;
         };
-        
-        // Ejecutar verificación automáticamente en carga
-        setTimeout(window.verificarPlataforma, 2000);
     </script>
 </body>
 </html>
