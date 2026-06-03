@@ -4256,10 +4256,15 @@
                 };
 
                 // Guardar con ID auto-generado
-                const docRef = await firebase.firestore()
-                    .collection('usuarios').doc(user.uid)
-                    .collection('pedidos')
-                    .add(pedidoData);
+                const docRef = await Promise.race([
+                    firebase.firestore()
+                        .collection('usuarios').doc(user.uid)
+                        .collection('pedidos')
+                        .add(pedidoData),
+                    new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Firestore timeout - tardó más de 10 segundos')), 10000)
+                    )
+                ]);
 
                 console.log('💾 [FIRESTORE] Pedido guardado exitosamente:', docRef.id);
                 return docRef.id;
