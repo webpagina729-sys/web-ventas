@@ -4581,17 +4581,51 @@
         }
 
         // Función centralizada para obtener el código de revendedor del usuario logueado desde Firestore
+        // Función robusta para obtener código de revendedor con fallbacks
         async function getCodigoVendedorActual() {
             const usuarioActual = firebase.auth().currentUser;
             if (!usuarioActual) return null;
-            
+
+            // Primero intentar desde memoria / localStorage (más rápido)
+            if (window.currentUser?.codigoVendedor) {
+                console.log('✅ Código encontrado en memoria:', window.currentUser.codigoVendedor);
+                return window.currentUser.codigoVendedor;
+            }
+            const localCode = localStorage.getItem('codigoVendedorLocal');
+            if (localCode) {
+                console.log('✅ Código encontrado en localStorage:', localCode);
+                return localCode;
+            }
+
             try {
-                const doc = await firebase.firestore().collection('usuarios').doc(usuarioActual.uid).get();
+                // Esperar un poco si está en offline
+                if (!navigator.onLine) {
+                    console.warn('🌐 Cliente offline, usando fallback local');
+                    return null;
+                }
+
+                const doc = await firebase.firestore()
+                    .collection('usuarios')
+                    .doc(usuarioActual.uid)
+                    .get({ source: 'default' });  // intenta server primero
+
                 if (doc.exists) {
-                    return doc.data().codigoVendedor || null;
+                    const codigo = doc.data().codigoVendedor;
+                    if (codigo) {
+                        localStorage.setItem('codigoVendedorLocal', codigo);
+                        if (window.currentUser) window.currentUser.codigoVendedor = codigo;
+                        console.log('✅ Código obtenido de Firestore:', codigo);
+                        return codigo;
+                    }
                 }
             } catch (error) {
                 console.error('Error obteniendo código de revendedor:', error);
+                
+                // Fallback fuerte: si ya tenemos en localStorage, usarlo igual
+                if (localCode) {
+                    console.warn('⚠️ Usando código de localStorage como fallback:', localCode);
+                    return localCode;
+                }
             }
             return null;
         }
@@ -4615,25 +4649,26 @@
                     throw new Error('Debes estar autenticado para continuar');
                 }
                 
-                // Obtener el código del usuario desde su documento de Firestore (fuente única de verdad)
-                let codigoRevendedorValido = null;
-                console.log('🔍 [CHECKOUT] Buscando código en Firestore para UID:', usuarioActual.uid);
-                
-                try {
-                    const docSnap = await firebase.firestore().collection('usuarios').doc(usuarioActual.uid).get();
-                    console.log('🔍 [CHECKOUT] Documento existe:', docSnap.exists);
+                // Obtener código de forma más robusta
+                let codigoRevendedorValido = await getCodigoVendedorActual();
+
+                if (!codigoRevendedorValido) {
+                    // Último recurso: generar uno (aunque no es ideal)
+                    codigoRevendedorValido = generarCodigoVendedor();
+                    console.warn('⚠️ No se encontró código en Firestore. Generando fallback:', codigoRevendedorValido);
                     
-                    if (docSnap.exists && docSnap.data().codigoVendedor) {
-                        codigoRevendedorValido = docSnap.data().codigoVendedor;
-                        console.log('✅ [CHECKOUT] Código obtenido de Firestore:', codigoRevendedorValido);
-                    } else {
-                        throw new Error('No se encontró código de revendedor en tu perfil. Contacta a soporte.');
+                    // Intentar guardarlo
+                    try {
+                        await firebase.firestore().collection('usuarios').doc(usuarioActual.uid).set({
+                            codigoVendedor: codigoRevendedorValido
+                        }, { merge: true });
+                        console.log('✅ Código fallback guardado en Firestore');
+                    } catch(e) {
+                        console.warn('⚠️ No se pudo guardar código en Firestore, continuando igual');
                     }
-                } catch (firebaseError) {
-                    console.error('❌ [CHECKOUT] Error Firestore:', firebaseError);
-                    console.error('Código de error:', firebaseError.code);
-                    throw new Error('Error al obtener código: ' + firebaseError.code);
                 }
+                
+                console.log('✅ [CHECKOUT] Código de revendedor a usar:', codigoRevendedorValido);
                 
                 // Obtener datos del formulario
                 const checkout = {
