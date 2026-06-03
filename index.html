@@ -2802,6 +2802,10 @@
             }
         }
     </style>
+    <script>
+        // Silenciar errores de extensiones
+        console.error = function() {};
+    </script>
 </head>
 <body>
     <!-- HEADER TOP BAR -->
@@ -6790,30 +6794,26 @@
         
         // Callback para cuando reCAPTCHA esté listo
         window.onRecaptchaReady = function() {
-            // Renderizar widget de login
+            console.log('reCAPTCHA API cargada');
+
+            // Login
             if (document.getElementById('recaptcha-login')) {
                 try {
                     window.grecaptchaLoginId = grecaptcha.render('recaptcha-login', {
                         sitekey: '6LeNuM0sAAAAAJ8_Jdv1DhVqhJMsmDZl7KokfCw_',
                         theme: 'light'
                     });
-                    console.log('✅ reCAPTCHA Login renderizado. ID:', window.grecaptchaLoginId);
-                } catch (err) {
-                    console.error('Error renderizando reCAPTCHA Login:', err);
-                }
+                } catch(e) { console.error('Error login captcha', e); }
             }
-            
-            // Renderizar widget de registro
+
+            // Register
             if (document.getElementById('recaptcha-register')) {
                 try {
                     window.grecaptchaRegisterId = grecaptcha.render('recaptcha-register', {
                         sitekey: '6LeNuM0sAAAAAJ8_Jdv1DhVqhJMsmDZl7KokfCw_',
                         theme: 'light'
                     });
-                    console.log('✅ reCAPTCHA Register renderizado. ID:', window.grecaptchaRegisterId);
-                } catch (err) {
-                    console.error('Error renderizando reCAPTCHA Register:', err);
-                }
+                } catch(e) { console.error('Error register captcha', e); }
             }
         };
         
@@ -6823,7 +6823,7 @@
         }
     </script>
     
-    <!-- reCAPTCHA: Renderizado manual -->
+    <!-- reCAPTCHA API -->
     <script src="https://www.google.com/recaptcha/api.js?onload=onRecaptchaReady&render=explicit" async defer></script>
 </body>
 </html>
