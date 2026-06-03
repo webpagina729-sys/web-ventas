@@ -4440,7 +4440,7 @@
             updateCartDisplay();
             saveCartToFirebase(window.cart);
             
-            closeDetails();
+            closeDetailsShoes();
             document.getElementById('modal-cart').classList.add('active');
             window.selectedTalle = null;
         }
@@ -4597,6 +4597,11 @@
 
         function closeCart() {
             document.getElementById('modal-cart').classList.remove('active');
+            
+            // Si estamos en el catálogo de calzados, volver al catálogo
+            if (window.currentCatalog === 'calzados') {
+                mostrarCatalogo();
+            }
         }
 
         function closeCartIfClickBackground(e) {
