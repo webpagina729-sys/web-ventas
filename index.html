@@ -4771,38 +4771,15 @@
                 console.log('🚀 [CHECKOUT] Iniciando proceso de compra...');
                 const total = cart.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
                 
-                // PRIMERO: Verificar que el usuario esté autenticado
                 const usuarioActual = firebase.auth().currentUser;
-                console.log('🔍 [CHECKOUT] Usuario autenticado:', !!usuarioActual);
-                console.log('🔍 [CHECKOUT] UID:', usuarioActual?.uid);
-                console.log('🔍 [CHECKOUT] Conexión en línea:', navigator.onLine);
-                
-                if (!usuarioActual) {
-                    throw new Error('Debes estar autenticado para continuar');
-                }
-                
-                // Obtener código de forma más robusta
-                let codigoRevendedorValido = await getCodigoVendedorActual();
+                if (!usuarioActual) throw new Error('Debes estar autenticado');
 
+                let codigoRevendedorValido = await getCodigoVendedorActual();
                 if (!codigoRevendedorValido) {
-                    // Último recurso: generar uno (aunque no es ideal)
                     codigoRevendedorValido = generarCodigoVendedor();
-                    console.warn('⚠️ No se encontró código en Firestore. Generando fallback:', codigoRevendedorValido);
-                    
-                    // Intentar guardarlo
-                    try {
-                        await firebase.firestore().collection('usuarios').doc(usuarioActual.uid).set({
-                            codigoVendedor: codigoRevendedorValido
-                        }, { merge: true });
-                        console.log('✅ Código fallback guardado en Firestore');
-                    } catch(e) {
-                        console.warn('⚠️ No se pudo guardar código en Firestore, continuando igual');
-                    }
+                    console.warn('⚠️ Usando código generado:', codigoRevendedorValido);
                 }
-                
-                console.log('✅ [CHECKOUT] Código de revendedor a usar:', codigoRevendedorValido);
-                
-                // Obtener datos del formulario
+
                 const checkout = {
                     nombre: document.getElementById('checkout-nombre').value.trim(),
                     apellido: document.getElementById('checkout-apellido').value.trim(),
@@ -4816,44 +4793,24 @@
                     codigoRevendedor: codigoRevendedorValido
                 };
 
-                // VALIDACIONES
-                if (!checkout.nombre) throw new Error('Nombre requerido');
-                if (!checkout.apellido) throw new Error('Apellido requerido');
-                if (!checkout.email) throw new Error('Email requerido');
-                if (!checkout.telefono) throw new Error('Teléfono requerido');
-                if (!checkout.provincia) throw new Error('Provincia requerida');
-                if (!checkout.ciudad) throw new Error('Ciudad requerida');
-                if (!checkout.cp) throw new Error('Código postal requerido');
-                if (!checkout.direccion) throw new Error('Dirección requerida');
-                
-                console.log('✅ [CHECKOUT] Validaciones pasadas');
+                // Validaciones básicas
+                if (!checkout.nombre || !checkout.apellido || !checkout.email || !checkout.telefono || 
+                    !checkout.provincia || !checkout.ciudad || !checkout.cp || !checkout.direccion) {
+                    throw new Error('Por favor completa todos los campos obligatorios');
+                }
 
-            // Calcular totales y ganancias ANTES de enviar a pago
                 const totales = calculateOrderTotals(cart);
-                console.log('✅ [CHECKOUT] Totales calculados:', totales);
-
-                // Mostrar estado de carga
+                
                 if (payButton) {
                     payButton.disabled = true;
                     payButton.textContent = 'Procesando...';
-                    console.log('✅ [CHECKOUT] Botón deshabilitado, texto: Procesando...');
                 }
-                
-                // 🔴 CREAR PEDIDO EN FIRESTORE ANTES DE MERCADO PAGO (ESTRATEGIA DE RESILENCIA)
+
+                // 1. Guardar pedido primero
                 const pedidoId = await savePedidoToFirestore(checkout, cart, totales);
-                
-                if (!pedidoId) {
-                    throw new Error('No se pudo crear el pedido. Por favor intenta nuevamente.');
-                }
-                
-                console.log('✅ [CHECKOUT] Pedido creado en Firestore:', pedidoId);
-                
-                // Actualizar estadísticas del usuario
-                if (firebase.auth().currentUser) {
-                    await updateUserStatistics(firebase.auth().currentUser.uid);
-                }
-                
-                // Estructura que el Worker espera (alineada con handleCreatePreference)
+                if (!pedidoId) throw new Error('No se pudo guardar el pedido');
+
+                // 2. Enviar al Worker
                 const requestBody = {
                     items: cart.map(item => ({
                         title: item.nombre,
@@ -4866,10 +4823,7 @@
                         surname: checkout.apellido,
                         email: checkout.email,
                         phone: { number: checkout.telefono },
-                        address: {
-                            street_name: checkout.direccion,
-                            zip_code: checkout.cp
-                        }
+                        address: { street_name: checkout.direccion, zip_code: checkout.cp }
                     },
                     back_urls: {
                         success: window.location.origin + '?status=success&pedidoId=' + pedidoId,
@@ -4877,99 +4831,43 @@
                         pending: window.location.origin + '?status=pending&pedidoId=' + pedidoId
                     },
                     auto_return: 'approved',
-                    external_reference: pedidoId,  // 🔴 CRUCIAL: Usar pedidoId para rastreabilidad
-                    notification_url: 'https://workerpagos.tuweb.workers.dev/api/mp/webhook?pedidoId=' + pedidoId,
+                    external_reference: pedidoId,
                     metadata: {
-                        pedidoId: pedidoId,  // 🔴 Incluir ID del pedido para el Worker
                         cliente: checkout,
                         carrito: cart,
                         codigoVendedor: codigoRevendedorValido,
-                        uid: firebase.auth().currentUser?.uid || '',
-                        timestampCreacion: new Date().toISOString()
+                        uid: usuarioActual.uid,
+                        pedidoId: pedidoId
                     }
                 };
 
-                console.log('🌐 [CHECKOUT] ════════════════════════════════════════════════════════════');
-                console.log('🌐 [CHECKOUT] ENVIANDO AL WORKER - Estructura Corregida para Mercado Pago');
-                console.log('🌐 [CHECKOUT] ════════════════════════════════════════════════════════════');
-                
-                console.log('👤 [CHECKOUT] DATOS DEL CLIENTE:');
-                console.log('   ├─ Nombre:', requestBody.payer.name, requestBody.payer.surname);
-                console.log('   ├─ Email:', requestBody.payer.email);
-                console.log('   ├─ Teléfono:', requestBody.payer.phone.number);
-                console.log('   └─ Dirección:', requestBody.payer.address.street_name);
-                
-                console.log('📦 [CHECKOUT] PRODUCTOS (' + requestBody.items.length + ' item(s)):');
-                requestBody.items.forEach((item, idx) => {
-                    console.log(`   ├─ [${idx + 1}] ${item.title}`);
-                    console.log(`   │  ├─ Cantidad: ${item.quantity}`);
-                    console.log(`   │  └─ Precio unitario: $${item.unit_price}`);
-                });
-                
-                console.log('🔗 [CHECKOUT] METADATA:');
-                console.log('   ├─ Código Vendedor:', requestBody.metadata.codigoVendedor);
-                console.log('   ├─ Usuario UID:', requestBody.metadata.uid);
-                console.log('   ├─ External Reference:', requestBody.external_reference);
-                console.log('   └─ Back URLs:', requestBody.back_urls);
-                
-                console.log('🌐 [CHECKOUT] URL del Worker:', WORKER_URL + MP_ENDPOINT);
-                console.log('🌐 [CHECKOUT] ════════════════════════════════════════════════════════════');
-                
-                // FETCH EXACTO AL WORKER
-                const response = await fetch(WORKER_URL + MP_ENDPOINT, {
+                const response = await fetch(WORKER_URL + '/api/mp/create-preference', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(requestBody)
                 });
 
-                console.log('📬 [CHECKOUT] ════════════════════════════════════════════════════════════');
-                console.log('📬 [CHECKOUT] RESPUESTA DEL WORKER');
-                console.log('📬 [CHECKOUT] ════════════════════════════════════════════════════════════');
-                console.log('📬 [CHECKOUT] HTTP Status:', response.status);
-
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    console.error('❌ [CHECKOUT] Error del Worker:', JSON.stringify(errorData, null, 2));
-                    throw new Error(errorData.error || 'Error al procesar el pago (Worker respondió con error)');
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `Error del servidor: ${response.status}`);
                 }
 
                 const data = await response.json();
-                console.log('✅ [CHECKOUT] Respuesta exitosa:');
-                console.log('   ├─ Preferencia ID:', data.preferenciaId);
-                console.log('   ├─ Init Point (producción):', data.init_point);
-                console.log('   └─ Sandbox Init Point (pruebas):', data.sandbox_init_point);
-                console.log('📬 [CHECKOUT] ════════════════════════════════════════════════════════════');
 
-                // REDIRECCIÓN FINAL A MERCADO PAGO
                 if (data.init_point) {
-                    console.log('🎯 [CHECKOUT] REDIRIGIENDO A MERCADO PAGO...');
-                    console.log('🎯 [CHECKOUT] URL:', data.init_point);
                     window.location.href = data.init_point;
                 } else {
-                    throw new Error('No se obtuvo la URL de pago de Mercado Pago. Respuesta: ' + JSON.stringify(data));
+                    throw new Error('No se recibió URL de pago de Mercado Pago');
                 }
 
             } catch (error) {
-                console.error('❌ [CHECKOUT] ERROR COMPLETO:', error);
-                console.error('Mensaje:', error.message);
-                console.error('Stack:', error.stack);
-                
-                alert(
-                    '❌ Error al procesar el pago\n\n' +
-                    'Error: ' + error.message + '\n\n' +
-                    'Worker: ' + WORKER_URL + '\n' +
-                    'Endpoint: ' + MP_ENDPOINT + '\n\n' +
-                    'Abre DevTools (F12) → Console para más detalles'
-                );
+                console.error('❌ [CHECKOUT] ERROR:', error);
+                alert('❌ Error: ' + error.message + '\n\nRevisa la consola (F12) para más detalles.');
             } finally {
-                // SIEMPRE restaurar el botón, sin excepciones
-                console.log('🔄 [CHECKOUT] Restaurando estado del botón...');
+                // ← ESTO ES CLAVE: Siempre restaurar el botón
                 if (payButton) {
                     payButton.disabled = false;
                     payButton.textContent = originalButtonText;
-                    console.log('✅ [CHECKOUT] Botón restaurado:', originalButtonText);
                 }
             }
         }
