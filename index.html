@@ -4765,20 +4765,26 @@
         // Procesar pago una vez rellenado el formulario
         async function submitCheckoutAndPay() {
             const payButton = document.getElementById('btn-checkout-pay');
+            
+            // Evitar doble ejecución
+            if (payButton && payButton.disabled) return;
+            
             const originalButtonText = payButton ? payButton.textContent : 'Comprar Ahora';
             
             try {
                 console.log('🚀 [CHECKOUT] Iniciando proceso de compra...');
-                const total = cart.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
-                
+
                 const usuarioActual = firebase.auth().currentUser;
+                console.log('👤 [CHECKOUT] Usuario:', usuarioActual ? usuarioActual.uid : 'NO AUTENTICADO');
                 if (!usuarioActual) throw new Error('Debes estar autenticado');
 
-                let codigoRevendedorValido = await getCodigoVendedorActual();
-                if (!codigoRevendedorValido) {
-                    codigoRevendedorValido = generarCodigoVendedor();
-                    console.warn('⚠️ Usando código generado:', codigoRevendedorValido);
+                if (payButton) {
+                    payButton.disabled = true;
+                    payButton.textContent = 'Procesando...';
                 }
+
+                let codigoRevendedorValido = await getCodigoVendedorActual();
+                console.log('🏷️ [CHECKOUT] Código vendedor:', codigoRevendedorValido);
 
                 const checkout = {
                     nombre: document.getElementById('checkout-nombre').value.trim(),
@@ -4789,28 +4795,40 @@
                     ciudad: document.getElementById('checkout-ciudad').value.trim(),
                     cp: document.getElementById('checkout-cp').value.trim(),
                     direccion: document.getElementById('checkout-direccion').value.trim(),
-                    observaciones: document.getElementById('checkout-observaciones').value.trim(),
+                    observaciones: document.getElementById('checkout-observaciones')?.value.trim() || '',
                     codigoRevendedor: codigoRevendedorValido
                 };
+                console.log('📋 [CHECKOUT] Datos checkout:', checkout);
 
-                // Validaciones básicas
-                if (!checkout.nombre || !checkout.apellido || !checkout.email || !checkout.telefono || 
+                if (!checkout.nombre || !checkout.apellido || !checkout.email || !checkout.telefono ||
                     !checkout.provincia || !checkout.ciudad || !checkout.cp || !checkout.direccion) {
                     throw new Error('Por favor completa todos los campos obligatorios');
                 }
+                console.log('✅ [CHECKOUT] Validaciones OK');
 
-                const totales = calculateOrderTotals(cart);
-                
-                if (payButton) {
-                    payButton.disabled = true;
-                    payButton.textContent = 'Procesando...';
+                let totales;
+                try {
+                    totales = calculateOrderTotals(cart);
+                    console.log('💰 [CHECKOUT] Totales calculados:', totales);
+                } catch (e) {
+                    console.error('❌ [CHECKOUT] Error en calculateOrderTotals:', e);
+                    throw e;
                 }
 
-                // 1. Guardar pedido primero
-                const pedidoId = await savePedidoToFirestore(checkout, cart, totales);
+                let pedidoId;
+                try {
+                    console.log('💾 [CHECKOUT] Guardando pedido en Firestore...');
+                    pedidoId = await savePedidoToFirestore(checkout, cart, totales);
+                    console.log('✅ [CHECKOUT] Pedido guardado con ID:', pedidoId);
+                } catch (e) {
+                    console.error('❌ [CHECKOUT] Error en savePedidoToFirestore:', e);
+                    throw e;
+                }
+
                 if (!pedidoId) throw new Error('No se pudo guardar el pedido');
 
-                // 2. Enviar al Worker
+                console.log('📡 [CHECKOUT] Llamando al Worker...');
+
                 const requestBody = {
                     items: cart.map(item => ({
                         title: item.nombre,
@@ -4847,24 +4865,28 @@
                     body: JSON.stringify(requestBody)
                 });
 
+                console.log('📨 [CHECKOUT] Respuesta del Worker - status:', response.status);
+
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({}));
+                    console.error('❌ [CHECKOUT] Error del Worker:', errorData);
                     throw new Error(errorData.error || `Error del servidor: ${response.status}`);
                 }
 
                 const data = await response.json();
+                console.log('✅ [CHECKOUT] Datos del Worker:', data);
 
                 if (data.init_point) {
+                    console.log('🔀 [CHECKOUT] Redirigiendo a Mercado Pago:', data.init_point);
                     window.location.href = data.init_point;
                 } else {
                     throw new Error('No se recibió URL de pago de Mercado Pago');
                 }
 
             } catch (error) {
-                console.error('❌ [CHECKOUT] ERROR:', error);
-                alert('❌ Error: ' + error.message + '\n\nRevisa la consola (F12) para más detalles.');
+                console.error('❌ [CHECKOUT] ERROR FINAL:', error.message, error);
+                alert('❌ Error: ' + error.message);
             } finally {
-                // ← ESTO ES CLAVE: Siempre restaurar el botón
                 if (payButton) {
                     payButton.disabled = false;
                     payButton.textContent = originalButtonText;
