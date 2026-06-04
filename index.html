@@ -2999,7 +2999,7 @@
     <!-- MODAL ZOOM -->
     <div class="modal-zoom" id="modal-zoom" onclick="closeZoomIfClickBackground(event)">
         <div class="modal-zoom-content">
-            <button class="modal-close" onclick="closeZoom()">✕</button>
+            <button class="modal-close" onclick="closeZoom()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Cerrar</button>
             <img id="zoom-image" class="modal-zoom-img" src="" alt="Zoom" onclick="toggleZoom(event)">
         </div>
     </div>
@@ -3048,7 +3048,7 @@
     <!-- MODAL CARRITO -->
     <div class="modal-cart" id="modal-cart" onclick="closeCartIfClickBackground(event)">
         <div class="modal-cart-content">
-            <button class="modal-cart-close" onclick="closeCart()">✕</button>
+            <button class="modal-cart-close" onclick="closeCart()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; margin-bottom: 10px;">Cerrar</button>
             <div class="modal-cart-header">
                 <h2>Tu Pedido por Encargo</h2>
                 <p class="cart-info">Mínimo de encargue: $150.000</p>
@@ -3084,7 +3084,7 @@
         <div class="checkout-container">
             <div class="checkout-header">
                 💳 Datos de Envío
-                <button class="checkout-close" onclick="closeCheckout()">✕</button>
+                <button class="checkout-close" onclick="closeCheckout()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Cerrar</button>
             </div>
             <form class="checkout-form" id="checkout-form">
                 <div class="form-group">
@@ -3138,7 +3138,7 @@
     <!-- MODAL AUTENTICACIÓN - LOGIN/REGISTRO CON FIREBASE -->
     <div class="auth-modal" id="auth-modal" onclick="closeAuthIfClickBackground(event)">
         <div class="auth-modal-content">
-            <button class="auth-modal-close" onclick="closeAuthModal()">✕</button>
+            <button class="auth-modal-close" onclick="closeAuthModal()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Cerrar</button>
             
             <!-- FORMULARIO LOGIN -->
             <div id="login-form-container" class="auth-form-container" style="display: block;">
@@ -3238,7 +3238,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2 class="modal-title">Mi Perfil</h2>
-                <button class="modal-close" onclick="closeProfileModal()">×</button>
+                <button class="modal-close" onclick="closeProfileModal()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Cerrar</button>
             </div>
 
             <div class="modal-section">
@@ -3278,7 +3278,7 @@
         <div class="modal-content" style="max-width: 500px;">
             <div class="modal-header">
                 <h2 class="modal-title">Importante</h2>
-                <button class="modal-close" onclick="closeEmailConfirmationModal()">×</button>
+                <button class="modal-close" onclick="closeEmailConfirmationModal()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Cerrar</button>
             </div>
 
             <div style="text-align: center; padding: 20px 0;">
@@ -3301,7 +3301,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2 class="modal-title">Guía Rápida</h2>
-                <button class="modal-close" onclick="closeGuideModal()">×</button>
+                <button class="modal-close" onclick="closeGuideModal()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Cerrar</button>
             </div>
 
             <div class="guide-item">
@@ -3337,7 +3337,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2 class="modal-title">Tus Estadísticas</h2>
-                <button class="modal-close" onclick="closeStatisticsModal()">×</button>
+                <button class="modal-close" onclick="closeStatisticsModal()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Cerrar</button>
             </div>
 
             <div style="padding: 20px 0;">
@@ -3372,7 +3372,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2 class="modal-title">Agregar productos a tu tienda</h2>
-                <button class="modal-close" onclick="closeProductsModal()">×</button>
+                <button class="modal-close" onclick="closeProductsModal()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Cerrar</button>
             </div>
 
             <div class="product-options">
@@ -3827,8 +3827,11 @@
             }
         });
 
-        // ✅ Variables GLOBALES para que no se pierdan
-        window.cart = [];
+        // ✅ CARRITOS SEPARADOS POR NICHO
+        window.perfumeCart = [];  // Carrito de perfumes
+        window.sneakerCart = [];  // Carrito de zapatillas
+        
+        // Variables GLOBALES para que no se pierdan
         window.currentFilter = 'todos';
         window.currentSort = 'default';
         window.currentSearch = '';
@@ -3845,6 +3848,20 @@
         window.carruselAutoplay = null;  // Para autoplay del carrusel
         window.carruselIndex = 0;
         window.isChangingCatalog = false;  // Flag para evitar cambios concurrentes
+        
+        // ✅ GETTER para carrito actual según catálogo
+        Object.defineProperty(window, 'cart', {
+            get() {
+                return window.currentCatalog === 'calzados' ? window.sneakerCart : window.perfumeCart;
+            },
+            set(value) {
+                if (window.currentCatalog === 'calzados') {
+                    window.sneakerCart = value;
+                } else {
+                    window.perfumeCart = value;
+                }
+            }
+        });
         
         // ✅ Referencia corta para compatibilidad
         let cart = window.cart;
@@ -4050,6 +4067,7 @@
         }
 
         function openDetails(id) {
+            window.currentCatalog = 'perfumes';  // Establecer catálogo de perfumes
             currentProduct = products.find(p => p.id === id);
             document.getElementById('modal-details-image').src = BASE_IMAGE_URL + currentProduct.imagen;
             document.getElementById('modal-details-name').textContent = currentProduct.nombre;
@@ -4407,10 +4425,13 @@
         function addToCart(productId) {
             const currentUser = firebase.auth().currentUser;
             if (!currentUser) {
-                closeDetails();
+                closeDetailsShoes();
                 showSessionRequiredModal();
                 return;
             }
+
+            // Asegurar que currentCatalog es calzados
+            window.currentCatalog = 'calzados';
 
             const product = window.shoes.find(p => p.id === productId);
             if (!product) return;
@@ -4421,14 +4442,14 @@
                 return;
             }
 
-            const existingItem = window.cart.find(item => 
+            const existingItem = window.sneakerCart.find(item => 
                 item.id === productId && item.talle === window.selectedTalle
             );
 
             if (existingItem) {
                 existingItem.cantidad += 1;
             } else {
-                window.cart.push({ 
+                window.sneakerCart.push({ 
                     ...product, 
                     cantidad: 1, 
                     talle: window.selectedTalle,
@@ -4438,7 +4459,7 @@
 
             updateCartCount();
             updateCartDisplay();
-            saveCartToFirebase(window.cart);
+            saveCartToFirebase(window.sneakerCart);
             
             closeDetailsShoes();
             document.getElementById('modal-cart').classList.add('active');
@@ -4454,17 +4475,20 @@
                 return;
             }
             
-            const existingItem = window.cart.find(item => item.id === currentProduct.id);
+            // Asegurar que currentCatalog es perfumes
+            window.currentCatalog = 'perfumes';
+            
+            const existingItem = window.perfumeCart.find(item => item.id === currentProduct.id);
             if (existingItem) {
                 existingItem.cantidad += (currentQty || 1);
             } else {
-                window.cart.push({ ...currentProduct, cantidad: (currentQty || 1) });
+                window.perfumeCart.push({ ...currentProduct, cantidad: (currentQty || 1) });
             }
             updateCartCount();
             updateCartDisplay();
             
             // Guardar carrito en Firebase
-            saveCartToFirebase(window.cart);
+            saveCartToFirebase(window.perfumeCart);
             
             closeDetails();
             document.getElementById('modal-cart').classList.add('active');
@@ -4474,20 +4498,34 @@
         }
 
         function updateCartCount() {
-            const count = cart.reduce((sum, item) => sum + item.cantidad, 0);
+            const activeCart = window.currentCatalog === 'calzados' ? window.sneakerCart : window.perfumeCart;
+            const count = activeCart.reduce((sum, item) => sum + item.cantidad, 0);
             const cartCountEl = document.getElementById('cart-count');
             if (cartCountEl) cartCountEl.textContent = count;
         }
 
         function updateCartDisplay() {
-            if (cart.length === 0) {
+            // Detectar qué carrito mostrar: usar currentCatalog para determinar cuál renderizar
+            const isShoes = window.currentCatalog === 'calzados';
+            const activeCart = isShoes ? window.sneakerCart : window.perfumeCart;
+            const cartType = isShoes ? 'calzados' : 'perfumes';
+
+            if (activeCart.length === 0) {
                 document.getElementById('modal-cart-items').innerHTML = '<p style="text-align: center; color: var(--text-light); padding: 20px;">El carrito está vacío</p>';
                 document.getElementById('btn-pay').disabled = true;
+                const cartSubtotalEl = document.getElementById('cart-subtotal');
+                const cartTotalEl = document.getElementById('cart-total');
+                if (cartSubtotalEl) cartSubtotalEl.textContent = '$0';
+                if (cartTotalEl) cartTotalEl.textContent = '$0';
+                const warningElement = document.getElementById('cart-warning');
+                if (warningElement) warningElement.classList.remove('hidden');
+                const cartFaltaEl = document.getElementById('cart-falta');
+                if (cartFaltaEl) cartFaltaEl.textContent = isShoes ? `12 productos` : `$150.000`;
                 return;
             }
 
             let html = '';
-            cart.forEach(item => {
+            activeCart.forEach((item, idx) => {
                 const talleText = item.talle ? ` - Talle ${item.talle}` : '';
                 html += `
                 <div class="cart-item">
@@ -4498,10 +4536,10 @@
                         <div class="cart-item-name">${item.nombre}${talleText}</div>
                         <div class="cart-item-price">$${item.precio.toLocaleString()}</div>
                         <div class="cart-item-qty-control">
-                            <button class="cart-item-qty-btn" onclick="changeItemQty(${cart.indexOf(item)}, -1)">−</button>
+                            <button class="cart-item-qty-btn" onclick="changeItemQtyFixed(${idx}, -1, '${cartType}')">−</button>
                             <span class="cart-item-qty-display">${item.cantidad}</span>
-                            <button class="cart-item-qty-btn" onclick="changeItemQty(${cart.indexOf(item)}, 1)">+</button>
-                            <button class="cart-item-delete" onclick="removeItemFromCart(${cart.indexOf(item)})">Eliminar</button>
+                            <button class="cart-item-qty-btn" onclick="changeItemQtyFixed(${idx}, 1, '${cartType}')">+</button>
+                            <button class="cart-item-delete" onclick="removeItemFromCartFixed(${idx}, '${cartType}')">Eliminar</button>
                         </div>
                     </div>
                 </div>`;
@@ -4509,13 +4547,9 @@
 
             document.getElementById('modal-cart-items').innerHTML = html;
 
-            // Detectar tipo de carrito (perfumes vs zapatillas)
-            const isShoes = cart.length > 0 && cart[0].talle !== undefined;
+            let totalQty = activeCart.reduce((sum, item) => sum + item.cantidad, 0);
+            let totalPrice = activeCart.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
             
-            let totalQty = cart.reduce((sum, item) => sum + item.cantidad, 0);
-            let totalPrice = cart.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
-            
-            // Update summary
             const subtotal = totalPrice;
             const total = subtotal;
             
@@ -4554,31 +4588,63 @@
             }
         }
 
-        function changeItemQty(index, change) {
-            if (index >= 0 && index < cart.length) {
-                cart[index].cantidad += change;
-                if (cart[index].cantidad <= 0) {
-                    cart.splice(index, 1);
-                } else {
-                    updateCartDisplay();
-                    updateCartCount();
-                    saveCartToFirebase(cart);
+        function changeItemQty(index, cartType) {
+            // cartType: 'perfumes' o 'calzados'
+            // Nota: el tercer argumento es el change (compatibilidad)
+            // Firma real: changeItemQty(index, change, cartType)
+            // Redirigir: el segundo arg puede ser change (legacy) o cartType
+            // Se llama desde HTML como changeItemQty(idx, change, cartType)
+            // Ver updateCartDisplay para la firma correcta
+            console.warn('changeItemQty llamado con firma incorrecta');
+        }
+
+        function changeItemQtyFixed(index, change, cartType) {
+            const activeCart = cartType === 'calzados' ? window.sneakerCart : window.perfumeCart;
+            if (index >= 0 && index < activeCart.length) {
+                activeCart[index].cantidad += change;
+                if (activeCart[index].cantidad <= 0) {
+                    activeCart.splice(index, 1);
                 }
+                // Forzar currentCatalog al tipo correcto antes de actualizar display
+                const prevCatalog = window.currentCatalog;
+                window.currentCatalog = cartType;
+                updateCartDisplay();
+                updateCartCount();
+                saveCartToFirebase(activeCart);
+                window.currentCatalog = prevCatalog;
+            }
+        }
+
+        function removeItemFromCartFixed(index, cartType) {
+            const activeCart = cartType === 'calzados' ? window.sneakerCart : window.perfumeCart;
+            if (index >= 0 && index < activeCart.length) {
+                activeCart.splice(index, 1);
+                const prevCatalog = window.currentCatalog;
+                window.currentCatalog = cartType;
+                updateCartDisplay();
+                updateCartCount();
+                if (firebase.auth().currentUser) {
+                    if (activeCart.length === 0) {
+                        clearCartFromFirebase();
+                    } else {
+                        saveCartToFirebase(activeCart);
+                    }
+                }
+                window.currentCatalog = prevCatalog;
             }
         }
 
         function removeItemFromCart(index) {
-            if (index >= 0 && index < cart.length) {
-                cart.splice(index, 1);
+            // Legacy: detectar carrito activo por currentCatalog
+            if (index >= 0 && index < window.cart.length) {
+                window.cart.splice(index, 1);
                 updateCartDisplay();
                 updateCartCount();
-                
-                // Guardar cambios en Firebase
                 if (firebase.auth().currentUser) {
-                    if (cart.length === 0) {
+                    if (window.cart.length === 0) {
                         clearCartFromFirebase();
                     } else {
-                        saveCartToFirebase(cart);
+                        saveCartToFirebase(window.cart);
                     }
                 }
             }
@@ -4624,7 +4690,7 @@
             modalDiv.innerHTML = `
                 <div class="session-required-content">
                     <div class="session-required-header">
-                        <button class="session-required-close" onclick="closeSessionRequiredModal()">✕</button>
+                        <button class="session-required-close" onclick="closeSessionRequiredModal()" style="padding: 6px 14px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 13px;">Cerrar</button>
                     </div>
                     <div class="session-required-body">
                         <div class="session-required-icon">🔐</div>
@@ -4667,11 +4733,22 @@
         
         // Abrir modal de checkout antes de pagar
         async function proceedToPayment() {
-            const total = cart.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+            const isShoes = window.currentCatalog === 'calzados';
+            const activeCart = isShoes ? window.sneakerCart : window.perfumeCart;
+            const total = activeCart.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+            const quantity = activeCart.reduce((sum, item) => sum + item.cantidad, 0);
             
-            if (total < MIN_ORDER) {
-                alert('⚠️ Pedido mínimo no alcanzado');
-                return;
+            // Validar según el tipo de carrito
+            if (isShoes) {
+                if (quantity < MIN_ORDER_SHOES_QTY) {
+                    alert('⚠️ Debes agregar al menos ' + MIN_ORDER_SHOES_QTY + ' zapatillas');
+                    return;
+                }
+            } else {
+                if (total < MIN_ORDER_PERFUMES) {
+                    alert('⚠️ El monto mínimo de compra es $' + MIN_ORDER_PERFUMES.toLocaleString());
+                    return;
+                }
             }
 
             // Mostrar modal de checkout
@@ -4819,7 +4896,7 @@
 
                 let totales;
                 try {
-                    totales = calculateOrderTotals(cart);
+                    totales = calculateOrderTotals(window.cart);
                     console.log('💰 [CHECKOUT] Totales calculados:', totales);
                 } catch (e) {
                     console.error('❌ [CHECKOUT] Error en calculateOrderTotals:', e);
@@ -4829,7 +4906,7 @@
                 let pedidoId;
                 try {
                     console.log('💾 [CHECKOUT] Guardando pedido en Firestore...');
-                    pedidoId = await savePedidoToFirestore(checkout, cart, totales);
+                    pedidoId = await savePedidoToFirestore(checkout, window.cart, totales);
                     console.log('✅ [CHECKOUT] Pedido guardado con ID:', pedidoId);
                 } catch (e) {
                     console.error('❌ [CHECKOUT] Error en savePedidoToFirestore:', e);
@@ -4841,7 +4918,7 @@
                 console.log('📡 [CHECKOUT] Llamando al Worker...');
 
                 const requestBody = {
-                    items: cart.map(item => ({
+                    items: window.cart.map(item => ({
                         title: item.nombre,
                         quantity: item.cantidad,
                         unit_price: Number(item.precio),
@@ -4863,7 +4940,7 @@
                     external_reference: pedidoId,
                     metadata: {
                         cliente: checkout,
-                        carrito: cart,
+                        carrito: window.cart,
                         codigoVendedor: codigoRevendedorValido,
                         uid: usuarioActual.uid,
                         pedidoId: pedidoId
@@ -5611,10 +5688,16 @@
                 }
             }
 
-            // Cargar carrito desde Firebase
+            // Cargar carritos desde Firebase (para ambos nichos)
             loadCartFromFirebase().then(cartItems => {
                 if (cartItems.length > 0) {
-                    cart = cartItems;
+                    // Detectar si es carrito de perfumes o zapatillas
+                    const isShoes = cartItems.length > 0 && cartItems[0].talle !== undefined;
+                    if (isShoes) {
+                        window.sneakerCart = cartItems;
+                    } else {
+                        window.perfumeCart = cartItems;
+                    }
                     updateCartCount();
                 }
             });
@@ -5743,6 +5826,7 @@
         }
         
         function openDetailsShoes(id) {
+            window.currentCatalog = 'calzados';  // Establecer catálogo de zapatillas
             const product = window.shoes.find(p => p.id === id);
             if (!product) return;
             
