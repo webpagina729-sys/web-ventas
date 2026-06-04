@@ -520,17 +520,8 @@
             position: absolute;
             top: 10px;
             right: 10px;
-            background: var(--primary);
-            color: white;
-            width: 40px;
-            height: 40px;
-            border: none;
-            border-radius: 50%;
-            font-size: 24px;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            transition: opacity 0.2s;
         }
 
         /* MODAL DETALLES */
@@ -732,23 +723,13 @@
         }
         .modal-cart-close {
             position: absolute;
-            top: 16px;
-            right: 16px;
-            background: transparent;
-            border: none;
-            font-size: 24px;
+            top: 12px;
+            right: 12px;
             cursor: pointer;
-            color: var(--text-light);
-            transition: color .2s;
-            padding: 0;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            transition: opacity .2s;
         }
         .modal-cart-close:hover {
-            color: var(--text);
+            opacity: 0.8;
         }
         .modal-cart-header {
             padding: 28px 24px 20px;
@@ -1021,23 +1002,12 @@
             position: absolute;
             top: 12px;
             right: 12px;
-            background: none;
-            border: none;
-            font-size: 24px;
             cursor: pointer;
-            color: #666;
-            padding: 0;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: background 0.2s;
+            transition: opacity 0.2s;
         }
 
         .auth-modal-close:hover {
-            background: #f0f0f0;
+            opacity: 0.8;
         }
 
         .auth-form-container h2 {
@@ -1615,28 +1585,17 @@
         }
 
         .modal-close {
-            background: none;
-            border: none;
-            font-size: 24px;
             cursor: pointer;
-            color: var(--text-light);
-            padding: 0;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
+            transition: opacity 0.2s ease;
             flex-shrink: 0;
         }
 
         .modal-close:hover {
-            color: var(--text);
-            transform: scale(1.15);
+            opacity: 0.8;
         }
 
         .modal-close:active {
-            transform: scale(1.05);
+            opacity: 0.6;
         }
 
         .modal-section {
@@ -2999,7 +2958,7 @@
     <!-- MODAL ZOOM -->
     <div class="modal-zoom" id="modal-zoom" onclick="closeZoomIfClickBackground(event)">
         <div class="modal-zoom-content">
-            <button class="modal-close" onclick="closeZoom()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Cerrar</button>
+            <button class="modal-close" onclick="closeZoom()" style="padding: 4px 12px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 12px; line-height: 1.4; white-space: nowrap;">Cerrar</button>
             <img id="zoom-image" class="modal-zoom-img" src="" alt="Zoom" onclick="toggleZoom(event)">
         </div>
     </div>
@@ -3048,7 +3007,7 @@
     <!-- MODAL CARRITO -->
     <div class="modal-cart" id="modal-cart" onclick="closeCartIfClickBackground(event)">
         <div class="modal-cart-content">
-            <button class="modal-cart-close" onclick="closeCart()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; margin-bottom: 10px;">Cerrar</button>
+            <button class="modal-cart-close" onclick="closeCart()" style="padding: 4px 12px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 12px; line-height: 1.4; white-space: nowrap;">Cerrar</button>
             <div class="modal-cart-header">
                 <h2>Tu Pedido por Encargo</h2>
                 <p class="cart-info">Mínimo de encargue: $150.000</p>
@@ -3084,7 +3043,7 @@
         <div class="checkout-container">
             <div class="checkout-header">
                 💳 Datos de Envío
-                <button class="checkout-close" onclick="closeCheckout()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Cerrar</button>
+                <button class="checkout-close" onclick="closeCheckout()" style="padding: 4px 12px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 12px; line-height: 1.4; white-space: nowrap;">Cerrar</button>
             </div>
             <form class="checkout-form" id="checkout-form">
                 <div class="form-group">
@@ -3138,7 +3097,7 @@
     <!-- MODAL AUTENTICACIÓN - LOGIN/REGISTRO CON FIREBASE -->
     <div class="auth-modal" id="auth-modal" onclick="closeAuthIfClickBackground(event)">
         <div class="auth-modal-content">
-            <button class="auth-modal-close" onclick="closeAuthModal()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Cerrar</button>
+            <button class="auth-modal-close" onclick="closeAuthModal()" style="padding: 4px 12px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 12px; line-height: 1.4; white-space: nowrap;">Cerrar</button>
             
             <!-- FORMULARIO LOGIN -->
             <div id="login-form-container" class="auth-form-container" style="display: block;">
@@ -3238,7 +3197,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2 class="modal-title">Mi Perfil</h2>
-                <button class="modal-close" onclick="closeProfileModal()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Cerrar</button>
+                <button class="modal-close" onclick="closeProfileModal()" style="padding: 4px 12px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 12px; line-height: 1.4; white-space: nowrap;">Cerrar</button>
             </div>
 
             <div class="modal-section">
@@ -3278,7 +3237,7 @@
         <div class="modal-content" style="max-width: 500px;">
             <div class="modal-header">
                 <h2 class="modal-title">Importante</h2>
-                <button class="modal-close" onclick="closeEmailConfirmationModal()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Cerrar</button>
+                <button class="modal-close" onclick="closeEmailConfirmationModal()" style="padding: 4px 12px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 12px; line-height: 1.4; white-space: nowrap;">Cerrar</button>
             </div>
 
             <div style="text-align: center; padding: 20px 0;">
@@ -3301,7 +3260,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2 class="modal-title">Guía Rápida</h2>
-                <button class="modal-close" onclick="closeGuideModal()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Cerrar</button>
+                <button class="modal-close" onclick="closeGuideModal()" style="padding: 4px 12px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 12px; line-height: 1.4; white-space: nowrap;">Cerrar</button>
             </div>
 
             <div class="guide-item">
@@ -3337,7 +3296,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2 class="modal-title">Tus Estadísticas</h2>
-                <button class="modal-close" onclick="closeStatisticsModal()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Cerrar</button>
+                <button class="modal-close" onclick="closeStatisticsModal()" style="padding: 4px 12px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 12px; line-height: 1.4; white-space: nowrap;">Cerrar</button>
             </div>
 
             <div style="padding: 20px 0;">
@@ -3372,7 +3331,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2 class="modal-title">Agregar productos a tu tienda</h2>
-                <button class="modal-close" onclick="closeProductsModal()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Cerrar</button>
+                <button class="modal-close" onclick="closeProductsModal()" style="padding: 4px 12px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 12px; line-height: 1.4; white-space: nowrap;">Cerrar</button>
             </div>
 
             <div class="product-options">
@@ -4690,7 +4649,7 @@
             modalDiv.innerHTML = `
                 <div class="session-required-content">
                     <div class="session-required-header">
-                        <button class="session-required-close" onclick="closeSessionRequiredModal()" style="padding: 6px 14px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 13px;">Cerrar</button>
+                        <button class="session-required-close" onclick="closeSessionRequiredModal()" style="padding: 4px 12px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 12px; line-height: 1.4; white-space: nowrap;">Cerrar</button>
                     </div>
                     <div class="session-required-body">
                         <div class="session-required-icon">🔐</div>
