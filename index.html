@@ -4874,7 +4874,46 @@
 
                 if (!pedidoId) throw new Error('No se pudo guardar el pedido');
 
-                console.log('📡 [CHECKOUT] Llamando al Worker...');
+                // ✅ REGISTRAR PEDIDO COMO PENDIENTE EN COLECCIÓN RAÍZ (para el panel de gestión)
+                console.log('📋 [CHECKOUT] Registrando pedido pendiente en Worker /api/pedido...');
+                try {
+                    const nicho = window.currentCatalog === 'calzados' ? 'calzados' : 'perfumes';
+                    const activeCart = window.currentCatalog === 'calzados' ? window.sneakerCart : window.perfumeCart;
+                    await fetch(WORKER_URL + '/api/pedido', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            pedidoId: pedidoId,
+                            cliente: {
+                                nombre:       checkout.nombre,
+                                apellido:     checkout.apellido,
+                                email:        checkout.email,
+                                telefono:     checkout.telefono,
+                                provincia:    checkout.provincia,
+                                ciudad:       checkout.ciudad,
+                                cp:           checkout.cp,
+                                direccion:    checkout.direccion,
+                                observaciones: checkout.observaciones || ''
+                            },
+                            productos: activeCart.map(item => ({
+                                nombre:   item.nombre,
+                                cantidad: item.cantidad,
+                                precio:   Number(item.precio),
+                                talle:    item.talle || null
+                            })),
+                            total:          totales.total || activeCart.reduce((s, i) => s + (i.precio * i.cantidad), 0),
+                            codigoVendedor: codigoRevendedorValido,
+                            uid:            usuarioActual.uid,
+                            nicho:          nicho
+                        })
+                    });
+                    console.log('✅ [CHECKOUT] Pedido pendiente registrado en colección raíz');
+                } catch (workerErr) {
+                    // No bloquea el flujo — el pedido ya está guardado en Firestore usuario
+                    console.warn('⚠️ [CHECKOUT] No se pudo registrar en /api/pedido:', workerErr.message);
+                }
+
+                console.log('📡 [CHECKOUT] Llamando al Worker para preferencia MP...');
 
                 const requestBody = {
                     items: window.cart.map(item => ({
