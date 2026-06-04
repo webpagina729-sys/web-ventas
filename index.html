@@ -520,8 +520,17 @@
             position: absolute;
             top: 10px;
             right: 10px;
+            background: var(--primary);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 50%;
+            font-size: 24px;
             cursor: pointer;
-            transition: opacity 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         /* MODAL DETALLES */
@@ -723,13 +732,23 @@
         }
         .modal-cart-close {
             position: absolute;
-            top: 12px;
-            right: 12px;
+            top: 16px;
+            right: 16px;
+            background: transparent;
+            border: none;
+            font-size: 24px;
             cursor: pointer;
-            transition: opacity .2s;
+            color: var(--text-light);
+            transition: color .2s;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .modal-cart-close:hover {
-            opacity: 0.8;
+            color: var(--text);
         }
         .modal-cart-header {
             padding: 28px 24px 20px;
@@ -992,22 +1011,68 @@
             background: white;
             border-radius: 12px;
             width: 90%;
-            max-width: 420px;
+            max-width: 460px;
             padding: 32px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
             position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        /* Password input with eye toggle */
+        .password-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .password-input-wrapper input {
+            width: 100%;
+            padding-right: 44px !important;
+        }
+        .password-toggle-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+            line-height: 0;
+        }
+        .password-toggle-btn:hover {
+            color: var(--primary);
+        }
+        .password-toggle-btn:focus {
+            outline: none;
         }
 
         .auth-modal-close {
             position: absolute;
             top: 12px;
             right: 12px;
+            background: none;
+            border: none;
+            font-size: 24px;
             cursor: pointer;
-            transition: opacity 0.2s;
+            color: #666;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
         }
 
         .auth-modal-close:hover {
-            opacity: 0.8;
+            background: #f0f0f0;
         }
 
         .auth-form-container h2 {
@@ -1585,17 +1650,28 @@
         }
 
         .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
             cursor: pointer;
-            transition: opacity 0.2s ease;
+            color: var(--text-light);
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
             flex-shrink: 0;
         }
 
         .modal-close:hover {
-            opacity: 0.8;
+            color: var(--text);
+            transform: scale(1.15);
         }
 
         .modal-close:active {
-            opacity: 0.6;
+            transform: scale(1.05);
         }
 
         .modal-section {
@@ -2750,6 +2826,48 @@
             display: none !important;
         }
 
+        /* GOOGLE SIGN IN BUTTON */
+        .google-divider {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 16px 0;
+            color: var(--text-light);
+            font-size: 13px;
+        }
+        .google-divider::before,
+        .google-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+        .btn-google {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 11px 16px;
+            background: #fff;
+            border: 1px solid #dadce0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #3c4043;
+            cursor: pointer;
+            font-family: var(--font-body);
+            transition: background 0.2s, box-shadow 0.2s;
+            margin-bottom: 4px;
+        }
+        .btn-google:hover {
+            background: #f8f9fa;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+        .btn-google:active {
+            background: #f1f3f4;
+        }
+
         @keyframes slideUp {
             from {
                 opacity: 0;
@@ -2958,7 +3076,7 @@
     <!-- MODAL ZOOM -->
     <div class="modal-zoom" id="modal-zoom" onclick="closeZoomIfClickBackground(event)">
         <div class="modal-zoom-content">
-            <button class="modal-close" onclick="closeZoom()" style="padding: 4px 12px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 12px; line-height: 1.4; white-space: nowrap;">Cerrar</button>
+            <button class="modal-close" onclick="closeZoom()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Cerrar</button>
             <img id="zoom-image" class="modal-zoom-img" src="" alt="Zoom" onclick="toggleZoom(event)">
         </div>
     </div>
@@ -3007,7 +3125,7 @@
     <!-- MODAL CARRITO -->
     <div class="modal-cart" id="modal-cart" onclick="closeCartIfClickBackground(event)">
         <div class="modal-cart-content">
-            <button class="modal-cart-close" onclick="closeCart()" style="padding: 4px 12px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 12px; line-height: 1.4; white-space: nowrap;">Cerrar</button>
+            <button class="modal-cart-close" onclick="closeCart()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; margin-bottom: 10px;">Cerrar</button>
             <div class="modal-cart-header">
                 <h2>Tu Pedido por Encargo</h2>
                 <p class="cart-info">Mínimo de encargue: $150.000</p>
@@ -3043,7 +3161,7 @@
         <div class="checkout-container">
             <div class="checkout-header">
                 💳 Datos de Envío
-                <button class="checkout-close" onclick="closeCheckout()" style="padding: 4px 12px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 12px; line-height: 1.4; white-space: nowrap;">Cerrar</button>
+                <button class="checkout-close" onclick="closeCheckout()">✕</button>
             </div>
             <form class="checkout-form" id="checkout-form">
                 <div class="form-group">
@@ -3097,14 +3215,25 @@
     <!-- MODAL AUTENTICACIÓN - LOGIN/REGISTRO CON FIREBASE -->
     <div class="auth-modal" id="auth-modal" onclick="closeAuthIfClickBackground(event)">
         <div class="auth-modal-content">
-            <button class="auth-modal-close" onclick="closeAuthModal()" style="padding: 4px 12px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 12px; line-height: 1.4; white-space: nowrap;">Cerrar</button>
+            <button class="auth-modal-close" onclick="closeAuthModal()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Cerrar</button>
             
             <!-- FORMULARIO LOGIN -->
             <div id="login-form-container" class="auth-form-container" style="display: block;">
                 <h2>Iniciar Sesión</h2>
+                <button type="button" class="btn-google" onclick="loginWithGoogle()">
+                    <svg width="18" height="18" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+                    Continuar con Google
+                </button>
+                <div class="google-divider">o</div>
                 <form onsubmit="loginUser(event)">
                     <input type="email" id="login-email" placeholder="Correo electrónico" required>
-                    <input type="password" id="login-password" placeholder="Contraseña" required>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="login-password" placeholder="Contraseña" required>
+                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('login-password', this)" tabindex="-1" aria-label="Mostrar contraseña">
+                            <svg class="eye-icon eye-show" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            <svg class="eye-icon eye-hide" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                        </button>
+                    </div>
                     <div id="recaptcha-login" style="margin: 15px 0; display: flex; justify-content: center;"></div>
                     <button type="submit" class="auth-btn">Ingresar</button>
                 </form>
@@ -3116,10 +3245,24 @@
             <!-- FORMULARIO REGISTRO -->
             <div id="register-form-container" class="auth-form-container" style="display: none;">
                 <h2>Crear Cuenta</h2>
+                <button type="button" class="btn-google" onclick="loginWithGoogle()">
+                    <svg width="18" height="18" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+                    Registrarse con Google
+                </button>
+                <div class="google-divider">o</div>
                 <form onsubmit="registerUser(event)">
-                    <input type="text" id="register-nombre" placeholder="Nombre completo" required>
+                    <input type="text" id="register-nombre" placeholder="Nombre" required>
+                    <input type="text" id="register-apellido" placeholder="Apellido" required>
+                    <input type="text" id="register-direccion" placeholder="Dirección" required>
+                    <input type="tel" id="register-telefono" placeholder="Teléfono" required>
                     <input type="email" id="register-email" placeholder="Correo electrónico" required>
-                    <input type="password" id="register-password" placeholder="Contraseña (mín. 6 caracteres)" required minlength="6">
+                    <div class="password-input-wrapper">
+                        <input type="password" id="register-password" placeholder="Contraseña (mín. 6 caracteres)" required minlength="6">
+                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('register-password', this)" tabindex="-1" aria-label="Mostrar contraseña">
+                            <svg class="eye-icon eye-show" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            <svg class="eye-icon eye-hide" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                        </button>
+                    </div>
                     <div id="recaptcha-register" style="margin: 15px 0; display: flex; justify-content: center;"></div>
                     <button type="submit" class="auth-btn">Crear Cuenta</button>
                 </form>
@@ -3197,7 +3340,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2 class="modal-title">Mi Perfil</h2>
-                <button class="modal-close" onclick="closeProfileModal()" style="padding: 4px 12px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 12px; line-height: 1.4; white-space: nowrap;">Cerrar</button>
+                <button class="modal-close" onclick="closeProfileModal()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Cerrar</button>
             </div>
 
             <div class="modal-section">
@@ -3237,7 +3380,7 @@
         <div class="modal-content" style="max-width: 500px;">
             <div class="modal-header">
                 <h2 class="modal-title">Importante</h2>
-                <button class="modal-close" onclick="closeEmailConfirmationModal()" style="padding: 4px 12px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 12px; line-height: 1.4; white-space: nowrap;">Cerrar</button>
+                <button class="modal-close" onclick="closeEmailConfirmationModal()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Cerrar</button>
             </div>
 
             <div style="text-align: center; padding: 20px 0;">
@@ -3260,7 +3403,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2 class="modal-title">Guía Rápida</h2>
-                <button class="modal-close" onclick="closeGuideModal()" style="padding: 4px 12px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 12px; line-height: 1.4; white-space: nowrap;">Cerrar</button>
+                <button class="modal-close" onclick="closeGuideModal()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Cerrar</button>
             </div>
 
             <div class="guide-item">
@@ -3296,7 +3439,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2 class="modal-title">Tus Estadísticas</h2>
-                <button class="modal-close" onclick="closeStatisticsModal()" style="padding: 4px 12px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 12px; line-height: 1.4; white-space: nowrap;">Cerrar</button>
+                <button class="modal-close" onclick="closeStatisticsModal()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Cerrar</button>
             </div>
 
             <div style="padding: 20px 0;">
@@ -3331,7 +3474,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2 class="modal-title">Agregar productos a tu tienda</h2>
-                <button class="modal-close" onclick="closeProductsModal()" style="padding: 4px 12px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 12px; line-height: 1.4; white-space: nowrap;">Cerrar</button>
+                <button class="modal-close" onclick="closeProductsModal()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Cerrar</button>
             </div>
 
             <div class="product-options">
@@ -4457,34 +4600,20 @@
         }
 
         function updateCartCount() {
-            const activeCart = window.currentCatalog === 'calzados' ? window.sneakerCart : window.perfumeCart;
-            const count = activeCart.reduce((sum, item) => sum + item.cantidad, 0);
+            const count = window.cart.reduce((sum, item) => sum + item.cantidad, 0);
             const cartCountEl = document.getElementById('cart-count');
             if (cartCountEl) cartCountEl.textContent = count;
         }
 
         function updateCartDisplay() {
-            // Detectar qué carrito mostrar: usar currentCatalog para determinar cuál renderizar
-            const isShoes = window.currentCatalog === 'calzados';
-            const activeCart = isShoes ? window.sneakerCart : window.perfumeCart;
-            const cartType = isShoes ? 'calzados' : 'perfumes';
-
-            if (activeCart.length === 0) {
+            if (window.cart.length === 0) {
                 document.getElementById('modal-cart-items').innerHTML = '<p style="text-align: center; color: var(--text-light); padding: 20px;">El carrito está vacío</p>';
                 document.getElementById('btn-pay').disabled = true;
-                const cartSubtotalEl = document.getElementById('cart-subtotal');
-                const cartTotalEl = document.getElementById('cart-total');
-                if (cartSubtotalEl) cartSubtotalEl.textContent = '$0';
-                if (cartTotalEl) cartTotalEl.textContent = '$0';
-                const warningElement = document.getElementById('cart-warning');
-                if (warningElement) warningElement.classList.remove('hidden');
-                const cartFaltaEl = document.getElementById('cart-falta');
-                if (cartFaltaEl) cartFaltaEl.textContent = isShoes ? `12 productos` : `$150.000`;
                 return;
             }
 
             let html = '';
-            activeCart.forEach((item, idx) => {
+            window.cart.forEach(item => {
                 const talleText = item.talle ? ` - Talle ${item.talle}` : '';
                 html += `
                 <div class="cart-item">
@@ -4495,10 +4624,10 @@
                         <div class="cart-item-name">${item.nombre}${talleText}</div>
                         <div class="cart-item-price">$${item.precio.toLocaleString()}</div>
                         <div class="cart-item-qty-control">
-                            <button class="cart-item-qty-btn" onclick="changeItemQtyFixed(${idx}, -1, '${cartType}')">−</button>
+                            <button class="cart-item-qty-btn" onclick="changeItemQty(${window.cart.indexOf(item)}, -1)">−</button>
                             <span class="cart-item-qty-display">${item.cantidad}</span>
-                            <button class="cart-item-qty-btn" onclick="changeItemQtyFixed(${idx}, 1, '${cartType}')">+</button>
-                            <button class="cart-item-delete" onclick="removeItemFromCartFixed(${idx}, '${cartType}')">Eliminar</button>
+                            <button class="cart-item-qty-btn" onclick="changeItemQty(${window.cart.indexOf(item)}, 1)">+</button>
+                            <button class="cart-item-delete" onclick="removeItemFromCart(${window.cart.indexOf(item)})">Eliminar</button>
                         </div>
                     </div>
                 </div>`;
@@ -4506,9 +4635,13 @@
 
             document.getElementById('modal-cart-items').innerHTML = html;
 
-            let totalQty = activeCart.reduce((sum, item) => sum + item.cantidad, 0);
-            let totalPrice = activeCart.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+            // Detectar tipo de carrito (perfumes vs zapatillas)
+            const isShoes = window.cart.length > 0 && window.cart[0].talle !== undefined;
             
+            let totalQty = window.cart.reduce((sum, item) => sum + item.cantidad, 0);
+            let totalPrice = window.cart.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+            
+            // Update summary
             const subtotal = totalPrice;
             const total = subtotal;
             
@@ -4547,58 +4680,26 @@
             }
         }
 
-        function changeItemQty(index, cartType) {
-            // cartType: 'perfumes' o 'calzados'
-            // Nota: el tercer argumento es el change (compatibilidad)
-            // Firma real: changeItemQty(index, change, cartType)
-            // Redirigir: el segundo arg puede ser change (legacy) o cartType
-            // Se llama desde HTML como changeItemQty(idx, change, cartType)
-            // Ver updateCartDisplay para la firma correcta
-            console.warn('changeItemQty llamado con firma incorrecta');
-        }
-
-        function changeItemQtyFixed(index, change, cartType) {
-            const activeCart = cartType === 'calzados' ? window.sneakerCart : window.perfumeCart;
-            if (index >= 0 && index < activeCart.length) {
-                activeCart[index].cantidad += change;
-                if (activeCart[index].cantidad <= 0) {
-                    activeCart.splice(index, 1);
+        function changeItemQty(index, change) {
+            if (index >= 0 && index < window.cart.length) {
+                window.cart[index].cantidad += change;
+                if (window.cart[index].cantidad <= 0) {
+                    window.cart.splice(index, 1);
+                } else {
+                    updateCartDisplay();
+                    updateCartCount();
+                    saveCartToFirebase(window.cart);
                 }
-                // Forzar currentCatalog al tipo correcto antes de actualizar display
-                const prevCatalog = window.currentCatalog;
-                window.currentCatalog = cartType;
-                updateCartDisplay();
-                updateCartCount();
-                saveCartToFirebase(activeCart);
-                window.currentCatalog = prevCatalog;
-            }
-        }
-
-        function removeItemFromCartFixed(index, cartType) {
-            const activeCart = cartType === 'calzados' ? window.sneakerCart : window.perfumeCart;
-            if (index >= 0 && index < activeCart.length) {
-                activeCart.splice(index, 1);
-                const prevCatalog = window.currentCatalog;
-                window.currentCatalog = cartType;
-                updateCartDisplay();
-                updateCartCount();
-                if (firebase.auth().currentUser) {
-                    if (activeCart.length === 0) {
-                        clearCartFromFirebase();
-                    } else {
-                        saveCartToFirebase(activeCart);
-                    }
-                }
-                window.currentCatalog = prevCatalog;
             }
         }
 
         function removeItemFromCart(index) {
-            // Legacy: detectar carrito activo por currentCatalog
             if (index >= 0 && index < window.cart.length) {
                 window.cart.splice(index, 1);
                 updateCartDisplay();
                 updateCartCount();
+                
+                // Guardar cambios en Firebase
                 if (firebase.auth().currentUser) {
                     if (window.cart.length === 0) {
                         clearCartFromFirebase();
@@ -4649,7 +4750,7 @@
             modalDiv.innerHTML = `
                 <div class="session-required-content">
                     <div class="session-required-header">
-                        <button class="session-required-close" onclick="closeSessionRequiredModal()" style="padding: 4px 12px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 12px; line-height: 1.4; white-space: nowrap;">Cerrar</button>
+                        <button class="session-required-close" onclick="closeSessionRequiredModal()">✕</button>
                     </div>
                     <div class="session-required-body">
                         <div class="session-required-icon">🔐</div>
@@ -4692,12 +4793,11 @@
         
         // Abrir modal de checkout antes de pagar
         async function proceedToPayment() {
-            const isShoes = window.currentCatalog === 'calzados';
-            const activeCart = isShoes ? window.sneakerCart : window.perfumeCart;
-            const total = activeCart.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
-            const quantity = activeCart.reduce((sum, item) => sum + item.cantidad, 0);
+            const total = window.cart.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+            const quantity = window.cart.reduce((sum, item) => sum + item.cantidad, 0);
             
             // Validar según el tipo de carrito
+            const isShoes = window.cart.length > 0 && window.cart[0].talle !== undefined;
             if (isShoes) {
                 if (quantity < MIN_ORDER_SHOES_QTY) {
                     alert('⚠️ Debes agregar al menos ' + MIN_ORDER_SHOES_QTY + ' zapatillas');
@@ -4874,46 +4974,7 @@
 
                 if (!pedidoId) throw new Error('No se pudo guardar el pedido');
 
-                // ✅ REGISTRAR PEDIDO COMO PENDIENTE EN COLECCIÓN RAÍZ (para el panel de gestión)
-                console.log('📋 [CHECKOUT] Registrando pedido pendiente en Worker /api/pedido...');
-                try {
-                    const nicho = window.currentCatalog === 'calzados' ? 'calzados' : 'perfumes';
-                    const activeCart = window.currentCatalog === 'calzados' ? window.sneakerCart : window.perfumeCart;
-                    await fetch(WORKER_URL + '/api/pedido', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            pedidoId: pedidoId,
-                            cliente: {
-                                nombre:       checkout.nombre,
-                                apellido:     checkout.apellido,
-                                email:        checkout.email,
-                                telefono:     checkout.telefono,
-                                provincia:    checkout.provincia,
-                                ciudad:       checkout.ciudad,
-                                cp:           checkout.cp,
-                                direccion:    checkout.direccion,
-                                observaciones: checkout.observaciones || ''
-                            },
-                            productos: activeCart.map(item => ({
-                                nombre:   item.nombre,
-                                cantidad: item.cantidad,
-                                precio:   Number(item.precio),
-                                talle:    item.talle || null
-                            })),
-                            total:          totales.total || activeCart.reduce((s, i) => s + (i.precio * i.cantidad), 0),
-                            codigoVendedor: codigoRevendedorValido,
-                            uid:            usuarioActual.uid,
-                            nicho:          nicho
-                        })
-                    });
-                    console.log('✅ [CHECKOUT] Pedido pendiente registrado en colección raíz');
-                } catch (workerErr) {
-                    // No bloquea el flujo — el pedido ya está guardado en Firestore usuario
-                    console.warn('⚠️ [CHECKOUT] No se pudo registrar en /api/pedido:', workerErr.message);
-                }
-
-                console.log('📡 [CHECKOUT] Llamando al Worker para preferencia MP...');
+                console.log('📡 [CHECKOUT] Llamando al Worker...');
 
                 const requestBody = {
                     items: window.cart.map(item => ({
@@ -5049,6 +5110,37 @@
             return 'RW-' + base;
         }
 
+        // LOGIN CON GOOGLE
+        async function loginWithGoogle() {
+            try {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                const result = await firebase.auth().signInWithPopup(provider);
+                const user = result.user;
+
+                // Verificar si ya existe en Firestore; si no, crear documento
+                const docRef = firebase.firestore().collection('usuarios').doc(user.uid);
+                const doc = await docRef.get();
+
+                if (!doc.exists) {
+                    const codigoVendedor = 'RW-' + user.uid.replace(/[^a-zA-Z0-9]/g, '').substring(0, 8).toUpperCase();
+                    await docRef.set({
+                        uid: user.uid,
+                        nombre: user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0],
+                        apellido: user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '',
+                        email: user.email,
+                        codigoVendedor: codigoVendedor,
+                        creado: new Date()
+                    });
+                }
+
+                closeAuthModal();
+            } catch (error) {
+                if (error.code !== 'auth/popup-closed-by-user') {
+                    alert('No se pudo iniciar sesión con Google. Intentá de nuevo.');
+                }
+            }
+        }
+
         // ABRIR MODAL LOGIN
         function abrirLogin() {
             document.getElementById('auth-modal').classList.add('active');
@@ -5083,6 +5175,18 @@
             document.getElementById('register-form-container').style.display = 'none';
         }
 
+        // MOSTRAR/OCULTAR CONTRASEÑA
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            const isPassword = input.type === 'password';
+            input.type = isPassword ? 'text' : 'password';
+            const showIcon = btn.querySelector('.eye-show');
+            const hideIcon = btn.querySelector('.eye-hide');
+            if (showIcon) showIcon.style.display = isPassword ? 'none' : '';
+            if (hideIcon) hideIcon.style.display = isPassword ? '' : 'none';
+        }
+
         // REGISTRO CON FIREBASE
         async function registerUser(e) {
             e.preventDefault();
@@ -5100,6 +5204,9 @@
             showLoadingOverlay();
             
             const nombre = document.getElementById('register-nombre').value;
+            const apellido = document.getElementById('register-apellido').value;
+            const direccion = document.getElementById('register-direccion').value;
+            const telefono = document.getElementById('register-telefono').value;
             const email = document.getElementById('register-email').value;
             const password = document.getElementById('register-password').value;
             const codigoVendedor = generarCodigoVendedor();
@@ -5115,6 +5222,9 @@
                 const userData = {
                     uid: user.uid,
                     nombre: nombre,
+                    apellido: apellido,
+                    direccion: direccion,
+                    telefono: telefono,
                     email: email,
                     codigoVendedor: codigoVendedor,
                     creado: new Date()
@@ -5836,11 +5946,11 @@
             let tallesHtml = '';
             if (product.talle && product.talle.length > 0) {
                 tallesHtml = `
-                    <div style="margin-top: 20px;">
+                    <div style="margin-top: 20px; width: 100%;">
                         <label style="display: block; margin-bottom: 10px; font-weight: 600; color: var(--text);">Seleccionar talle:</label>
-                        <div style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px;">
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px; width: 100%;">
                             ${product.talle.map((talle, idx) => `
-                                <button class="size-btn" onclick="selectTalle(this, '${talle}')" style="padding: 8px 15px; border: 2px solid var(--border); border-radius: 4px; background: white; cursor: pointer; font-weight: 600; color: var(--text); flex-shrink: 0;">
+                                <button class="size-btn" onclick="selectTalle(this, '${talle}')" style="padding: 8px 14px; border: 2px solid var(--border); border-radius: 4px; background: white; cursor: pointer; font-weight: 600; color: var(--text); flex-shrink: 0;">
                                     ${talle}
                                 </button>
                             `).join('')}
