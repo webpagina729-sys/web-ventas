@@ -1015,6 +1015,8 @@
             padding: 32px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
             position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .auth-modal-close {
@@ -2802,70 +2804,16 @@
             }
         }
 
-        /* === NUEVOS ESTILOS (agregados) === */
-
-        /* Modal auth con scroll para campos extra del registro */
-        .auth-modal-content {
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        /* Botón Google */
-        .btn-google {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 11px 16px;
-            background: #fff;
-            border: 1px solid #dadce0;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 500;
-            color: #3c4043;
-            cursor: pointer;
-            transition: background 0.2s, box-shadow 0.2s;
-            margin-bottom: 4px;
-        }
-        .btn-google:hover { background: #f8f9fa; box-shadow: 0 1px 4px rgba(0,0,0,.12); }
-
-        /* Divisor "o" entre Google y formulario */
-        .google-auth-divider {
-            display: flex;
-            align-items: center;
-            text-align: center;
-            color: #999;
-            font-size: 13px;
-            margin: 12px 0;
-        }
-        .google-auth-divider::before,
-        .google-auth-divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid #e5e5e5;
-        }
+        /* === AGREGADOS === */
+        .auth-modal-content { max-height: 90vh; overflow-y: auto; }
+        .btn-google { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 11px 16px; background: #fff; border: 1px solid #dadce0; border-radius: 6px; font-size: 14px; font-weight: 500; color: #3c4043; cursor: pointer; transition: background 0.2s; margin-bottom: 4px; }
+        .btn-google:hover { background: #f8f9fa; }
+        .google-auth-divider { display: flex; align-items: center; color: #999; font-size: 13px; margin: 12px 0; }
+        .google-auth-divider::before, .google-auth-divider::after { content: ''; flex: 1; border-bottom: 1px solid #e5e5e5; }
         .google-auth-divider span { padding: 0 10px; }
-
-        /* Wrapper contraseña con ojito */
-        .password-input-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
+        .password-input-wrapper { position: relative; display: flex; align-items: center; }
         .password-input-wrapper input { width: 100%; padding-right: 44px !important; }
-        .password-toggle-btn {
-            position: absolute;
-            right: 12px;
-            background: none;
-            border: none;
-            padding: 0;
-            cursor: pointer;
-            color: #999;
-            display: flex;
-            align-items: center;
-            line-height: 0;
-        }
+        .password-toggle-btn { position: absolute; right: 12px; background: none; border: none; padding: 0; cursor: pointer; color: #999; display: flex; align-items: center; line-height: 0; }
         .password-toggle-btn:hover { color: var(--primary); }
         .password-toggle-btn:focus { outline: none; }
     </style>
@@ -3367,6 +3315,7 @@
         <div class="modal-content" style="max-width: 500px;">
             <div class="modal-header">
                 <h2 class="modal-title">Importante</h2>
+                
             </div>
 
             <div style="text-align: center; padding: 20px 0;">
@@ -3389,6 +3338,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2 class="modal-title">Guía Rápida</h2>
+                
             </div>
 
             <div class="guide-item">
@@ -3424,6 +3374,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2 class="modal-title">Tus Estadísticas</h2>
+                
             </div>
 
             <div style="padding: 20px 0;">
@@ -3458,6 +3409,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2 class="modal-title">Agregar productos a tu tienda</h2>
+                
             </div>
 
             <div class="product-options">
@@ -5925,7 +5877,7 @@
                 tallesHtml = `
                     <div style="margin-top: 20px;">
                         <label style="display: block; margin-bottom: 10px; font-weight: 600; color: var(--text);">Seleccionar talle:</label>
-                        <div style="display: flex; flex-wrap: wrap; gap: 8px; width: 100%;">
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                             ${product.talle.map((talle, idx) => `
                                 <button class="size-btn" onclick="selectTalle(this, '${talle}')" style="padding: 8px 15px; border: 2px solid var(--border); border-radius: 4px; background: white; cursor: pointer; font-weight: 600; color: var(--text); flex-shrink: 0;">
                                     ${talle}
