@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Revende Ways | Mayorista de Perfumes</title>
-    <meta name="description" content="Revende con nosotros. Te damos tu tienda lista para comenzar con +250 productos. Precio solo para revendedores.">
+    <title>Revende Ways | Tu Tienda Libre</title>
+    <meta name="description" content="Te damos tu tienda lista para comenzar con +500 productos. Precio solo para revendedores.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -1450,6 +1450,22 @@
         .close-error-btn:active {
             transform: scale(0.96);
         }
+
+        /* MODAL ACCIÓN DEL DÍA */
+        #accion-modal { position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:10000;backdrop-filter:blur(3px); }
+        #accion-modal.active { display:flex; }
+        .accion-modal-content { background:#fff;border-radius:16px;width:90%;max-width:380px;padding:36px 32px;box-shadow:0 16px 48px rgba(0,0,0,.18);text-align:center;animation:slideUpScale .35s cubic-bezier(.34,1.56,.64,1); }
+        .accion-modal-icon { font-size:36px;margin-bottom:12px; }
+        .accion-modal-content h2 { font-size:17px;font-weight:700;color:var(--text);margin:0 0 6px 0;font-family:var(--font-display); }
+        .accion-modal-content p { font-size:12px;color:var(--text-light);margin:0 0 24px 0; }
+        .accion-modal-btns { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
+        .accion-btn { padding:14px 10px;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;font-family:var(--font-body);display:flex;flex-direction:column;align-items:center;gap:6px; }
+        .accion-btn-icon { font-size:22px; }
+        .accion-btn-label { font-size:11px;font-weight:600;opacity:.8; }
+        .accion-btn-stock { background:linear-gradient(135deg,#0066ff,#004cc4);color:#fff; }
+        .accion-btn-stock:hover { transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,102,255,.35); }
+        .accion-btn-vender { background:linear-gradient(135deg,#1B7F3D,#14612e);color:#fff; }
+        .accion-btn-vender:hover { transform:translateY(-2px);box-shadow:0 6px 20px rgba(27,127,61,.35); }
 
         /* LOADER SPINNER */
         .spinner {
@@ -3207,6 +3223,9 @@
             </div>
         </div>
     </div>
+
+    <!-- MODAL ACCIÓN DEL DÍA -->
+    <div id="accion-modal"><div class="accion-modal-content"><div class="accion-modal-icon">🚀</div><h2>¿Cuál es tu acción de hoy?</h2><p>Elegí cómo querés continuar</p><div class="accion-modal-btns"><button class="accion-btn accion-btn-stock" onclick="accionStock()"><span class="accion-btn-icon">📦</span>Stock<span class="accion-btn-label">Ver catálogo</span></button><button class="accion-btn accion-btn-vender" onclick="accionVender()"><span class="accion-btn-icon">🛒</span>Vender<span class="accion-btn-label">Mi tienda</span></button></div></div></div>
 
     <!-- LOADING OVERLAY -->
     <div id="loading-overlay">
@@ -5105,21 +5124,23 @@
         }
 
         // ABRIR MODAL LOGIN
-        function abrirLogin() {
-            document.getElementById('auth-modal').classList.add('active');
-        }
+        function abrirLogin() { document.getElementById('auth-modal').classList.add('active'); }
+
+        // MODAL ACCIÓN DEL DÍA
+        function mostrarModalAccion() { document.getElementById('accion-modal').classList.add('active'); preventBodyScroll(true); }
+        function accionStock() { document.getElementById('accion-modal').classList.remove('active'); preventBodyScroll(false); }
+        function accionVender() { window.location.href = 'https://mitienda.revendeways.shop/'; }
 
         // CERRAR MODAL LOGIN
         function closeAuthModal() {
             const authModal = document.getElementById('auth-modal');
-            if (authModal) {
-                authModal.classList.remove('active');
-            }
-            
+            if (authModal) { authModal.classList.remove('active'); }
             const loginForm = document.getElementById('login-form-container');
             const registerForm = document.getElementById('register-form-container');
             if (loginForm) loginForm.style.display = 'block';
             if (registerForm) registerForm.style.display = 'none';
+            // Mostrar modal de acción después del login
+            if (firebase.auth().currentUser) { setTimeout(mostrarModalAccion, 200); }
         }
 
         function closeAuthIfClickBackground(e) {
@@ -6846,6 +6867,11 @@
             }, 300);
         }, { once: true });
         
+        // Abrir modal de login automáticamente si no hay sesión activa
+        firebase.auth().onAuthStateChanged(function(user) {
+            if (!user) { setTimeout(function(){ abrirLogin(); }, 400); }
+        });
+
         window.verificarPlataforma = function() {
             // Diagnóstico de la plataforma (función vacía por ahora)
         };
