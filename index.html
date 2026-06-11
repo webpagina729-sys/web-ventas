@@ -2845,6 +2845,7 @@
             <a class="logo">Revende Ways</a>
             <div class="header-actions">
                 <button class="login-btn" onclick="abrirLogin()">Iniciar sesión</button>
+                <button onclick="window.location.href='https://mitienda.revendeways.shop/'" style="background:linear-gradient(135deg,#1B7F3D,#22a34a);color:white;border:none;padding:6px 13px;border-radius:var(--radius);cursor:pointer;font-weight:700;font-size:12px;display:flex;align-items:center;gap:5px;transition:all .2s;white-space:nowrap;box-shadow:0 2px 8px rgba(27,127,61,.25);" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 14px rgba(27,127,61,.4)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 8px rgba(27,127,61,.25)'">🛒 Mi Tienda</button>
                 <button class="cart-btn" onclick="toggleCart()">
                     ☑️
                     <span class="cart-count" id="cart-count">0</span>
@@ -3291,40 +3292,43 @@
 
     <!-- MODAL PERFIL -->
     <div class="modal-overlay" id="profileModal" onclick="closeProfileModal(event)">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Mi Perfil</h2>
-                <button class="modal-close" onclick="closeProfileModal()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Cerrar</button>
+        <div class="modal-content" style="max-width:420px;padding:28px;">
+            <div class="modal-header" style="margin-bottom:18px;">
+                <h2 class="modal-title" style="font-size:20px;">Mi Perfil</h2>
             </div>
 
-            <div class="modal-section">
-                <div class="modal-section-title">Nombre</div>
-                <div class="modal-section-value" id="profileName">-</div>
+            <div class="modal-section" style="margin-bottom:12px;">
+                <div class="modal-section-title" style="font-size:11px;margin-bottom:4px;">Nombre</div>
+                <div class="modal-section-value" style="font-size:14px;" id="profileName">-</div>
             </div>
 
-            <div class="modal-section">
-                <div class="modal-section-title">Email</div>
-                <div class="modal-section-value" id="profileEmail">-</div>
+            <div class="modal-section" style="margin-bottom:12px;">
+                <div class="modal-section-title" style="font-size:11px;margin-bottom:4px;">Email</div>
+                <div class="modal-section-value" style="font-size:14px;" id="profileEmail">-</div>
             </div>
 
-            <div class="modal-section">
-                <div class="modal-section-title">Contraseña</div>
-                <div class="modal-section-value" style="letter-spacing: 2px;">••••••••</div>
+            <div class="modal-section" style="margin-bottom:16px;">
+                <div class="modal-section-title" style="font-size:11px;margin-bottom:4px;">Contraseña</div>
+                <div class="modal-section-value" style="font-size:14px;letter-spacing:2px;">••••••••</div>
             </div>
 
-            <div class="modal-divider"></div>
+            <div class="modal-divider" style="margin:14px 0;"></div>
 
-            <!-- CÓDIGO DE REVENDEDOR - SECCIÓN DESTACADA -->
-            <div class="profile-code-section">
-                <div class="profile-code-title">Código de Revendedor</div>
-                <div class="profile-code-value" id="profileCode">-</div>
-                <div class="profile-code-description">Utilizá este código para aprobar tus pedidos</div>
-                <button type="button" class="profile-code-copy-btn" onclick="copyCodigoVendedor()">Copiar código</button>
+            <!-- CÓDIGO DE REVENDEDOR - UNA SOLA LÍNEA -->
+            <div style="background:linear-gradient(135deg,#0066ff,#0052cc);border-radius:10px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 0;">
+                <div style="display:flex;flex-direction:column;gap:2px;min-width:0;">
+                    <span style="font-size:10px;font-weight:700;color:rgba(255,255,255,.8);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap;">Código Revendedor</span>
+                    <span id="profileCode" style="font-size:14px;font-weight:800;color:white;font-family:'Courier New',monospace;letter-spacing:.5px;white-space:nowrap;">-</span>
+                </div>
+                <button id="profile-copy-btn" onclick="copyCodigoVendedor()" title="Copiar código" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);color:white;width:34px;height:34px;border-radius:6px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;">📋</button>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; margin-top: 20px;">
-                <button type="button" class="confirmation-button" style="background: #f5f5f5; color: var(--text);" onclick="closeProfileModal()">Cerrar</button>
-                <button type="button" class="confirmation-button confirmation-button-primary" onclick="logoutUser()">Cerrar sesión</button>
+            <div style="display:flex;justify-content:center;margin-bottom:16px;">
+                <span id="profile-copy-feedback" style="font-size:12px;color:#22a34a;font-weight:600;opacity:0;transition:opacity .3s;display:flex;align-items:center;gap:4px;">✅ Código copiado</span>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr;gap:10px;width:100%;">
+                <button type="button" class="confirmation-button confirmation-button-primary" onclick="logoutUser()" style="font-size:13px;padding:11px;">Cerrar sesión</button>
             </div>
         </div>
     </div>
@@ -5462,38 +5466,22 @@
         }
         
         function copyCodigoVendedor() {
-            // Copiar el código directamente desde window.currentUser
             let codigo = window.currentUser?.codigoVendedor || '';
-            
-            // Si no está disponible, intentar desde localStorage (fallback)
-            if (!codigo) {
-                codigo = localStorage.getItem('codigoVendedorLocal') || '';
-            }
-            
-            // No copiar si está vacío
-            if (!codigo || codigo.trim() === '') {
-                alert('Tu código de revendedor aún no está disponible. Por favor intenta más tarde.');
-                return;
-            }
-            
-            const btn = event.target.closest('button');
+            if (!codigo) { codigo = localStorage.getItem('codigoVendedorLocal') || ''; }
+            if (!codigo || codigo.trim() === '') { alert('Tu código de revendedor aún no está disponible. Por favor intenta más tarde.'); return; }
             
             navigator.clipboard.writeText(codigo).then(() => {
-                // Mostrar feedback
-                btn.classList.add('copied');
-                const feedback = document.getElementById('copy-feedback');
-                if (feedback) {
-                    feedback.classList.add('show');
-                    
-                    // Resetear después de 2 segundos
-                    setTimeout(() => {
-                        btn.classList.remove('copied');
-                        feedback.classList.remove('show');
-                    }, 2000);
-                }
-            }).catch(err => {
-                alert('No se pudo copiar el código. Intenta de nuevo.');
-            });
+                // Feedback en modal de perfil
+                const profileFeedback = document.getElementById('profile-copy-feedback');
+                const profileBtn = document.getElementById('profile-copy-btn');
+                if (profileFeedback) { profileFeedback.style.opacity = '1'; setTimeout(() => { profileFeedback.style.opacity = '0'; }, 2500); }
+                if (profileBtn) { profileBtn.innerHTML = '✅'; setTimeout(() => { profileBtn.innerHTML = '📋'; }, 2500); }
+                // Feedback en modal de confirmación de registro
+                const regFeedback = document.getElementById('copy-feedback');
+                const regBtn = event && event.target ? event.target.closest('button') : null;
+                if (regFeedback) { regFeedback.classList.add('show'); setTimeout(() => { regFeedback.classList.remove('show'); }, 2500); }
+                if (regBtn && regBtn.classList) { regBtn.classList.add('copied'); setTimeout(() => { regBtn.classList.remove('copied'); }, 2500); }
+            }).catch(() => { alert('No se pudo copiar el código. Intenta de nuevo.'); });
         }
         
         function closeEmailConfirmationModal(e) {
