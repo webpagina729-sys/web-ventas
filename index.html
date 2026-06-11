@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Revende Ways | Tu Tienda Propia</title>
-    <meta name="description" content="Te damos tu tienda lista para comenzar con +500 productos. Precio solo para revendedores.">
+    <title>Revende Ways | Mayorista de Perfumes</title>
+    <meta name="description" content="Revende con nosotros. Te damos tu tienda lista para comenzar con +250 productos. Precio solo para revendedores.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -5139,8 +5139,6 @@
             const registerForm = document.getElementById('register-form-container');
             if (loginForm) loginForm.style.display = 'block';
             if (registerForm) registerForm.style.display = 'none';
-            // Mostrar modal de acción después del login
-            if (firebase.auth().currentUser) { setTimeout(mostrarModalAccion, 200); }
         }
 
         function closeAuthIfClickBackground(e) {
@@ -5173,6 +5171,8 @@
         async function loginWithGoogle() {
             try {
                 const provider = new firebase.auth.GoogleAuthProvider();
+                provider.addScope('email');
+                provider.addScope('profile');
                 const result = await firebase.auth().signInWithPopup(provider);
                 const user = result.user;
                 const docRef = firebase.firestore().collection('usuarios').doc(user.uid);
@@ -5190,11 +5190,51 @@
                 }
                 closeAuthModal();
             } catch (error) {
-                if (error.code !== 'auth/popup-closed-by-user') {
-                    alert('No se pudo iniciar sesión con Google. Intentá de nuevo.');
+                if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') return;
+                if (error.code === 'auth/popup-blocked') {
+                    // Fallback: usar redirect en lugar de popup (para navegadores que bloquean popups)
+                    try {
+                        const provider = new firebase.auth.GoogleAuthProvider();
+                        provider.addScope('email');
+                        provider.addScope('profile');
+                        await firebase.auth().signInWithRedirect(provider);
+                    } catch(e) {
+                        alert('Tu navegador bloqueó la ventana de Google. Habilitá los pop-ups para este sitio e intentá de nuevo.');
+                    }
+                } else if (error.code === 'auth/unauthorized-domain') {
+                    alert('Este dominio no está autorizado en Firebase. Agregalo en Firebase Console → Authentication → Authorized domains.');
+                } else if (error.code === 'auth/operation-not-allowed') {
+                    alert('El inicio de sesión con Google no está habilitado en Firebase. Activalo en Firebase Console → Authentication → Sign-in methods.');
+                } else {
+                    alert('Error al iniciar sesión con Google: ' + (error.message || error.code));
                 }
             }
         }
+
+        // Manejar resultado de redirect de Google (para cuando se usa signInWithRedirect)
+        firebase.auth().getRedirectResult().then(function(result) {
+            if (result && result.user) {
+                const user = result.user;
+                const docRef = firebase.firestore().collection('usuarios').doc(user.uid);
+                docRef.get().then(function(doc) {
+                    if (!doc.exists) {
+                        const codigoVendedor = generarCodigoVendedor();
+                        docRef.set({
+                            uid: user.uid,
+                            nombre: user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0],
+                            apellido: user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '',
+                            email: user.email,
+                            codigoVendedor: codigoVendedor,
+                            creado: new Date()
+                        }).catch(function(){});
+                    }
+                }).catch(function(){});
+            }
+        }).catch(function(error) {
+            if (error.code && error.code !== 'auth/popup-closed-by-user') {
+                console.error('Redirect result error:', error.code, error.message);
+            }
+        });
 
         // REGISTRO CON FIREBASE
         async function registerUser(e) {
@@ -6149,6 +6189,17 @@
             firebase.auth().onAuthStateChanged(async (user) => {
                 
                 if (user) {
+                    // Cerrar modal de login si está abierto
+                    const authModal = document.getElementById('auth-modal');
+                    if (authModal && authModal.classList.contains('active')) {
+                        authModal.classList.remove('active');
+                        const loginForm = document.getElementById('login-form-container');
+                        const registerForm = document.getElementById('register-form-container');
+                        if (loginForm) loginForm.style.display = 'block';
+                        if (registerForm) registerForm.style.display = 'none';
+                        // Mostrar modal de acción del día
+                        setTimeout(mostrarModalAccion, 300);
+                    }
                     
                     // Intentar cargar datos de Firestore CON REINTENTOS
                     const userData = await loadUserDataFromFirestoreWithRetry(user.uid);
@@ -6867,10 +6918,13 @@
             }, 300);
         }, { once: true });
         
-        // Abrir modal de login automáticamente si no hay sesión activa
-        firebase.auth().onAuthStateChanged(function(user) {
-            if (!user) { setTimeout(function(){ abrirLogin(); }, 400); }
-        });
+        // Abrir modal de login automáticamente solo la primera vez, sin re-dispararse
+        (function() {
+            var unsubscribe = firebase.auth().onAuthStateChanged(function(user) {
+                unsubscribe(); // desuscribirse inmediatamente después del primer disparo
+                if (!user) { setTimeout(function(){ abrirLogin(); }, 500); }
+            });
+        })();
 
         window.verificarPlataforma = function() {
             // Diagnóstico de la plataforma (función vacía por ahora)
