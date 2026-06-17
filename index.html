@@ -2832,6 +2832,74 @@
         .password-toggle-btn { position: absolute; right: 12px; background: none; border: none; padding: 0; cursor: pointer; color: #999; display: flex; align-items: center; line-height: 0; }
         .password-toggle-btn:hover { color: var(--primary); }
         .password-toggle-btn:focus { outline: none; }
+
+        /* ===== AJUSTE GLOBAL: VISTA CENTRADA Y SIN DESBORDE HORIZONTAL ===== */
+        html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+        *, *::before, *::after { max-width: 100%; }
+        img, svg, video, iframe { max-width: 100%; height: auto; }
+        /* La barra superior nunca debe desbordar ni quedar movida a un costado */
+        .header-top-inner {
+            margin-left: auto;
+            margin-right: auto;
+            max-width: 1200px;
+            padding-left: 16px;
+            padding-right: 16px;
+            flex-wrap: wrap;
+            row-gap: 8px;
+        }
+        .header-actions {
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            min-width: 0;
+        }
+        .header-actions > * { flex-shrink: 1; min-width: 0; }
+        .logo { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+        /* Modales perfectamente centrados dentro de la pantalla */
+        #auth-modal, #accion-modal, #accion-guide-modal, .modal-overlay {
+            padding: 16px;
+        }
+        .auth-modal-content,
+        .accion-modal-content,
+        .modal-content { margin: auto; }
+        /* ===== MISMA DISTANCIA A LOS BORDES EN CUALQUIER CELULAR ===== */
+        :root { --page-gutter: 16px; }
+        @media (max-width: 600px) {
+            /* Secciones a ancho completo, sin padding lateral propio */
+            .banner, .nichos-section, .revend-section, .final-footer,
+            .cta-section, .footer-banner, .top-ribbon, .shoes-category-section {
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
+            /* Todos los contenedores de contenido con el MISMO margen lateral */
+            .header-top-inner,
+            .ribbon-content,
+            .banner-inner,
+            .nichos-section-inner,
+            .filters-container,
+            .products-container,
+            .pagination-section,
+            .portada-image-section,
+            .revend-section-inner,
+            .final-footer-inner,
+            .footer-banner-inner,
+            .cta-section-inner,
+            .shoes-category-section {
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+                padding-left: var(--page-gutter) !important;
+                padding-right: var(--page-gutter) !important;
+                max-width: 100% !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            /* Evitar doble margen lateral en hijos que ya traen el suyo */
+            .search-box-wrapper, .filters, .sort-control, .products-grid {
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
+        }
     </style>
     <script>
         // Silenciar errores de extensiones
@@ -3228,7 +3296,18 @@
     <!-- MODAL ACCIÓN DEL DÍA -->
     <div id="accion-modal"><div class="accion-modal-content"><div class="accion-modal-icon"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-0.15em"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg></div><h2>¿Cuál es tu acción de hoy?</h2><p>Elegí cómo querés continuar</p><div class="accion-modal-btns"><button class="accion-btn accion-btn-stock" onclick="accionStock()"><span class="accion-btn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-0.15em"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span>Stock<span class="accion-btn-label">Ver catálogo</span></button><button class="accion-btn accion-btn-vender" onclick="accionVender()"><span class="accion-btn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-0.15em"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></span>Vender<span class="accion-btn-label">Mi tienda</span></button></div></div></div>
 
-    <!-- LOADING OVERLAY -->
+    <!-- MODAL GUÍA SEGÚN ACCIÓN ELEGIDA -->
+    <div class="modal-overlay" id="accion-guide-modal" onclick="if(event.target.id==='accion-guide-modal')cerrarGuiaAccion()">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="accion-guide-title">Guía rápida</h2>
+            </div>
+            <p id="accion-guide-subtitle" style="font-size:13px;color:var(--text-light);margin:0 0 16px 0;"></p>
+            <div id="accion-guide-body"></div>
+            <div id="accion-guide-footer" style="margin-top:20px;"></div>
+        </div>
+    </div>
+
     <div id="loading-overlay">
         <div class="loading-overlay-content">
             <div class="loading-overlay-spinner"></div>
@@ -5132,8 +5211,43 @@
 
         // MODAL ACCIÓN DEL DÍA
         function mostrarModalAccion() { document.getElementById('accion-modal').classList.add('active'); preventBodyScroll(true); }
-        function accionStock() { document.getElementById('accion-modal').classList.remove('active'); preventBodyScroll(false); }
-        function accionVender() { window.location.href = 'https://mitienda.revendeways.shop/'; }
+        function accionStock() { document.getElementById('accion-modal').classList.remove('active'); mostrarGuiaAccion('stock'); }
+        function accionVender() { document.getElementById('accion-modal').classList.remove('active'); mostrarGuiaAccion('vender'); }
+
+        // GUÍA SEGÚN LA ACCIÓN ELEGIDA
+        function mostrarGuiaAccion(tipo) {
+            const title = document.getElementById('accion-guide-title');
+            const subtitle = document.getElementById('accion-guide-subtitle');
+            const body = document.getElementById('accion-guide-body');
+            const footer = document.getElementById('accion-guide-footer');
+            const item = (n, t) => '<div class="guide-item"><span class="guide-number">' + n + '</span><span class="guide-text">' + t + '</span></div>';
+            if (tipo === 'stock') {
+                title.textContent = 'Cómo usar el Catálogo (Stock)';
+                subtitle.textContent = 'Acá ves todos los productos disponibles para revender.';
+                body.innerHTML =
+                    item(1, 'Explorá los productos con el buscador y los filtros por categoría para encontrar lo que querés vender.') +
+                    item(2, 'Tocá un producto para ver sus detalles, fotos, el precio de revendedor y tu ganancia estimada.') +
+                    item(3, 'Agregá los productos al carrito con la cantidad que necesites para armar tu pedido.') +
+                    item(4, 'Cuando termines, abrí el carrito (arriba a la derecha) y completá tu encargue.');
+                footer.innerHTML = '<button type="button" class="confirmation-button confirmation-button-primary" style="width:100%;" onclick="cerrarGuiaAccion()">Entendido, ver catálogo</button>';
+            } else {
+                title.textContent = 'Cómo usar Mi Tienda (Vender)';
+                subtitle.textContent = 'Es tu tienda online lista para venderles a tus clientes.';
+                body.innerHTML =
+                    item(1, 'Vas a entrar a tu tienda propia, donde tus clientes ven los productos con tus precios de venta.') +
+                    item(2, 'Compartí el link de tu tienda por WhatsApp o redes para que te hagan pedidos.') +
+                    item(3, 'Cobrá una seña del 50% al confirmar, realizá el pedido del stock y entregá obteniendo tu ganancia.') +
+                    item(4, 'Desde tu tienda podés gestionar productos, pedidos y el seguimiento de tus ventas.');
+                footer.innerHTML = '<button type="button" class="confirmation-button confirmation-button-primary" style="width:100%;" onclick="irAMiTienda()">Continuar a Mi Tienda →</button>';
+            }
+            document.getElementById('accion-guide-modal').classList.add('active');
+            preventBodyScroll(true);
+        }
+        function cerrarGuiaAccion() {
+            document.getElementById('accion-guide-modal').classList.remove('active');
+            preventBodyScroll(false);
+        }
+        function irAMiTienda() { window.location.href = 'https://mitienda.revendeways.shop/'; }
 
         // CERRAR MODAL LOGIN
         function closeAuthModal() {
@@ -6913,6 +7027,23 @@
                 if (!user) { setTimeout(function(){ abrirLogin(); }, 500); }
             });
         })();
+
+        // RESPALDO: garantizar que el panel de inicio de sesión SIEMPRE aparezca,
+        // aunque Firebase tarde o no esté disponible (sin afectar a usuarios logueados).
+        setTimeout(function() {
+            try {
+                if (window.currentUser) return;
+                var authModal = document.getElementById('auth-modal');
+                var accionModal = document.getElementById('accion-modal');
+                var guideModal = document.getElementById('accion-guide-modal');
+                var algunoAbierto =
+                    (authModal && authModal.classList.contains('active')) ||
+                    (accionModal && accionModal.classList.contains('active')) ||
+                    (guideModal && guideModal.classList.contains('active'));
+                if (!algunoAbierto) { abrirLogin(); }
+            } catch (e) {}
+        }, 1800);
+
 
         window.verificarPlataforma = function() {
             // Diagnóstico de la plataforma (función vacía por ahora)
