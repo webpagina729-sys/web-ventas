@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Revende Ways | Tu Tienda Propia</title>
     <meta name="description" content="Sin inversión inicial. Te damos tu tienda lista para comenzar con +250 productos. Precio solo para revendedores.">
+    <link rel="icon" type="image/png" href="logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -53,6 +54,20 @@
             align-items: center;
             justify-content: space-between;
             gap: 12px;
+        }
+        .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+            background: var(--gray-light);
         }
         .logo {
             font-family: var(--font-display);
@@ -232,12 +247,12 @@
             align-items: center;
             gap: 24px;
         }
-        .banner-title {
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--text);
-            text-align: center;
-            line-height: 1.2;
+        .banner-logo-img {
+            max-width: 220px;
+            width: 60%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
         }
         .banner-subtitle {
             font-size: 14px;
@@ -255,6 +270,70 @@
             text-align: center;
             max-width: 300px;
         }
+
+        /* SECCIÓN TEASER (SOLO SESIÓN CERRADA) */
+        .nichos-teaser-section {
+            background: var(--surface);
+            padding: 36px 16px 44px;
+        }
+        .nichos-teaser-section.hide { display: none; }
+        .nichos-teaser-inner {
+            max-width: 460px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 16px;
+            background: linear-gradient(180deg, #f4f9ff 0%, #f1fbf5 100%);
+            border: 1px solid #dfeeff;
+            border-radius: 18px;
+            padding: 32px 26px 30px;
+            box-shadow: 0 8px 28px rgba(0,102,255,.08);
+            position: relative;
+            overflow: hidden;
+        }
+        .nichos-teaser-inner::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--primary) 50%, #1B7F3D 50%, #22a34a 100%);
+        }
+        .nichos-teaser-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, #22a34a 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 14px rgba(0,102,255,.25);
+        }
+        .nichos-teaser-lead {
+            font-size: 19px;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1.3;
+            font-family: var(--font-display);
+        }
+        .nichos-teaser-badge {
+            background: linear-gradient(135deg, #1B7F3D, #22a34a);
+            color: white;
+            padding: 10px 26px;
+            border-radius: 24px;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: .2px;
+            box-shadow: 0 4px 14px rgba(27,127,61,.3);
+        }
+        .nichos-teaser-desc {
+            font-size: 13px;
+            color: var(--text-light);
+            line-height: 1.55;
+            max-width: 360px;
+        }
+        .nichos-teaser-desc strong { color: var(--text); }
 
         /* BÚSQUEDA INTEGRADA */
         .search-box-wrapper {
@@ -1982,8 +2061,8 @@
             .banner {
                 padding: 28px 16px;
             }
-            .banner-title {
-                font-size: 24px;
+            .banner-logo-img {
+                max-width: 170px;
             }
             .products-grid {
                 grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -2018,11 +2097,12 @@
                 gap: 8px;
             }
             .logo { font-size: 16px; }
+            .logo-icon { width: 26px; height: 26px; }
             .login-btn { font-size: 10px; padding: 5px 8px; }
             .cart-btn { font-size: 10px; padding: 5px 8px; }
             .header-searchbar { display: none; }
             .banner-inner { margin: 0 8px; }
-            .banner-title { font-size: 18px; }
+            .banner-logo-img { max-width: 140px; }
             .banner-subtitle { font-size: 11px; }
             .banner-badge { font-size: 10px; padding: 6px 10px; }
             .search-box-wrapper { padding: 0 8px; margin: 16px 0 20px; }
@@ -2046,7 +2126,6 @@
                 padding: 6px 12px;
                 font-size: 11px;
             }
-            .banner-title { font-size: 18px; }
             .cta-section { padding: 40px 8px; }
             .cta-section-inner { margin: 0 8px; }
             .cta-title { font-size: 20px; }
@@ -2978,14 +3057,17 @@
     <!-- HEADER TOP BAR -->
     <header class="header-top">
         <div class="header-top-inner">
-            <a class="logo">Revende Ways</a>
+            <div class="logo-group">
+                <img src="logo.png" alt="Revende Ways" class="logo-icon" onerror="this.style.display='none'">
+                <a class="logo">Revende Ways</a>
+            </div>
             <div class="header-actions">
-                <button class="login-btn" onclick="abrirLogin()">Iniciar sesión</button>
-                <button onclick="window.location.href='https://mitienda.revendeways.shop/'" style="background:linear-gradient(135deg,#1B7F3D,#22a34a);color:white;border:none;padding:6px 13px;border-radius:var(--radius);cursor:pointer;font-weight:700;font-size:12px;display:flex;align-items:center;gap:5px;transition:all .2s;white-space:nowrap;box-shadow:0 2px 8px rgba(27,127,61,.25);" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 14px rgba(27,127,61,.4)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 8px rgba(27,127,61,.25)'"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-0.15em"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg> Mi Tienda</button>
-                <button class="cart-btn" onclick="toggleCart()">
+                <button class="cart-btn" id="header-mitienda-btn" onclick="window.location.href='https://mitienda.revendeways.shop/'" style="background:linear-gradient(135deg,#1B7F3D,#22a34a);display:none;"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-0.15em"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg> Mi Tienda</button>
+                <button class="cart-btn" id="header-cart-btn" onclick="toggleCart()" style="display:none;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-0.15em"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
                     <span class="cart-count" id="cart-count">0</span>
                 </button>
+                <button class="login-btn" id="header-auth-btn" onclick="handleHeaderAuthClick()">Iniciar sesión</button>
             </div>
         </div>
     </header>
@@ -3006,14 +3088,24 @@
     <!-- HERO BANNER -->
     <section class="banner">
         <div class="banner-inner">
-            <h1 class="banner-title">Revende Ways</h1>
+            <img src="logoservi.png" alt="Revende Ways" class="banner-logo-img" onerror="this.style.display='none'">
             <p class="banner-subtitle">Revende con nosotros. Te damos tu tienda lista para comenzar con +500 productos.</p>
             <div class="banner-badge"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-0.15em"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> Pedido mínimo en la categoría- Precio solo para revendedores</div>
         </div>
     </section>
 
+    <!-- SECCIÓN "TEASER" - SOLO VISIBLE CON SESIÓN CERRADA -->
+    <section class="nichos-teaser-section" id="nichos-teaser-section">
+        <div class="nichos-teaser-inner">
+            <div class="nichos-teaser-icon"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
+            <p class="nichos-teaser-lead">Emprendé con nosotros y Stockeate desde un mismo lugar</p>
+            <div class="nichos-teaser-badge">Elegí tu Tienda Ideal</div>
+            <p class="nichos-teaser-desc">Perfumería, Bazar, Belleza, Electrónica, y muchos productos más para que comiences a emprender sin poner en riesgo tu capital.</p>
+        </div>
+    </section>
+
     <!-- NUEVA SECCIÓN: ELEGÍ TU TIENDA IDEAL -->
-    <section class="nichos-section" id="nichos-section">
+    <section class="nichos-section hide" id="nichos-section">
         <div class="nichos-section-inner">
             <h2 class="nichos-pretitle">Emprende con Nosotros, Stockeate para invertir tus ganancias.</h2>
             <h3 class="nichos-title">Elegí tu tienda ideal</h3>
@@ -3153,16 +3245,18 @@
     <div class="revend-section" id="revend-section-container">
         <div class="revend-section-inner">
             <img id="portada-uno-img" alt="Portada Revende" class="portada-image" style="width: 100%; max-width: 100%; display: block; margin: 0 auto 20px auto;">
-            <div style="text-align: center; font-size: 16px; font-weight: 600; color: white; margin-bottom: 20px;">Obtené ideas todas las semanas para llevar adelante tu negocio con Revende Ways</div>
-            <button class="revend-btn" id="revend-btn-main" onclick="abrirLogin()" style="margin-bottom: 30px;">Quiero mi tienda</button>
-        </img>
+            <div id="revend-cta-content" style="text-align: center; width: 100%;">
+                <div style="text-align: center; font-size: 16px; font-weight: 600; color: white; margin-bottom: 20px;">Obtené ideas todas las semanas para llevar adelante tu negocio con Revende Ways</div>
+                <button class="revend-btn" id="revend-btn-main" onclick="abrirLogin()" style="margin-bottom: 30px;">Quiero mi tienda</button>
+            </div>
+        </div>
     </div>
 
     <!-- FINAL FOOTER BANNER -->
     <footer class="final-footer">
         <div class="final-footer-inner">
             <div class="final-footer-title">
-                <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-0.15em"><polyline points="20 6 9 17 4 12"/></svg> más de 4.000 productos | <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-0.15em"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> envíos a todo el país desde Buenos Aires
+                <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-0.15em"><polyline points="20 6 9 17 4 12"/></svg> más de 4.000 productos | <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-0.15em"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> envíos a todo el país
             </div>
             <div class="final-footer-links">
                 <a href="javascript:void(0)" class="final-footer-link" onclick="alert('Sección de compra - próximamente')">Comprar</a>
@@ -3346,16 +3440,16 @@
             <!-- FORMULARIO REGISTRO -->
             <div id="register-form-container" class="auth-form-container" style="display: none;">
                 <h2>Crear Cuenta</h2>
-                <button type="button" class="btn-google" onclick="loginWithGoogle()">
+                <button type="button" class="btn-google" onclick="handleGoogleRegisterClick()">
                     <svg width="18" height="18" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
                     Registrarse con Google
                 </button>
                 <div class="google-auth-divider"><span>o</span></div>
-                <form onsubmit="registerUser(event)">
-                    <input type="text" id="register-nombre" placeholder="Nombre" required>
-                    <input type="text" id="register-apellido" placeholder="Apellido" required>
-                    <input type="text" id="register-direccion" placeholder="Dirección" required>
-                    <input type="tel" id="register-telefono" placeholder="Teléfono" required>
+                <form onsubmit="handleManualRegisterSubmit(event)">
+                    <input type="text" id="register-nombre" placeholder="Nombres" required>
+                    <input type="text" id="register-apellido" placeholder="Apellidos" required>
+                    <label for="register-fecha-nacimiento" style="display:block; font-size:12px; color: var(--text-light); margin: 8px 0 4px; text-align:left;">Fecha de nacimiento</label>
+                    <input type="date" id="register-fecha-nacimiento" placeholder="Fecha de nacimiento" required>
                     <input type="email" id="register-email" placeholder="Correo electrónico" required>
                     <div class="password-input-wrapper">
                         <input type="password" id="register-password" placeholder="Contraseña (mín. 6 caracteres)" required minlength="6">
@@ -3371,6 +3465,34 @@
                     ¿Ya tienes cuenta? <a href="javascript:void(0)" onclick="switchToLogin()">Inicia sesión aquí</a>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL CONSENTIMIENTO DE DATOS (Política de privacidad + Términos) -->
+    <div class="modal-overlay" id="consent-modal" onclick="if(event.target.id==='consent-modal') closeConsentModal()">
+        <div class="modal-content" style="max-width: 420px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Cómo utilizamos tus datos</h2>
+            </div>
+            <p style="font-size: 13px; line-height: 1.5; color: var(--text); margin: 4px 0 6px;">
+                Usamos tus datos únicamente para gestionar tu cuenta y tus pedidos como revendedor.
+                <a href="javascript:void(0)" onclick="alert('Enlace disponible próximamente.')" style="color: var(--primary); font-weight: 600;">Ver más</a>
+            </p>
+            <p style="font-size: 11px; color: var(--text-light); margin: 0 0 16px;">
+                Política de privacidad: <a href="javascript:void(0)" onclick="alert('Enlace disponible próximamente.')" style="color: var(--primary);">Ver términos y condiciones</a>
+            </p>
+
+            <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--text); margin-bottom: 12px; cursor: pointer; text-align: left;">
+                <input type="checkbox" id="consent-privacy-check" onchange="updateConsentButtonState()" style="margin-top: 2px; width: 16px; height: 16px; flex-shrink: 0;">
+                Aceptar nuestra política de privacidad
+            </label>
+            <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--text); margin-bottom: 18px; cursor: pointer; text-align: left;">
+                <input type="checkbox" id="consent-terms-check" onchange="updateConsentButtonState()" style="margin-top: 2px; width: 16px; height: 16px; flex-shrink: 0;">
+                Aceptar términos y condiciones
+            </label>
+
+            <button type="button" id="consent-continue-btn" class="confirmation-button confirmation-button-primary" style="width: 100%; opacity: 0.5; cursor: not-allowed;" disabled onclick="confirmConsentAndContinue()">Continuar</button>
+            <button type="button" class="confirmation-button" style="width: 100%; margin-top: 10px; background: #f5f5f5; color: var(--text);" onclick="closeConsentModal()">Cancelar</button>
         </div>
     </div>
 
@@ -5914,6 +6036,71 @@ window.maquillaje = [
             document.getElementById('register-form-container').style.display = 'none';
         }
 
+        // Abre el modal de autenticación directo en el formulario de registro
+        function abrirRegistro() {
+            if (window.currentUser || (firebase.auth && firebase.auth() && firebase.auth().currentUser)) return;
+            document.getElementById('auth-modal').classList.add('active');
+            switchToRegister();
+        }
+
+        // ── DETECCIÓN "¿Ya se registró en este dispositivo?" (Registrarme vs Iniciar Sesión) ──
+        const REGISTERED_FLAG_KEY = 'rw_uid_registrado';
+        function marcarUsuarioRegistrado(uid) {
+            try { localStorage.setItem(REGISTERED_FLAG_KEY, uid || '1'); } catch (e) {}
+        }
+        function usuarioYaRegistrado() {
+            try { return !!localStorage.getItem(REGISTERED_FLAG_KEY); } catch (e) { return false; }
+        }
+
+        // ── MODAL DE CONSENTIMIENTO (política de privacidad + términos) ──
+        function openConsentModal(method) {
+            window.pendingAuthMethod = method; // 'manual' | 'google'
+            const privacyCheck = document.getElementById('consent-privacy-check');
+            const termsCheck = document.getElementById('consent-terms-check');
+            if (privacyCheck) privacyCheck.checked = false;
+            if (termsCheck) termsCheck.checked = false;
+            updateConsentButtonState();
+            document.getElementById('consent-modal').classList.add('active');
+            preventBodyScroll(true);
+        }
+
+        function closeConsentModal() {
+            document.getElementById('consent-modal').classList.remove('active');
+            preventBodyScroll(false);
+            window.pendingAuthMethod = null;
+            window.pendingRegisterData = null;
+            setRegisterButtonLoading(false);
+        }
+
+        function updateConsentButtonState() {
+            const privacyCheck = document.getElementById('consent-privacy-check');
+            const termsCheck = document.getElementById('consent-terms-check');
+            const btn = document.getElementById('consent-continue-btn');
+            if (!btn) return;
+            const enabled = !!(privacyCheck && privacyCheck.checked && termsCheck && termsCheck.checked);
+            btn.disabled = !enabled;
+            btn.style.opacity = enabled ? '1' : '0.5';
+            btn.style.cursor = enabled ? 'pointer' : 'not-allowed';
+        }
+
+        // No permitir avanzar si no se aceptaron ambos términos
+        function confirmConsentAndContinue() {
+            const privacyCheck = document.getElementById('consent-privacy-check');
+            const termsCheck = document.getElementById('consent-terms-check');
+            if (!privacyCheck || !privacyCheck.checked || !termsCheck || !termsCheck.checked) return;
+
+            const method = window.pendingAuthMethod;
+            document.getElementById('consent-modal').classList.remove('active');
+            preventBodyScroll(false);
+
+            if (method === 'google') {
+                loginWithGoogle();
+            } else if (method === 'manual') {
+                finalizeManualRegister();
+            }
+            window.pendingAuthMethod = null;
+        }
+
         // MOSTRAR/OCULTAR CONTRASEÑA
         function togglePasswordVisibility(inputId, btn) {
             const input = document.getElementById(inputId);
@@ -5944,6 +6131,9 @@ window.maquillaje = [
                         codigoVendedor: codigoVendedor,
                         creado: new Date()
                     });
+                    marcarUsuarioRegistrado(user.uid);
+                } else {
+                    marcarUsuarioRegistrado(user.uid);
                 }
                 closeAuthModal();
             } catch (error) {
@@ -5994,47 +6184,49 @@ window.maquillaje = [
         });
 
         // REGISTRO CON FIREBASE
-        // Normaliza el teléfono/WhatsApp del registro con prefijo argentino +549
-        function normalizeTelefonoAR(raw) {
-            if (!raw) return '';
-            let digits = String(raw).replace(/\D/g, '');
-            // Quitar un 0 inicial (código de área local) si lo tuviera
-            digits = digits.replace(/^0+/, '');
-            if (digits.startsWith('549')) {
-                digits = digits.slice(3);
-            } else if (digits.startsWith('54')) {
-                digits = digits.slice(2);
-            }
-            return '+549' + digits;
-        }
 
-        async function registerUser(e) {
+        // Paso 1 (formulario manual): validar datos y reCAPTCHA, luego pedir consentimiento
+        function handleManualRegisterSubmit(e) {
             e.preventDefault();
-            
-            // Validar reCAPTCHA usando el ID del widget de registro
+
             const recaptchaResponse = grecaptcha.getResponse(window.grecaptchaRegisterId);
-            console.log('📋 reCAPTCHA Response:', recaptchaResponse);
             if (!recaptchaResponse) {
                 alert('Por favor, completa el reCAPTCHA');
                 return;
             }
-            
-            // Mostrar loading state
+
+            // Guardamos los datos del formulario para usarlos luego de aceptar el consentimiento
+            window.pendingRegisterData = {
+                nombre: document.getElementById('register-nombre').value,
+                apellido: document.getElementById('register-apellido').value,
+                fechaNacimiento: document.getElementById('register-fecha-nacimiento').value,
+                email: document.getElementById('register-email').value,
+                password: document.getElementById('register-password').value
+            };
+
+            openConsentModal('manual');
+        }
+
+        // Botón "Registrarse con Google": primero pedir consentimiento
+        function handleGoogleRegisterClick() {
+            window.pendingRegisterData = null;
+            openConsentModal('google');
+        }
+
+        // Paso 2: ejecuta el registro manual ya aceptado el consentimiento
+        async function finalizeManualRegister() {
+            const data = window.pendingRegisterData;
+            if (!data) return;
+
             setRegisterButtonLoading(true);
             showLoadingOverlay();
-            
-            const nombre = document.getElementById('register-nombre').value;
-            const apellido = document.getElementById('register-apellido').value;
-            const direccion = document.getElementById('register-direccion').value;
-            const telefono = normalizeTelefonoAR(document.getElementById('register-telefono').value);
-            const email = document.getElementById('register-email').value;
-            const password = document.getElementById('register-password').value;
+
+            const { nombre, apellido, fechaNacimiento, email, password } = data;
             const codigoVendedor = generarCodigoVendedor();
 
             let userCreatedSuccessfully = false;
 
             try {
-                // Crear usuario en Firebase Auth
                 const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
                 const user = userCredential.user;
                 userCreatedSuccessfully = true;
@@ -6043,34 +6235,23 @@ window.maquillaje = [
                     uid: user.uid,
                     nombre: nombre,
                     apellido: apellido,
-                    direccion: direccion,
-                    telefono: telefono,
+                    fechaNacimiento: fechaNacimiento,
                     email: email,
                     codigoVendedor: codigoVendedor,
                     creado: new Date()
                 };
 
-                // ✅ Guardar código en localStorage PRIMERO (antes de Firestore)
                 localStorage.setItem('codigoVendedorLocal', codigoVendedor);
+                marcarUsuarioRegistrado(user.uid);
 
                 if (firebase.firestore) {
-                    const usuariosCollection = firebase.firestore().collection('usuarios');
-                    
-                    // Guardar en Firestore sin bloquear el flujo
-                    // Esto permite que el registro continúe incluso si Firestore falla
-                    usuariosCollection.doc(user.uid).set(userData)
-                        .catch(err => {
-                            // Error silencioso
-                        });
+                    firebase.firestore().collection('usuarios').doc(user.uid).set(userData)
+                        .catch(err => {});
                 }
 
-                // Mostrar modal de confirmación con el código vendedor
                 showRegistrationConfirmation(codigoVendedor, nombre);
-                
+
             } catch (error) {
-                
-                // FALLBACK: Si el usuario se creó en Firebase pero falló Firestore,
-                // mostrar el modal de todas formas
                 if (userCreatedSuccessfully) {
                     try {
                         showRegistrationConfirmation(codigoVendedor, nombre);
@@ -6080,6 +6261,8 @@ window.maquillaje = [
                 } else {
                     showRegistrationError(error);
                 }
+            } finally {
+                window.pendingRegisterData = null;
             }
         }
 
@@ -6106,6 +6289,7 @@ window.maquillaje = [
                 // El usuario ya está autenticado por Firebase
                 // onAuthStateChanged() se disparará automáticamente
                 closeAuthModal();
+                if (userCredential.user) marcarUsuarioRegistrado(userCredential.user.uid);
                 
                 // Guardar en Firestore si no existe (en background, sin bloquear)
                 // IMPORTANTE: NO regenerar el codigoVendedor si ya existe
@@ -6502,18 +6686,37 @@ window.maquillaje = [
         // MOSTRAR/OCULTAR CINTA SUPERIOR DESPUÉS DEL LOGIN
         function updateUIForAuthentication(isLoggedIn) {
             const ribbon = document.getElementById('topRibbon');
-            const loginBtn = document.querySelector('.login-btn');
-            
+            const loginBtn = document.getElementById('header-auth-btn');
+            const miTiendaBtn = document.getElementById('header-mitienda-btn');
+            const cartBtn = document.getElementById('header-cart-btn');
+
             if (isLoggedIn) {
                 ribbon.classList.add('show');
-                if (loginBtn) {
-                    loginBtn.style.display = 'none';
-                }
+                if (loginBtn) loginBtn.style.display = 'none';
+                if (miTiendaBtn) miTiendaBtn.style.display = 'flex';
+                if (cartBtn) cartBtn.style.display = 'flex';
             } else {
                 ribbon.classList.remove('show');
-                if (loginBtn) {
-                    loginBtn.style.display = 'block';
-                }
+                if (loginBtn) loginBtn.style.display = 'block';
+                if (miTiendaBtn) miTiendaBtn.style.display = 'none';
+                if (cartBtn) cartBtn.style.display = 'none';
+            }
+            actualizarBotonHeaderAuth();
+        }
+
+        // Decide si el botón del header debe decir "Registrarme" o "Iniciar sesión",
+        // según si este dispositivo ya registró una cuenta antes (UID guardado localmente).
+        function actualizarBotonHeaderAuth() {
+            const btn = document.getElementById('header-auth-btn');
+            if (!btn) return;
+            btn.textContent = usuarioYaRegistrado() ? 'Iniciar sesión' : 'Registrarme';
+        }
+
+        function handleHeaderAuthClick() {
+            if (usuarioYaRegistrado()) {
+                abrirLogin();
+            } else {
+                abrirRegistro();
             }
         }
 
@@ -6660,12 +6863,8 @@ window.maquillaje = [
                 }
             }
             
-            // Mostrar botón "Cerrar sesión" en lugar de "Iniciar sesión"
-            const loginBtn = document.querySelector('.login-btn');
-            if (loginBtn) {
-                loginBtn.textContent = 'Cerrar sesión';
-                loginBtn.onclick = logoutUser;
-            }
+            // NOTA: el botón de autenticación del header se oculta al iniciar sesión
+            // (ver updateUIForAuthentication). Cerrar sesión se hace desde el modal de Perfil.
         }
 
         // ════════════════════════════════════════════════════════════════════════════
@@ -7042,11 +7241,6 @@ window.maquillaje = [
                     // Usuario no autenticado: limpiar interfaz
                     window.currentUser = null;
                     updateUIForAuthentication(false);
-                    const loginBtn = document.querySelector('.login-btn');
-                    if (loginBtn) {
-                        loginBtn.textContent = 'Iniciar sesión';
-                        loginBtn.onclick = abrirLogin;
-                    }
                 }
             });
         }
@@ -7176,6 +7370,7 @@ window.maquillaje = [
         // Verificar si ya está logueado y mostrar sección de nichos
         function actualizarVistaNichos() {
             const nichosSection = document.getElementById('nichos-section');
+            const teaserSection = document.getElementById('nichos-teaser-section');
             
             // Limpiar intervalos antes de reinicializar (solo si no hay cambio en progreso)
             if (!window.isChangingCatalog) {
@@ -7186,6 +7381,9 @@ window.maquillaje = [
             }
             
             if (window.currentUser) {
+                // Con sesión iniciada: ocultar el teaser y mostrar las vidrieras reales
+                if (teaserSection) teaserSection.classList.add('hide');
+
                 // Verificar si ya validó el código (localStorage)
                 const codigoEnSesion = localStorage.getItem('codigoRevendedorValidado');
                 if (codigoEnSesion) {
@@ -7201,12 +7399,10 @@ window.maquillaje = [
                     reiniciarCarruselesNichos();
                 }
             } else {
-                // Usuario NO logueado: mostrar nichos
-                if (nichosSection) {
-                    nichosSection.classList.remove('hide');
-                }
-                // IMPORTANTE: Inicializar carruseles también cuando no hay usuario logueado
-                reiniciarCarruselesNichos();
+                // Sesión cerrada: mostrar el teaser compacto y ocultar las vidrieras reales
+                // (para ver el catálogo con precios hay que registrarse/iniciar sesión).
+                if (nichosSection) nichosSection.classList.add('hide');
+                if (teaserSection) teaserSection.classList.remove('hide');
             }
         }
 
@@ -7551,17 +7747,20 @@ window.maquillaje = [
         function actualizarBotonesRevend() {
             const revendBtn = document.getElementById('revend-btn-main');
             const revendSection = document.getElementById('revend-section-container');
+            const revendCtaContent = document.getElementById('revend-cta-content');
             
             if (!revendBtn || !revendSection) return;
             
             if (window.currentUser) {
-                // Usuario logueado: cambiar texto y estilo
+                // Usuario logueado: mostrar texto, botón e imagen
                 revendBtn.textContent = 'Recibir ideas de combos y promociones';
                 revendSection.style.display = 'block';
+                if (revendCtaContent) revendCtaContent.style.display = 'block';
             } else {
-                // Usuario no logueado: mostrar texto original
+                // Usuario no logueado: mostrar solo la imagen de portada (sin texto ni botón)
                 revendBtn.textContent = 'Quiero mi tienda';
                 revendSection.style.display = 'block';
+                if (revendCtaContent) revendCtaContent.style.display = 'none';
             }
         }
 
@@ -7576,13 +7775,20 @@ window.maquillaje = [
             });
             
             const nichosSection = document.getElementById('nichos-section');
+            const teaserSection = document.getElementById('nichos-teaser-section');
             const filtersContainer = document.getElementById('filters-container');
             const productsContainer = document.getElementById('products-container');
             const paginationSection = document.getElementById('pagination-section');
             const portadaDosSection = document.getElementById('portada-dos-section');
             const revendSection = document.querySelector('.revend-section');
 
-            if (nichosSection) nichosSection.classList.remove('hide');
+            if (window.currentUser) {
+                if (nichosSection) nichosSection.classList.remove('hide');
+                if (teaserSection) teaserSection.classList.add('hide');
+            } else {
+                if (nichosSection) nichosSection.classList.add('hide');
+                if (teaserSection) teaserSection.classList.remove('hide');
+            }
             if (filtersContainer) filtersContainer.classList.add('hidden');
             if (productsContainer) productsContainer.classList.add('hidden');
             if (paginationSection) paginationSection.classList.add('hidden');
@@ -7592,7 +7798,7 @@ window.maquillaje = [
             window.currentCatalog = null;
 
             // Re-inicializar los carruseles de las vidrieras (cleanupAllTimers los detuvo)
-            reiniciarCarruselesNichos();
+            if (window.currentUser) reiniciarCarruselesNichos();
         }
 
         // Reprograma los carruseles de las 3 vidrieras de forma segura, cancelando
@@ -7631,13 +7837,20 @@ window.maquillaje = [
                 }
                 
                 const nichosSection = document.getElementById('nichos-section');
+                const teaserSection = document.getElementById('nichos-teaser-section');
                 const filtersContainer = document.getElementById('filters-container');
                 const productsContainer = document.getElementById('products-container');
                 const paginationSection = document.getElementById('pagination-section');
                 const portadaDosSection = document.getElementById('portada-dos-section');
                 const revendSection = document.querySelector('.revend-section');
 
-                if (nichosSection) nichosSection.classList.remove('hide');
+                if (window.currentUser) {
+                    if (nichosSection) nichosSection.classList.remove('hide');
+                    if (teaserSection) teaserSection.classList.add('hide');
+                } else {
+                    if (nichosSection) nichosSection.classList.add('hide');
+                    if (teaserSection) teaserSection.classList.remove('hide');
+                }
                 if (filtersContainer) filtersContainer.classList.add('hidden');
                 if (productsContainer) productsContainer.classList.add('hidden');
                 if (paginationSection) paginationSection.classList.add('hidden');
@@ -7668,7 +7881,7 @@ window.maquillaje = [
                 window.currentCatalog = null;
                 
                 // Re-inicializar carruseles de nichos (sin acumular timeouts huérfanos)
-                reiniciarCarruselesNichos();
+                if (window.currentUser) reiniciarCarruselesNichos();
             } catch (error) {
             } finally {
                 window.isChangingCatalog = false;
@@ -7788,6 +8001,9 @@ window.maquillaje = [
             // Ejecutar solo una vez
             if (window.domLoaded) return;
             window.domLoaded = true;
+
+            // Mostrar "Registrarme" o "Iniciar sesión" según corresponda, antes de esperar a Firebase
+            actualizarBotonHeaderAuth();
             
             // Esperar a que Firebase esté listo
             setTimeout(() => {
