@@ -2134,13 +2134,12 @@
             .footer-banner-inner { margin: 0 8px; grid-template-columns: 1fr; }
             .footer-links-section { grid-template-columns: 1fr; }
             .portada-image-section { margin: 30px 8px; }
-            .revend-section { padding: 40px 8px; }
-            .revend-section-inner { padding: 0 4px; display: flex; flex-direction: column; align-items: center; }
-            .revend-section-inner h2 { font-size: 11px !important; white-space: normal !important; display: block !important; width: 100% !important; }
-            .revend-section-inner img { max-width: 100%; height: auto; margin-bottom: 8px !important; }
-            .revend-title { font-size: 13px; }
-            .revend-subtitle { font-size: 13px; margin-bottom: 16px; }
-            .revend-btn { font-size: 12px; padding: 10px 16px; letter-spacing: 0px; line-height: 1.2; white-space: nowrap; text-align: center; }\n            .nicho-footer { flex-direction: column; gap: 12px; }\n            .nicho-badge { min-width: auto; width: 100%; }\n            .nicho-button { width: 100%; }\n            .carrusel-container { height: 180px; }\n            .revend-section-inner { gap: 16px; }
+            .revend-text-section { padding: 14px 12px 0; margin-top: 16px; }
+            .revend-text-line { font-size: 13px; line-height: 1.35; max-width: 320px; }
+            .nicho-footer { flex-direction: column; gap: 12px; }
+            .nicho-badge { min-width: auto; width: 100%; }
+            .nicho-button { width: 100%; }
+            .carrusel-container { height: 160px; }
             .final-footer { padding: 30px 8px; }
             .final-footer-inner { margin: 0 8px; }
             .final-footer-title { line-height: 1.3; font-size: 11px; word-break: break-word; text-align: left !important; max-width: 340px; }
@@ -2323,49 +2322,19 @@
             white-space: nowrap;
         }
 
-        /* REVEND SECTION */
-        .revend-section {
-            background: linear-gradient(135deg, #1B7F3D 0%, #2BA84F 100%);
-            padding: 80px 16px;
+        /* TEXTO "OBTENÉ IDEAS..." (sin fondo verde, compacto, pegado al banner negro) */
+        .revend-text-section {
+            padding: 18px 16px 0;
             text-align: center;
-            margin: 60px 0 0 0;
-            border-top: 3px solid #1B7F3D;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            margin: 24px 0 0 0;
         }
-        .revend-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: radial-gradient(circle at 20% 50%, rgba(255,255,255,.1) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 80%, rgba(0,0,0,.1) 0%, transparent 50%);
-            pointer-events: none;
-        }
-        .revend-section-inner {
-            max-width: 100%;
-            width: 100%;
+        .revend-text-line {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1a1a1a;
+            line-height: 1.35;
+            max-width: 480px;
             margin: 0 auto;
-            position: relative;
-            z-index: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 0;
-        }
-        .revend-section-inner img {
-            width: 100%;
-            height: auto;
-            max-width: none;
-            margin: 0 auto 20px auto;
-            display: block;
         }
         .revend-title {
             font-family: var(--font-display);
@@ -2411,8 +2380,22 @@
         .final-footer {
             background: #1a1a1a;
             color: white;
-            padding: 40px 16px;
-            margin-top: 40px;
+            padding: 24px 16px 40px;
+            margin-top: 0;
+        }
+        .final-footer-image {
+            width: 100%;
+            max-width: 100%;
+            border-radius: 8px;
+            display: block;
+            margin: 0 auto 24px auto;
+            box-shadow: none;
+        }
+        .final-footer-copyright {
+            text-align: center;
+            font-size: 11px;
+            color: #888;
+            margin-top: 28px;
         }
         .final-footer-inner {
             max-width: 100%;
@@ -2504,7 +2487,7 @@
                 font-size: 12px;
             }
             .carrusel-container {
-                height: 100px;
+                height: 160px;
                 margin-bottom: 16px;
             }
             .nicho-footer {
@@ -2981,7 +2964,7 @@
         :root { --page-gutter: 16px; }
         @media (max-width: 600px) {
             /* Secciones a ancho completo, sin padding lateral propio */
-            .banner, .nichos-section, .revend-section, .final-footer,
+            .banner, .nichos-section, .revend-text-section, .final-footer,
             .cta-section, .footer-banner, .top-ribbon, .shoes-category-section {
                 padding-left: 0 !important;
                 padding-right: 0 !important;
@@ -2995,7 +2978,6 @@
             .products-container,
             .pagination-section,
             .portada-image-section,
-            .revend-section-inner,
             .final-footer-inner,
             .footer-banner-inner,
             .cta-section-inner,
@@ -3098,7 +3080,7 @@
     <section class="nichos-teaser-section" id="nichos-teaser-section">
         <div class="nichos-teaser-inner">
             <div class="nichos-teaser-icon"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
-            <p class="nichos-teaser-lead">Emprendé con nosotros y Stockeate desde un mismo lugar</p>
+            <p class="nichos-teaser-lead">Emprendé con nosotros con $0 de inversión y reinvertí desde un mismo lugar</p>
             <div class="nichos-teaser-badge">Elegí tu Tienda Ideal</div>
             <p class="nichos-teaser-desc">Perfumería, Bazar, Belleza, Electrónica, y muchos productos más para que comiences a emprender sin poner en riesgo tu capital.</p>
         </div>
@@ -3241,20 +3223,15 @@
         <img id="portada-dos-img" alt="Portada Dos" class="portada-image">
     </div>
 
-    <!-- REVEND SECTION -->
-    <div class="revend-section" id="revend-section-container">
-        <div class="revend-section-inner">
-            <img id="portada-uno-img" alt="Portada Revende" class="portada-image" style="width: 100%; max-width: 100%; display: block; margin: 0 auto 20px auto;">
-            <div id="revend-cta-content" style="text-align: center; width: 100%;">
-                <div style="text-align: center; font-size: 16px; font-weight: 600; color: white; margin-bottom: 20px;">Obtené ideas todas las semanas para llevar adelante tu negocio con Revende Ways</div>
-                <button class="revend-btn" id="revend-btn-main" onclick="abrirLogin()" style="margin-bottom: 30px;">Quiero mi tienda</button>
-            </div>
-        </div>
+    <!-- TEXTO "OBTENÉ IDEAS..." (sin fondo, compacto, unificado con el banner negro) -->
+    <div class="revend-text-section" id="revend-section-container">
+        <p class="revend-text-line">Obtené ideas todas las semanas para llevar adelante tu negocio con Revende Ways</p>
     </div>
 
     <!-- FINAL FOOTER BANNER -->
     <footer class="final-footer">
         <div class="final-footer-inner">
+            <img id="portada-uno-img" alt="Portada Revende" class="portada-image final-footer-image">
             <div class="final-footer-title">
                 <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-0.15em"><polyline points="20 6 9 17 4 12"/></svg> más de 4.000 productos | <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-0.15em"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> envíos a todo el país
             </div>
@@ -3264,6 +3241,7 @@
                 <a href="javascript:void(0)" class="final-footer-link" onclick="alert('Política de devoluciones - próximamente')">Devoluciones</a>
                 <a href="javascript:void(0)" class="final-footer-link" onclick="alert('Más opciones de reventa - próximamente')">Más opciones de reventa</a>
             </div>
+            <div class="final-footer-copyright">Revende Ways © Todos los derechos reservados</div>
         </div>
     </footer>
 
@@ -7049,7 +7027,7 @@ window.maquillaje = [
             productosCarrusel.forEach((producto, index) => {
                 const slide = document.createElement('div');
                 slide.className = 'carrusel-slide';
-                slide.innerHTML = `<img src="${BASE_IMAGE_URL}${producto.imagen}" alt="${producto.nombre}" style="width: 100%; height: auto; max-height: 350px; object-fit: contain; display: block; margin: 0 auto;">`;
+                slide.innerHTML = `<img src="${BASE_IMAGE_URL}${producto.imagen}" alt="${producto.nombre}" onerror="this.src='${BASE_IMAGE_URL}portadauno.png'">`;
                 wrapper.appendChild(slide);
 
                 const dot = document.createElement('button');
@@ -7061,12 +7039,12 @@ window.maquillaje = [
             window.carruselIndex = 0;
             actualizarCarruselShoesPreview();
             
-            // Autoplay cada 5 segundos
+            // Autoplay cada 3,5 segundos (según especificación)
             if (window.carruselAutoplay) clearInterval(window.carruselAutoplay);
             window.carruselAutoplay = setInterval(() => {
                 window.carruselIndex = (window.carruselIndex + 1) % productosCarrusel.length;
                 actualizarCarruselShoesPreview();
-            }, 5000);
+            }, 3500);
         }
         
         function actualizarCarruselShoesPreview() {
@@ -7110,7 +7088,7 @@ window.maquillaje = [
             BELLEZA_PREVIEW_IMAGES.forEach((img, index) => {
                 const slide = document.createElement('div');
                 slide.className = 'carrusel-slide';
-                slide.innerHTML = `<img src="${BASE_MAQUILLAJE_IMAGE_URL}${img}" alt="Belleza y Cuidado Personal" style="width: 100%; height: auto; max-height: 350px; object-fit: contain; display: block; margin: 0 auto;">`;
+                slide.innerHTML = `<img src="${BASE_MAQUILLAJE_IMAGE_URL}${img}" alt="Belleza y Cuidado Personal" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23f3f4f6%22 width=%22300%22 height=%22300%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-family=%22Arial%22 font-size=%2216%22 fill=%22%23999%22%3EBelleza%3C/text%3E%3C/svg%3E'">`;
                 wrapper.appendChild(slide);
 
                 const dot = document.createElement('button');
@@ -7126,7 +7104,7 @@ window.maquillaje = [
             window.carruselAutoplayBelleza = setInterval(() => {
                 window.carruselIndexBelleza = (window.carruselIndexBelleza + 1) % BELLEZA_PREVIEW_IMAGES.length;
                 actualizarCarruselBelleza();
-            }, 5000);
+            }, 3500);
         }
 
         function actualizarCarruselBelleza() {
@@ -7285,12 +7263,14 @@ window.maquillaje = [
 
         // INICIALIZAR CARRUSEL CON IMÁGENES DE PRODUCTOS
         function inicializarCarrusel() {
-            // Filtrar productos con precio entre 5000 y 30000
-            const productosArabes = window.products.filter(p => 
-                p.precio >= 5000 && p.precio <= 30000 && p.imagen && p.categoria
-            );
-            
-            productosCarrusel = productosArabes;
+            // Selección según especificación: 3 masculino + 6 femenino + 9 unisex (máx. 18),
+            // excluyendo imágenes cuyo nombre contenga "portada".
+            const disponibles = window.products.filter(p => p.imagen && !p.imagen.toLowerCase().includes('portada'));
+            const masculinos = disponibles.filter(p => p.categoria === 'masculino').slice(0, 3);
+            const femeninos = disponibles.filter(p => p.categoria === 'femenino').slice(0, 6);
+            const unisex = disponibles.filter(p => p.categoria === 'unisex').slice(0, 9);
+
+            productosCarrusel = [...masculinos, ...femeninos, ...unisex];
 
             if (productosCarrusel.length === 0) return;
 
@@ -7351,7 +7331,7 @@ window.maquillaje = [
             actualizarCarrusel();
         }
 
-        // Auto-deslizar carrusel cada 5 segundos
+        // Auto-deslizar carrusel cada 3,5 segundos
         window.carruselInterval = null;
         function iniciarAutoDesliz() {
             if (window.carruselInterval) clearInterval(window.carruselInterval);
@@ -7359,7 +7339,7 @@ window.maquillaje = [
                 if (productosCarrusel.length > 1) {
                     carruselSiguiente();
                 }
-            }, 5000);
+            }, 3500);
         }
         function detenerAutoDesliz() {
             if (window.carruselInterval) clearInterval(window.carruselInterval);
@@ -7593,7 +7573,7 @@ window.maquillaje = [
                 const productsContainer = document.getElementById('products-container');
                 const paginationSection = document.getElementById('pagination-section');
                 const portadaDosSection = document.getElementById('portada-dos-section');
-                const revendSection = document.querySelector('.revend-section');
+                const revendSection = document.getElementById('revend-section-container');
                 const shoesCategorySection = document.getElementById('shoes-category-section');
 
                 if (nichosSection) nichosSection.classList.add('hide');
@@ -7743,25 +7723,10 @@ window.maquillaje = [
             }
         }
 
-        // Actualizar botón "Quiero mi tienda" según estado de login
+        // Mantiene visible el bloque de texto "Obtené ideas..." (ya no tiene botón ni fondo verde)
         function actualizarBotonesRevend() {
-            const revendBtn = document.getElementById('revend-btn-main');
             const revendSection = document.getElementById('revend-section-container');
-            const revendCtaContent = document.getElementById('revend-cta-content');
-            
-            if (!revendBtn || !revendSection) return;
-            
-            if (window.currentUser) {
-                // Usuario logueado: mostrar texto, botón e imagen
-                revendBtn.textContent = 'Recibir ideas de combos y promociones';
-                revendSection.style.display = 'block';
-                if (revendCtaContent) revendCtaContent.style.display = 'block';
-            } else {
-                // Usuario no logueado: mostrar solo la imagen de portada (sin texto ni botón)
-                revendBtn.textContent = 'Quiero mi tienda';
-                revendSection.style.display = 'block';
-                if (revendCtaContent) revendCtaContent.style.display = 'none';
-            }
+            if (revendSection) revendSection.style.display = 'block';
         }
 
         // Mostrar sección de nichos (Inicio)
@@ -7780,7 +7745,7 @@ window.maquillaje = [
             const productsContainer = document.getElementById('products-container');
             const paginationSection = document.getElementById('pagination-section');
             const portadaDosSection = document.getElementById('portada-dos-section');
-            const revendSection = document.querySelector('.revend-section');
+            const revendSection = document.getElementById('revend-section-container');
 
             if (window.currentUser) {
                 if (nichosSection) nichosSection.classList.remove('hide');
@@ -7842,7 +7807,7 @@ window.maquillaje = [
                 const productsContainer = document.getElementById('products-container');
                 const paginationSection = document.getElementById('pagination-section');
                 const portadaDosSection = document.getElementById('portada-dos-section');
-                const revendSection = document.querySelector('.revend-section');
+                const revendSection = document.getElementById('revend-section-container');
 
                 if (window.currentUser) {
                     if (nichosSection) nichosSection.classList.remove('hide');
