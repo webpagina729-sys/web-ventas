@@ -268,7 +268,15 @@
             font-size: 12px;
             font-weight: 600;
             text-align: center;
-            max-width: 300px;
+            width: 260px;
+            max-width: 90vw;
+            box-sizing: border-box;
+        }
+        .banner-badge-note {
+            font-size: 11px;
+            color: var(--text-light);
+            text-align: center;
+            margin-top: 6px;
         }
 
         /* SECCIÓN TEASER (SOLO SESIÓN CERRADA) */
@@ -857,9 +865,14 @@
             margin-bottom: 8px;
         }
         .cart-info {
-            font-size: 13px;
-            color: var(--text-light);
+            font-size: 11px;
+            line-height: 1.6;
+            color: white;
             margin: 0;
+            background: linear-gradient(135deg, #1B7F3D, #22a34a);
+            padding: 8px 12px;
+            border-radius: 6px;
+            display: inline-block;
         }
         .modal-cart-items {
             max-height: 400px;
@@ -1006,14 +1019,29 @@
             color: var(--primary);
         }
         .summary-warning {
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            color: #856404;
-            padding: 12px;
-            border-radius: 4px;
+            background: white;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 10px rgba(0,0,0,.06);
+            color: var(--text);
+            padding: 14px 16px;
+            border-radius: 8px;
             font-size: 13px;
             margin-top: 12px;
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+        .summary-warning svg {
+            color: #e0a800;
+        }
+        .summary-warning-text {
+            line-height: 1.5;
+        }
+        .summary-warning-text strong {
+            color: var(--primary);
+            font-size: 14px;
         }
         .summary-warning.hidden {
             display: none;
@@ -2472,10 +2500,10 @@
                 font-size: 15px;
                 margin-bottom: 8px;
             }
-            .nichos-title {
-                font-size: 16px;
+            .nichos-title-box {
+                font-size: 13px;
                 margin-bottom: 22px;
-                white-space: normal;
+                padding: 7px 12px;
             }
             .nicho-item {
                 margin-bottom: 22px;
@@ -2513,14 +2541,19 @@
             font-family: var(--font-display);
             line-height: 1.3;
         }
-        .nichos-title {
-            font-size: 20px;
+        .nichos-title-box {
+            background: linear-gradient(135deg, #1B7F3D, #22a34a);
+            color: white;
+            font-size: 15px;
             font-weight: 700;
-            color: var(--text);
             text-align: center;
-            margin-bottom: 36px;
-            font-family: var(--font-display);
-            white-space: nowrap;
+            padding: 8px 16px;
+            border-radius: 6px;
+            width: 260px;
+            max-width: 90vw;
+            box-sizing: border-box;
+            margin: 0 auto 36px auto;
+            box-shadow: 0 2px 8px rgba(27,127,61,.25);
         }
         .nichos-grid {
             display: grid;
@@ -3072,7 +3105,8 @@
         <div class="banner-inner">
             <img src="logoservi.png" alt="Revende Ways" class="banner-logo-img" onerror="this.style.display='none'">
             <p class="banner-subtitle">Revende con nosotros. Te damos tu tienda lista para comenzar con +500 productos.</p>
-            <div class="banner-badge"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-0.15em"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> Pedido mínimo en la categoría- Precio solo para revendedores</div>
+            <div class="banner-badge"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-0.15em"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> Pedido mínimo en cada categoría</div>
+            <p class="banner-badge-note">Precio solo para revendedores</p>
         </div>
     </section>
 
@@ -3090,7 +3124,7 @@
     <section class="nichos-section hide" id="nichos-section">
         <div class="nichos-section-inner">
             <h2 class="nichos-pretitle">Emprende con Nosotros, Stockeate para invertir tus ganancias.</h2>
-            <h3 class="nichos-title">Elegí tu tienda ideal</h3>
+            <div class="nichos-title-box">Elegí tu tienda ideal</div>
             
             <!-- NICHO 1: PERFUMERÍA -->
             <div class="nicho-item">
@@ -3257,7 +3291,8 @@
         <div class="modal-details-content">
             <div style="width: 100%; display: flex; flex-direction: column; align-items: center; text-align: center;">
                 <div style="width: 100%; margin-bottom: 20px;">
-                    <img id="modal-details-image" src="" alt="Producto" style="width: 100%; border-radius: 8px; object-fit: cover;">
+                    <img id="modal-details-image" src="" alt="Producto" style="width: 100%; border-radius: 8px; object-fit: cover;" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23f3f4f6%22 width=%22300%22 height=%22300%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-family=%22Arial%22 font-size=%2216%22 fill=%22%23999%22%3EProducto%3C/text%3E%3C/svg%3E'">
+                    <div id="modal-details-image-dots" style="display:flex; justify-content:center; gap:6px; margin-top:10px;"></div>
                 </div>
                 <div style="width: 100%; display: flex; flex-direction: column; align-items: center;">
                     <div class="modal-details-name" id="modal-details-name" style="font-size: 24px; font-weight: 600; margin-bottom: 15px; color: var(--text); width: 100%;"></div>
@@ -3301,8 +3336,8 @@
     <div class="modal-cart" id="modal-cart" onclick="closeCartIfClickBackground(event)">
         <div class="modal-cart-content">
             <div class="modal-cart-header">
-                <h2>Tu Pedido por Encargo</h2>
-                <p class="cart-info">Mínimo de encargue: $150.000</p>
+                <h2>Completa tu Stock</h2>
+                <p class="cart-info">Perfumes: mínimo $150.000<br>Calzados: mínimo 12 productos<br>Belleza: mínimo $200.000</p>
             </div>
             
             <div class="modal-cart-items" id="modal-cart-items">
@@ -3319,7 +3354,8 @@
                     <span class="summary-value" id="cart-total">$0</span>
                 </div>
                 <div class="summary-warning" id="cart-warning">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-0.15em"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Falta: <span id="cart-falta">$150.000</span> para completar el pedido mínimo
+                    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-0.15em"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <div class="summary-warning-text"><strong>Faltan: <span id="cart-falta">$150.000</span></strong><br>Para completar el pedido mínimo</div>
                 </div>
             </div>
             
@@ -3446,6 +3482,29 @@
         </div>
     </div>
 
+    <!-- MODAL "SELECCIONÁ UNA VARIANTE" (cuando se intenta agregar sin elegir) -->
+    <div class="modal-overlay" id="variant-required-modal" onclick="if(event.target.id==='variant-required-modal') cerrarModalVarianteRequerida()">
+        <div class="modal-content" style="max-width: 340px; text-align: center; padding: 24px 20px;">
+            <p style="font-size: 15px; font-weight: 700; color: var(--text); margin: 0 0 16px;">Por favor: Selecciona una variante</p>
+            <div id="variant-required-chips" class="variant-chips" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 18px;"></div>
+            <button type="button" class="confirmation-button confirmation-button-primary" id="variant-required-confirm-btn" style="width: 100%; opacity: 0.5; cursor: not-allowed;" disabled onclick="confirmarVarianteYAgregar()">Agregar al carrito</button>
+        </div>
+    </div>
+
+    <!-- MODAL "RECORDAR INICIO DE SESIÓN" -->
+    <div class="modal-overlay" id="remember-session-modal">
+        <div class="modal-content" style="max-width: 380px; text-align: center;">
+            <div class="modal-header" style="justify-content: center;">
+                <h2 class="modal-title">¿Guardar el inicio de sesión?</h2>
+            </div>
+            <p style="font-size: 13px; line-height: 1.5; color: var(--text-light); margin: 4px 0 22px;">
+                Si lo guardás, la próxima vez que entres vas a ingresar automáticamente. Si no, te vamos a pedir que inicies sesión cada vez.
+            </p>
+            <button type="button" class="confirmation-button confirmation-button-primary" style="width: 100%;" onclick="confirmarRecordarSesion(true)">Sí, guardar sesión</button>
+            <button type="button" class="confirmation-button" style="width: 100%; margin-top: 10px; background: #f5f5f5; color: var(--text);" onclick="confirmarRecordarSesion(false)">No, preguntar cada vez</button>
+        </div>
+    </div>
+
     <!-- MODAL CONSENTIMIENTO DE DATOS (Política de privacidad + Términos) -->
     <div class="modal-overlay" id="consent-modal" onclick="if(event.target.id==='consent-modal') closeConsentModal()">
         <div class="modal-content" style="max-width: 420px;">
@@ -3453,7 +3512,7 @@
                 <h2 class="modal-title">Cómo utilizamos tus datos</h2>
             </div>
             <p style="font-size: 13px; line-height: 1.5; color: var(--text); margin: 4px 0 6px;">
-                Usamos tus datos únicamente para gestionar tu cuenta y tus pedidos como revendedor.
+                Usamos tus datos para mejorar tu experiencia, tu cuenta y tus pedidos como revendedor.
                 <a href="javascript:void(0)" onclick="alert('Enlace disponible próximamente.')" style="color: var(--primary); font-weight: 600;">Ver más</a>
             </p>
             <p style="font-size: 11px; color: var(--text-light); margin: 0 0 16px;">
@@ -3753,7 +3812,9 @@
         const BASE_URL = window.location.origin;
         const BASE_IMAGE_URL = BASE_URL + '/';
         // Imágenes y productos de Maquillaje se cargan desde el repositorio externo
-        const BASE_MAQUILLAJE_IMAGE_URL = 'https://raw.githubusercontent.com/webpagina729-sys/Maquillaje/main/';
+        // Se usa el mirror de jsDelivr sobre el mismo repositorio (más confiable para hotlinking
+        // que raw.githubusercontent.com, que no está pensado para servir imágenes en producción).
+        const BASE_MAQUILLAJE_IMAGE_URL = 'https://cdn.jsdelivr.net/gh/webpagina729-sys/Maquillaje@main/';
         
         // ✅ Hacer global para evitar problemas de scope
         window.products = [
@@ -4623,7 +4684,6 @@ window.maquillaje = [
                         <div class="product-price">
                             <div class="price-current">$${p.precio.toLocaleString()}</div>
                             <div class="price-original">$${p.precioOriginal.toLocaleString()}</div>
-                            <div class="price-discount">${Math.round((1 - p.precio/p.precioOriginal) * 100)}%</div>
                         </div>
                         <button class="btn-more" onclick="openDetails(${p.id})">Ver más</button>
                     </div>
@@ -4721,7 +4781,6 @@ window.maquillaje = [
                         <div class="product-price">
                             <div class="price-current">$${p.precio.toLocaleString()}</div>
                             <div class="price-original">$${p.precioOriginal.toLocaleString()}</div>
-                            <div class="price-discount">${Math.round((1 - p.precio/p.precioOriginal) * 100)}%</div>
                         </div>
                         <button class="btn-more" onclick="openDetailsBelleza(${p.id}, '${p.origenBelleza}')">Ver más</button>
                     </div>
@@ -4780,7 +4839,6 @@ window.maquillaje = [
                         <div class="product-price">
                             <div class="price-current">$${p.precio.toLocaleString()}</div>
                             <div class="price-original">$${p.precioOriginal.toLocaleString()}</div>
-                            <div class="price-discount">${Math.round((1 - p.precio/p.precioOriginal) * 100)}%</div>
                         </div>
                         <button class="btn-more" onclick="openDetailsShoes(${p.id})">Ver más</button>
                     </div>
@@ -4858,7 +4916,7 @@ window.maquillaje = [
             window.currentProductSourceCatalog = 'perfumes';
             window.selectedVariante = null;
             if (!currentProduct) return;
-            document.getElementById('modal-details-image').src = BASE_IMAGE_URL + currentProduct.imagen;
+            renderModalDetailsImages(BASE_IMAGE_URL, currentProduct);
             document.getElementById('modal-details-name').textContent = currentProduct.nombre;
             document.getElementById('modal-details-price').textContent = `$${currentProduct.precio.toLocaleString()}`;
             document.getElementById('modal-details-price-original').textContent = `$${currentProduct.precioOriginal.toLocaleString()}`;
@@ -4867,6 +4925,42 @@ window.maquillaje = [
             document.getElementById('modal-details-moment').textContent = currentProduct.momento;
             renderVariantSection(null);
             document.getElementById('modal-details').classList.add('active');
+        }
+
+        // Galería del modal de detalles: soporta productos con varias imágenes (carrusel de fotos)
+        function renderModalDetailsImages(imgBase, item) {
+            const mainImg = document.getElementById('modal-details-image');
+            const dotsContainer = document.getElementById('modal-details-image-dots');
+            if (!mainImg) return;
+
+            const imagenes = [item.imagen, ...((item.imagenesExtra && item.imagenesExtra.length) ? item.imagenesExtra : [])];
+            window.modalDetailsImages = imagenes;
+            window.modalDetailsImageBase = imgBase;
+            window.modalDetailsImageIndex = 0;
+
+            mainImg.src = imgBase + imagenes[0];
+
+            if (dotsContainer) {
+                if (imagenes.length > 1) {
+                    dotsContainer.innerHTML = imagenes.map((img, i) =>
+                        `<button type="button" class="carrusel-dot modal-gallery-dot ${i === 0 ? 'active' : ''}" onclick="irAModalDetailsImage(${i})" style="background: ${i === 0 ? 'var(--primary)' : '#ddd'};"></button>`
+                    ).join('');
+                } else {
+                    dotsContainer.innerHTML = '';
+                }
+            }
+        }
+
+        function irAModalDetailsImage(index) {
+            const mainImg = document.getElementById('modal-details-image');
+            const imagenes = window.modalDetailsImages || [];
+            if (!mainImg || !imagenes[index]) return;
+            window.modalDetailsImageIndex = index;
+            mainImg.src = window.modalDetailsImageBase + imagenes[index];
+            document.querySelectorAll('#modal-details-image-dots .modal-gallery-dot').forEach((dot, i) => {
+                dot.style.background = i === index ? 'var(--primary)' : '#ddd';
+                dot.classList.toggle('active', i === index);
+            });
         }
 
         // Renderiza (o esconde) el selector de variantes obligatorio dentro del modal de detalles
@@ -4910,7 +5004,7 @@ window.maquillaje = [
             window.selectedVariante = null;
 
             const imgBase = origen === 'maquillaje' ? BASE_MAQUILLAJE_IMAGE_URL : BASE_IMAGE_URL;
-            document.getElementById('modal-details-image').src = imgBase + item.imagen;
+            renderModalDetailsImages(imgBase, item);
             document.getElementById('modal-details-name').textContent = item.nombre;
             document.getElementById('modal-details-price').textContent = `$${item.precio.toLocaleString()}`;
             document.getElementById('modal-details-price-original').textContent = `$${item.precioOriginal.toLocaleString()}`;
@@ -4933,10 +5027,12 @@ window.maquillaje = [
 
         function openZoomFromDetails() {
             closeDetails();
+            const imagenes = window.modalDetailsImages || [currentProduct.imagen];
+            const currentImg = imagenes[window.modalDetailsImageIndex || 0] || currentProduct.imagen;
             if (window.currentProductCatalog === 'belleza' && window.currentProductSourceCatalog === 'maquillaje') {
-                openZoom(BASE_MAQUILLAJE_IMAGE_URL + currentProduct.imagen, true);
+                openZoom(BASE_MAQUILLAJE_IMAGE_URL + currentImg, true);
             } else {
-                openZoom(currentProduct.imagen);
+                openZoom(currentImg);
             }
         }
 
@@ -5381,6 +5477,58 @@ window.maquillaje = [
             window.selectedTalle = null;
         }
 
+        // ── MODAL "Selecciona una variante" (cuando se intenta agregar sin elegir) ──
+        function mostrarModalVarianteRequerida(item) {
+            window.pendingVariantItem = item;
+            const chipsContainer = document.getElementById('variant-required-chips');
+            const confirmBtn = document.getElementById('variant-required-confirm-btn');
+            if (!chipsContainer || !confirmBtn) return;
+
+            chipsContainer.innerHTML = (item.variantes || []).map(v =>
+                `<button type="button" class="variant-chip" onclick="seleccionarVarianteDesdeAviso('${v.replace(/'/g, "\\'")}', this)">${v}</button>`
+            ).join('');
+            confirmBtn.disabled = true;
+            confirmBtn.style.opacity = '0.5';
+            confirmBtn.style.cursor = 'not-allowed';
+
+            document.getElementById('variant-required-modal').classList.add('active');
+            preventBodyScroll(true);
+        }
+
+        function cerrarModalVarianteRequerida() {
+            document.getElementById('variant-required-modal').classList.remove('active');
+            preventBodyScroll(false);
+            window.pendingVariantItem = null;
+        }
+
+        function seleccionarVarianteDesdeAviso(variante, btnEl) {
+            window.selectedVariante = variante;
+            document.querySelectorAll('#variant-required-chips .variant-chip').forEach(b => b.classList.remove('active'));
+            if (btnEl) btnEl.classList.add('active');
+
+            // Reflejar la selección también en el modal de detalles, por si el usuario vuelve a él
+            document.querySelectorAll('#modal-details-variants .variant-chip').forEach(b => {
+                b.classList.toggle('active', b.textContent === variante);
+            });
+            const detailsAddBtn = document.getElementById('modal-details-add-btn');
+            if (detailsAddBtn) { detailsAddBtn.disabled = false; detailsAddBtn.style.opacity = '1'; }
+
+            const confirmBtn = document.getElementById('variant-required-confirm-btn');
+            if (confirmBtn) {
+                confirmBtn.disabled = false;
+                confirmBtn.style.opacity = '1';
+                confirmBtn.style.cursor = 'pointer';
+            }
+        }
+
+        function confirmarVarianteYAgregar() {
+            if (!window.selectedVariante) return;
+            document.getElementById('variant-required-modal').classList.remove('active');
+            preventBodyScroll(false);
+            window.pendingVariantItem = null;
+            addToCartFromModal();
+        }
+
         function addToCartFromModal() {
             // Validar que hay sesión activa
             const currentUser = firebase.auth().currentUser;
@@ -5396,7 +5544,7 @@ window.maquillaje = [
                 if (!item) return;
 
                 if (Array.isArray(item.variantes) && item.variantes.length > 0 && !window.selectedVariante) {
-                    alert('Por favor selecciona una variante antes de agregar el producto.');
+                    mostrarModalVarianteRequerida(item);
                     return;
                 }
 
@@ -5461,12 +5609,16 @@ window.maquillaje = [
             const payButton = document.getElementById('btn-pay');
             const warningElement = document.getElementById('cart-warning');
             const cartInfo = document.querySelector('.cart-info');
-            if (cartInfo) cartInfo.textContent = 'Perfumes: mínimo $150.000 · Calzados: mínimo 12 productos · Belleza: mínimo $200.000';
+            if (cartInfo) cartInfo.innerHTML = 'Perfumes: mínimo $150.000<br>Calzados: mínimo 12 productos<br>Belleza: mínimo $200.000';
 
             if (window.cart.length === 0) {
                 if (modalCartItems) modalCartItems.innerHTML = '<p style="text-align: center; color: var(--text-light); padding: 20px;">El carrito está vacío</p>';
                 if (warningElement) warningElement.classList.add('hidden');
                 if (payButton) payButton.disabled = true;
+                const cartSubtotalElEmpty = document.getElementById('cart-subtotal');
+                const cartTotalElEmpty = document.getElementById('cart-total');
+                if (cartSubtotalElEmpty) cartSubtotalElEmpty.textContent = '$0';
+                if (cartTotalElEmpty) cartTotalElEmpty.textContent = '$0';
                 return;
             }
 
@@ -5509,7 +5661,10 @@ window.maquillaje = [
             const status = getCartMinimumStatus(window.cart);
             const cartFaltaEl = document.getElementById('cart-falta');
             if (status.missing.length > 0) {
-                if (cartFaltaEl) cartFaltaEl.textContent = status.missing.join(' · ');
+                // Cada entrada viene como "Categoría: faltan $X" o "Categoría: faltan N productos";
+                // acá solo mostramos la parte del monto/cantidad, sin repetir la palabra "faltan".
+                const montos = status.missing.map(m => m.split(': faltan ')[1] || m);
+                if (cartFaltaEl) cartFaltaEl.textContent = montos.join(' · ');
                 if (warningElement) warningElement.classList.remove('hidden');
                 if (payButton) payButton.disabled = true;
             } else {
@@ -5898,7 +6053,7 @@ window.maquillaje = [
 
             if (status === 'success') {
                 // Limpiar carrito de memoria y Firebase
-                cart = [];
+                window.cart = [];
                 updateCartCount();
                 updateCartDisplay();
                 clearCartFromFirebase();
@@ -5945,6 +6100,7 @@ window.maquillaje = [
             // No mostrar el login si ya hay una sesión activa (evita que el modal
             // reaparezca estando el usuario logueado).
             if (window.currentUser || (firebase.auth && firebase.auth() && firebase.auth().currentUser)) return;
+            if (window.cancelarAutoAperturaAuth) window.cancelarAutoAperturaAuth();
             document.getElementById('auth-modal').classList.add('active');
         }
 
@@ -6017,6 +6173,7 @@ window.maquillaje = [
         // Abre el modal de autenticación directo en el formulario de registro
         function abrirRegistro() {
             if (window.currentUser || (firebase.auth && firebase.auth() && firebase.auth().currentUser)) return;
+            if (window.cancelarAutoAperturaAuth) window.cancelarAutoAperturaAuth();
             document.getElementById('auth-modal').classList.add('active');
             switchToRegister();
         }
@@ -6079,6 +6236,32 @@ window.maquillaje = [
             window.pendingAuthMethod = null;
         }
 
+        // ── MODAL "¿GUARDAR EL INICIO DE SESIÓN?" ──
+        const REMEMBER_SESSION_KEY = 'rw_remember_session';
+
+        function mostrarModalRecordarSesion() {
+            const modal = document.getElementById('remember-session-modal');
+            if (modal) {
+                modal.classList.add('active');
+                preventBodyScroll(true);
+            }
+        }
+
+        function confirmarRecordarSesion(recordar) {
+            try {
+                if (recordar) {
+                    firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+                    localStorage.setItem(REMEMBER_SESSION_KEY, '1');
+                } else {
+                    firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE);
+                    localStorage.setItem(REMEMBER_SESSION_KEY, '0');
+                }
+            } catch (e) {}
+            const modal = document.getElementById('remember-session-modal');
+            if (modal) modal.classList.remove('active');
+            preventBodyScroll(false);
+        }
+
         // MOSTRAR/OCULTAR CONTRASEÑA
         function togglePasswordVisibility(inputId, btn) {
             const input = document.getElementById(inputId);
@@ -6114,6 +6297,7 @@ window.maquillaje = [
                     marcarUsuarioRegistrado(user.uid);
                 }
                 closeAuthModal();
+                mostrarModalRecordarSesion();
             } catch (error) {
                 if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') return;
                 if (error.code === 'auth/popup-blocked') {
@@ -6268,6 +6452,7 @@ window.maquillaje = [
                 // onAuthStateChanged() se disparará automáticamente
                 closeAuthModal();
                 if (userCredential.user) marcarUsuarioRegistrado(userCredential.user.uid);
+                mostrarModalRecordarSesion();
                 
                 // Guardar en Firestore si no existe (en background, sin bloquear)
                 // IMPORTANTE: NO regenerar el codigoVendedor si ya existe
@@ -6730,6 +6915,7 @@ window.maquillaje = [
         async function logoutUser() {
             try {
                 await firebase.auth().signOut();
+                try { localStorage.removeItem(REMEMBER_SESSION_KEY); } catch (e) {}
                 // Cerrar cinta superior y recargar página
                 updateUIForAuthentication(false);
                 window.location.reload();
@@ -8009,21 +8195,41 @@ window.maquillaje = [
             }, 300);
         }, { once: true });
         
-        // Abrir modal de login automáticamente solo la primera vez, sin re-dispararse
+        // Apertura automática del modal de autenticación al entrar a la web:
+        // - Si el dispositivo ya se registró antes: pedirle que inicie sesión.
+        // - Si nunca se registró: darle 10s para que toque "Registrarme" solo;
+        //   si no lo hace, abrir el formulario de registro automáticamente.
+        window.autoAuthTimers = [];
+        function cancelarAutoAperturaAuth() {
+            (window.autoAuthTimers || []).forEach(id => clearTimeout(id));
+            window.autoAuthTimers = [];
+        }
+
         (function() {
             var unsubscribe = firebase.auth().onAuthStateChanged(function(user) {
                 unsubscribe(); // desuscribirse inmediatamente después del primer disparo
-                if (!user) { setTimeout(function(){ abrirLogin(); }, 500); }
+                if (user) return; // ya hay sesión activa, no mostrar nada
+
+                if (usuarioYaRegistrado()) {
+                    window.autoAuthTimers.push(setTimeout(function () {
+                        if (!window.currentUser && !firebase.auth().currentUser) abrirLogin();
+                    }, 500));
+                } else {
+                    window.autoAuthTimers.push(setTimeout(function () {
+                        var authModal = document.getElementById('auth-modal');
+                        var yaAbierto = authModal && authModal.classList.contains('active');
+                        if (!yaAbierto && !window.currentUser && !firebase.auth().currentUser) {
+                            abrirRegistro();
+                        }
+                    }, 10000));
+                }
             });
         })();
 
-        // RESPALDO: garantizar que el panel de inicio de sesión SIEMPRE aparezca,
-        // aunque Firebase tarde o no esté disponible (sin afectar a usuarios logueados).
+        // RESPALDO: garantizar que el panel de autenticación aparezca aunque Firebase
+        // tarde en resolver el estado inicial (sin afectar a usuarios ya logueados).
         setTimeout(function() {
             try {
-                // Usar el estado real y sincrónico de Firebase Auth (no solo la bandera
-                // window.currentUser, que puede tardar en poblarse desde Firestore y
-                // provocaba que el modal de login reapareciera con la sesión ya iniciada).
                 if (window.currentUser || (firebase.auth() && firebase.auth().currentUser)) return;
                 var authModal = document.getElementById('auth-modal');
                 var accionModal = document.getElementById('accion-modal');
@@ -8032,9 +8238,12 @@ window.maquillaje = [
                     (authModal && authModal.classList.contains('active')) ||
                     (accionModal && accionModal.classList.contains('active')) ||
                     (guideModal && guideModal.classList.contains('active'));
-                if (!algunoAbierto) { abrirLogin(); }
+                if (algunoAbierto) return;
+                // Solo forzamos el respaldo para usuarios que ya se habían registrado antes;
+                // para visitantes nuevos, el temporizador de 10s ya se encarga del registro.
+                if (usuarioYaRegistrado()) { abrirLogin(); }
             } catch (e) {}
-        }, 1800);
+        }, 2500);
 
 
         window.verificarPlataforma = function() {
