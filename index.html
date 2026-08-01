@@ -7225,12 +7225,12 @@ window.maquillaje = [
             window.carruselIndex = 0;
             actualizarCarruselShoesPreview();
             
-            // Autoplay cada 3,5 segundos (según especificación)
+            // Autoplay cada 3 segundos (según especificación)
             if (window.carruselAutoplay) clearInterval(window.carruselAutoplay);
             window.carruselAutoplay = setInterval(() => {
                 window.carruselIndex = (window.carruselIndex + 1) % productosCarrusel.length;
                 actualizarCarruselShoesPreview();
-            }, 3500);
+            }, 3000);
         }
         
         function actualizarCarruselShoesPreview() {
@@ -7260,7 +7260,7 @@ window.maquillaje = [
         }
         
         // Carrusel de la vidriera "Belleza y Cuidado Personal" (imágenes fijas del repositorio Maquillaje)
-        const BELLEZA_PREVIEW_IMAGES = ['blushl.png', 'spray.png', 'delineadorn.png', 'cleanser.png', 'lipglosst.png'];
+        const BELLEZA_PREVIEW_IMAGES = ['cleanser.png', 'concealerd.png', 'rubork.png', 'blushl.png', 'lipoilf.png', 'gelcejas.png', 'blushf.png'];
 
         function inicializarCarruselBelleza() {
             const wrapper = document.getElementById('carrusel-wrapper-belleza-preview');
@@ -7290,7 +7290,7 @@ window.maquillaje = [
             window.carruselAutoplayBelleza = setInterval(() => {
                 window.carruselIndexBelleza = (window.carruselIndexBelleza + 1) % BELLEZA_PREVIEW_IMAGES.length;
                 actualizarCarruselBelleza();
-            }, 3500);
+            }, 2500);
         }
 
         function actualizarCarruselBelleza() {
@@ -7517,7 +7517,7 @@ window.maquillaje = [
             actualizarCarrusel();
         }
 
-        // Auto-deslizar carrusel cada 3,5 segundos
+        // Auto-deslizar carrusel cada 2 segundos
         window.carruselInterval = null;
         function iniciarAutoDesliz() {
             if (window.carruselInterval) clearInterval(window.carruselInterval);
@@ -7525,7 +7525,7 @@ window.maquillaje = [
                 if (productosCarrusel.length > 1) {
                     carruselSiguiente();
                 }
-            }, 3500);
+            }, 2000);
         }
         function detenerAutoDesliz() {
             if (window.carruselInterval) clearInterval(window.carruselInterval);
