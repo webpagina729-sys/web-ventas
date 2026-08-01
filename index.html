@@ -7274,7 +7274,7 @@ window.maquillaje = [
             BELLEZA_PREVIEW_IMAGES.forEach((img, index) => {
                 const slide = document.createElement('div');
                 slide.className = 'carrusel-slide';
-                slide.innerHTML = `<img src="${BASE_MAQUILLAJE_IMAGE_URL}${img}" alt="Belleza y Cuidado Personal" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23f3f4f6%22 width=%22300%22 height=%22300%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-family=%22Arial%22 font-size=%2216%22 fill=%22%23999%22%3EBelleza%3C/text%3E%3C/svg%3E'">`;
+                slide.innerHTML = `<img src="${BASE_MAQUILLAJE_IMAGE_URL}${img}" alt="Belleza y Cuidado Personal" onerror="this.onerror=function(){this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23f3f4f6%22 width=%22300%22 height=%22300%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-family=%22Arial%22 font-size=%2216%22 fill=%22%23999%22%3EBelleza%3C/text%3E%3C/svg%3E'};this.src='https://raw.githubusercontent.com/webpagina729-sys/Maquillaje/main/${img}'">`;
                 wrapper.appendChild(slide);
 
                 const dot = document.createElement('button');
