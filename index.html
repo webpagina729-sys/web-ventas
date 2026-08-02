@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Revende Ways | Tu Tienda Propia</title>
     <meta name="description" content="Sin inversión inicial. Te damos tu tienda lista para comenzar con +250 productos. Precio solo para revendedores.">
-    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="icon" type="image/png" href="logo.png?v=2">
+    <link rel="shortcut icon" type="image/png" href="logo.png?v=2">
+    <link rel="apple-touch-icon" href="logo.png?v=2">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -6324,29 +6326,38 @@ window.maquillaje = [
         }
 
         // Manejar resultado de redirect de Google (para cuando se usa signInWithRedirect)
-        firebase.auth().getRedirectResult().then(function(result) {
-            if (result && result.user) {
-                const user = result.user;
-                const docRef = firebase.firestore().collection('usuarios').doc(user.uid);
-                docRef.get().then(function(doc) {
-                    if (!doc.exists) {
-                        const codigoVendedor = generarCodigoVendedor();
-                        docRef.set({
-                            uid: user.uid,
-                            nombre: user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0],
-                            apellido: user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '',
-                            email: user.email,
-                            codigoVendedor: codigoVendedor,
-                            creado: new Date()
+        // Envuelto en try/catch + chequeo de existencia: si el SDK de Firebase todavía
+        // no cargó (bloqueador de anuncios, extensión, timing de red), esto ya no debe
+        // cortar la ejecución del resto del script (lo que rompía el carrusel de Belleza).
+        try {
+            if (typeof firebase !== 'undefined' && firebase.auth) {
+                firebase.auth().getRedirectResult().then(function(result) {
+                    if (result && result.user) {
+                        const user = result.user;
+                        const docRef = firebase.firestore().collection('usuarios').doc(user.uid);
+                        docRef.get().then(function(doc) {
+                            if (!doc.exists) {
+                                const codigoVendedor = generarCodigoVendedor();
+                                docRef.set({
+                                    uid: user.uid,
+                                    nombre: user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0],
+                                    apellido: user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '',
+                                    email: user.email,
+                                    codigoVendedor: codigoVendedor,
+                                    creado: new Date()
+                                }).catch(function(){});
+                            }
                         }).catch(function(){});
                     }
-                }).catch(function(){});
+                }).catch(function(error) {
+                    if (error.code && error.code !== 'auth/popup-closed-by-user') {
+                        console.error('Redirect result error:', error.code, error.message);
+                    }
+                });
             }
-        }).catch(function(error) {
-            if (error.code && error.code !== 'auth/popup-closed-by-user') {
-                console.error('Redirect result error:', error.code, error.message);
-            }
-        });
+        } catch (e) {
+            console.error('Firebase no disponible al iniciar:', e);
+        }
 
         // REGISTRO CON FIREBASE
 
