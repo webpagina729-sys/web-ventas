@@ -3274,10 +3274,10 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-0.15em"><polyline points="20 6 9 17 4 12"/></svg> más de 4.000 productos | <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-0.15em"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> envíos a todo el país
             </div>
             <div class="final-footer-links">
-                <a href="javascript:void(0)" class="final-footer-link" onclick="alert('Sección de compra - próximamente')">Comprar</a>
-                <a href="javascript:void(0)" class="final-footer-link" onclick="openWhatsApp()">Contacto</a>
-                <a href="javascript:void(0)" class="final-footer-link" onclick="alert('Política de devoluciones - próximamente')">Devoluciones</a>
-                <a href="javascript:void(0)" class="final-footer-link" onclick="alert('Más opciones de reventa - próximamente')">Más opciones de reventa</a>
+                <a href="javascript:void(0)" class="final-footer-link" onclick="abrirInstruccionesCompra()">Comprar</a>
+                <a href="javascript:void(0)" class="final-footer-link" onclick="window.open('https://wa.me/541176277337?text=' + encodeURIComponent('Hola! mi consulta es:'), '_blank')">Contacto</a>
+                <a href="javascript:void(0)" class="final-footer-link" onclick="abrirModalDevoluciones()">Devoluciones</a>
+                <a href="javascript:void(0)" class="final-footer-link" onclick="mostrarInicio(); const s=document.getElementById('nichos-section'); if(s) s.scrollIntoView({behavior:'smooth', block:'start'});">Más opciones de reventa</a>
             </div>
             <div class="final-footer-copyright">Revende Ways © Todos los derechos reservados</div>
         </div>
@@ -3433,7 +3433,7 @@
             <!-- FORMULARIO LOGIN -->
             <div id="login-form-container" class="auth-form-container" style="display: block;">
                 <h2>Iniciar Sesión</h2>
-                <button type="button" class="btn-google" onclick="loginWithGoogle()">
+                <button type="button" class="btn-google" onclick="loginWithGoogle('login')">
                     <svg width="18" height="18" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
                     Continuar con Google
                 </button>
@@ -3466,8 +3466,31 @@
                 <form onsubmit="handleManualRegisterSubmit(event)">
                     <input type="text" id="register-nombre" placeholder="Nombres" required>
                     <input type="text" id="register-apellido" placeholder="Apellidos" required>
-                    <label for="register-fecha-nacimiento" style="display:block; font-size:12px; color: var(--text-light); margin: 8px 0 4px; text-align:left;">Fecha de nacimiento</label>
-                    <input type="date" id="register-fecha-nacimiento" placeholder="Fecha de nacimiento" required>
+                    <label for="register-fecha-dia" style="display:block; font-size:12px; color: var(--text-light); margin: 8px 0 4px; text-align:left;">Fecha de nacimiento</label>
+                    <div style="display:flex; gap:8px;">
+                        <select id="register-fecha-dia" required onchange="actualizarFechaNacimientoOculta()" style="flex:1; min-width:0;">
+                            <option value="">Día</option>
+                        </select>
+                        <select id="register-fecha-mes" required onchange="actualizarFechaNacimientoOculta()" style="flex:1.3; min-width:0;">
+                            <option value="">Mes</option>
+                            <option value="01">Enero</option>
+                            <option value="02">Febrero</option>
+                            <option value="03">Marzo</option>
+                            <option value="04">Abril</option>
+                            <option value="05">Mayo</option>
+                            <option value="06">Junio</option>
+                            <option value="07">Julio</option>
+                            <option value="08">Agosto</option>
+                            <option value="09">Septiembre</option>
+                            <option value="10">Octubre</option>
+                            <option value="11">Noviembre</option>
+                            <option value="12">Diciembre</option>
+                        </select>
+                        <select id="register-fecha-anio" required onchange="actualizarFechaNacimientoOculta()" style="flex:1; min-width:0;">
+                            <option value="">Año</option>
+                        </select>
+                    </div>
+                    <input type="hidden" id="register-fecha-nacimiento" required>
                     <input type="email" id="register-email" placeholder="Correo electrónico" required>
                     <div class="password-input-wrapper">
                         <input type="password" id="register-password" placeholder="Contraseña (mín. 6 caracteres)" required minlength="6">
@@ -3509,6 +3532,93 @@
         </div>
     </div>
 
+    <!-- MODAL "USUARIO NO EXISTE" (login con Google sin cuenta registrada) -->
+    <div class="modal-overlay" id="usuario-no-existe-modal" onclick="if(event.target.id==='usuario-no-existe-modal') cerrarModalUsuarioNoExiste()">
+        <div class="modal-content" style="max-width: 380px; text-align: center;">
+            <div class="modal-header" style="justify-content: center;">
+                <h2 class="modal-title">No encontramos tu cuenta</h2>
+            </div>
+            <p style="font-size: 13px; line-height: 1.5; color: var(--text-light); margin: 4px 0 22px;">
+                Esa cuenta de Google todavía no está registrada en Revende Ways. Registrate para empezar a vender.
+            </p>
+            <button type="button" class="confirmation-button confirmation-button-primary" style="width: 100%;" onclick="cerrarModalUsuarioNoExiste(); abrirRegistro();">Registrarme</button>
+            <button type="button" class="confirmation-button" style="width: 100%; margin-top: 10px; background: #f5f5f5; color: var(--text);" onclick="cerrarModalUsuarioNoExiste()">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- MODAL "CONFIRMÁ TU CORREO ELECTRÓNICO" -->
+    <div class="modal-overlay" id="confirmar-correo-modal" onclick="if(event.target.id==='confirmar-correo-modal') cerrarModalConfirmarCorreo()">
+        <div class="modal-content" style="max-width: 380px; text-align: center;">
+            <div class="modal-header" style="justify-content: center;">
+                <h2 class="modal-title">Confirmá tu correo electrónico</h2>
+            </div>
+            <p style="font-size: 13px; line-height: 1.5; color: var(--text-light); margin: 4px 0 8px;">
+                Te enviamos un correo con un enlace de verificación. Confirmalo para proteger tu cuenta y no perder acceso a tu tienda.
+            </p>
+            <p id="confirmar-correo-email" style="font-size: 13px; font-weight: 700; color: var(--text); margin: 0 0 20px;"></p>
+            <button type="button" class="confirmation-button confirmation-button-primary" style="width: 100%;" onclick="reenviarCorreoVerificacion()">Reenviar correo</button>
+            <button type="button" class="confirmation-button" style="width: 100%; margin-top: 10px; background: #f5f5f5; color: var(--text);" onclick="cerrarModalConfirmarCorreo()">Ya lo confirmé / Cerrar</button>
+        </div>
+    </div>
+
+    <!-- MODAL "COMPLETÁ TUS DATOS" (fecha de nacimiento + contraseña de seguridad, para altas con Google) -->
+    <div class="modal-overlay" id="datos-adicionales-modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Confirmá tus datos</h2>
+            </div>
+            <p style="font-size: 13px; line-height: 1.5; color: var(--text-light); margin: 4px 0 18px; text-align:left;">
+                Necesitamos tu fecha de nacimiento y que definas una contraseña de seguridad. La vas a necesitar más adelante para confirmar ciertos cambios en tu cuenta.
+            </p>
+            <label style="display:block; font-size:12px; color: var(--text-light); margin: 0 0 4px; text-align:left;">Fecha de nacimiento</label>
+            <div style="display:flex; gap:8px; margin-bottom:14px;">
+                <select id="datos-fecha-dia" style="flex:1; min-width:0;"><option value="">Día</option></select>
+                <select id="datos-fecha-mes" style="flex:1.3; min-width:0;">
+                    <option value="">Mes</option>
+                    <option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option>
+                    <option value="04">Abril</option><option value="05">Mayo</option><option value="06">Junio</option>
+                    <option value="07">Julio</option><option value="08">Agosto</option><option value="09">Septiembre</option>
+                    <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+                </select>
+                <select id="datos-fecha-anio" style="flex:1; min-width:0;"><option value="">Año</option></select>
+            </div>
+            <label for="datos-password-seguridad" style="display:block; font-size:12px; color: var(--text-light); margin: 0 0 4px; text-align:left;">Contraseña de seguridad</label>
+            <div class="password-input-wrapper" style="margin-bottom:16px;">
+                <input type="password" id="datos-password-seguridad" placeholder="Mínimo 6 caracteres" minlength="6">
+                <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('datos-password-seguridad', this)" tabindex="-1" aria-label="Mostrar contraseña">
+                    <svg class="eye-show" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <svg class="eye-hide" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                </button>
+            </div>
+            <button type="button" class="confirmation-button confirmation-button-primary" style="width: 100%;" onclick="confirmarDatosAdicionales()">Aceptar</button>
+        </div>
+    </div>
+
+    <!-- MODAL "GUARDÁ TU CONTRASEÑA DE SEGURIDAD" -->
+    <div class="modal-overlay" id="guardar-password-modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <div class="modal-header" style="justify-content: center;">
+                <h2 class="modal-title">Guardá tu contraseña de seguridad</h2>
+            </div>
+            <p style="font-size: 13px; line-height: 1.5; color: var(--text-light); margin: 4px 0 18px;">
+                Guardala muy bien: la vas a necesitar para confirmar algunos cambios en tu cuenta más adelante.
+            </p>
+            <div style="display:flex; align-items:center; gap:8px; border:1px solid #e0e0e0; border-radius:10px; padding:10px 12px; margin-bottom:20px;">
+                <input type="password" id="guardar-password-valor" readonly style="flex:1; border:none; outline:none; font-size:15px; letter-spacing:2px; background:transparent;">
+                <button type="button" onclick="toggleVerPasswordSeguridad(this)" aria-label="Mostrar contraseña" style="background:none; border:none; cursor:pointer; color: var(--text-light); display:flex; padding:4px;">
+                    <svg class="eye-show" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <svg class="eye-hide" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                </button>
+                <button type="button" onclick="copiarPasswordSeguridad(this)" aria-label="Copiar contraseña" style="background:none; border:none; cursor:pointer; color: var(--text-light); display:flex; padding:4px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                </button>
+            </div>
+            <p id="copiar-password-confirmacion" style="font-size:12px; color:#2e8b57; font-weight:600; height:16px; margin:-12px 0 12px;"></p>
+            <button type="button" class="confirmation-button confirmation-button-primary" style="width: 100%;" onclick="continuarDesdeGuardarPassword()">Ya la guardé, continuar</button>
+        </div>
+    </div>
+
+
     <!-- MODAL CONSENTIMIENTO DE DATOS (Política de privacidad + Términos) -->
     <div class="modal-overlay" id="consent-modal" onclick="if(event.target.id==='consent-modal') closeConsentModal()">
         <div class="modal-content" style="max-width: 420px;">
@@ -3517,10 +3627,10 @@
             </div>
             <p style="font-size: 13px; line-height: 1.5; color: var(--text); margin: 4px 0 6px;">
                 Usamos tus datos para mejorar tu experiencia, tu cuenta y tus pedidos como revendedor.
-                <a href="javascript:void(0)" onclick="alert('Enlace disponible próximamente.')" style="color: var(--primary); font-weight: 600;">Ver más</a>
+                <a href="https://politicarevendedor.tuweb.workers.dev/" target="_blank" rel="noopener" style="color: var(--primary); font-weight: 600;">Ver más</a>
             </p>
             <p style="font-size: 11px; color: var(--text-light); margin: 0 0 16px;">
-                Política de privacidad: <a href="javascript:void(0)" onclick="alert('Enlace disponible próximamente.')" style="color: var(--primary);">Ver términos y condiciones</a>
+                Política de privacidad: <a href="https://politicarevendedor.tuweb.workers.dev/" target="_blank" rel="noopener" style="color: var(--primary);">Ver términos y condiciones</a>
             </p>
 
             <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--text); margin-bottom: 12px; cursor: pointer; text-align: left;">
@@ -3732,6 +3842,40 @@
 
             <button type="button" class="confirmation-button confirmation-button-primary" style="width: 100%; margin-top: 16px; white-space: nowrap; font-size: 13px;" onclick="window.location.href='https://gestion.revendeways.shop/'">Ver más estadísticas</button>
             <button type="button" class="confirmation-button" style="width: 100%; margin-top: 10px; background: #f5f5f5; color: var(--text);" onclick="closeStatisticsModal()">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- MODAL INSTRUCCIONES DE COMPRA -->
+    <div class="modal-overlay" id="instrucciones-compra-modal" onclick="if(event.target.id==='instrucciones-compra-modal') cerrarInstruccionesCompra()">
+        <div class="modal-content" style="max-width: 440px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Cómo comprar</h2>
+            </div>
+            <p style="font-size: 13.5px; line-height: 1.6; color: var(--text); margin: 4px 0 20px; text-align: left;">
+                Para realizar tu compra, dirigite a la sección <strong>Categorías</strong>, seleccioná la categoría de tu interés y accedé a su catálogo completo. Desde ahí, agregá los productos que desees a tu lista de compra ("Carrito") y, una vez finalizada la selección, aboná el monto total correspondiente. Una vez confirmado el pago, recibimos tu pedido de forma automática y lo enviamos ese mismo día a nuestros proveedores para su preparación y despacho.
+            </p>
+            <button type="button" class="confirmation-button confirmation-button-primary" style="width: 100%;" onclick="cerrarInstruccionesCompra(); mostrarInicio(); const s=document.getElementById('nichos-section'); if(s) s.scrollIntoView({behavior:'smooth', block:'start'});">Ir a categorías</button>
+            <button type="button" class="confirmation-button" style="width: 100%; margin-top: 10px; background: #f5f5f5; color: var(--text);" onclick="cerrarInstruccionesCompra()">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- MODAL POLÍTICA DE DEVOLUCIONES (no se puede cerrar sin marcar el checkbox) -->
+    <div class="modal-overlay" id="devoluciones-modal">
+        <div class="modal-content" style="max-width: 440px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Política de devoluciones</h2>
+            </div>
+            <p style="font-size: 13.5px; line-height: 1.6; color: var(--text); margin: 4px 0 8px; text-align: left;">
+                Lee nuestra política de devoluciones para continuar.
+            </p>
+            <p style="font-size: 13px; margin: 0 0 18px;">
+                <a href="https://politicarevendedor.tuweb.workers.dev/" target="_blank" rel="noopener" style="color: var(--primary); font-weight: 600;">Leer más</a>
+            </p>
+            <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--text); margin-bottom: 18px; cursor: pointer; text-align: left;">
+                <input type="checkbox" id="devoluciones-check" onchange="actualizarBotonDevoluciones()" style="margin-top: 2px; width: 16px; height: 16px; flex-shrink: 0;">
+                Confirmo que he leído la política de devoluciones
+            </label>
+            <button type="button" id="devoluciones-aceptar-btn" class="confirmation-button confirmation-button-primary" style="width: 100%; opacity: 0.5; cursor: not-allowed;" disabled onclick="aceptarDevoluciones()">Aceptar</button>
         </div>
     </div>
 
@@ -4895,6 +5039,157 @@ window.maquillaje = [
             window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
         }
 
+        function abrirInstruccionesCompra() {
+            document.getElementById('instrucciones-compra-modal').classList.add('active');
+            preventBodyScroll(true);
+        }
+
+        function cerrarInstruccionesCompra() {
+            document.getElementById('instrucciones-compra-modal').classList.remove('active');
+            preventBodyScroll(false);
+        }
+
+        // ── MODAL POLÍTICA DE DEVOLUCIONES ──
+        function yaAceptoDevoluciones(uid) {
+            try { return localStorage.getItem('rw_devoluciones_aceptado') === (uid || 'anon'); } catch(e) { return false; }
+        }
+
+        function abrirModalDevoluciones() {
+            const user = (firebase.auth && firebase.auth().currentUser) || null;
+            const uid = user ? user.uid : 'anon';
+            if (yaAceptoDevoluciones(uid)) {
+                // Ya aceptó antes: no volver a mostrar el modal de aceptación, solo la política.
+                window.open('https://politicarevendedor.tuweb.workers.dev/', '_blank', 'noopener');
+                return;
+            }
+            const check = document.getElementById('devoluciones-check');
+            if (check) check.checked = false;
+            actualizarBotonDevoluciones();
+            const modal = document.getElementById('devoluciones-modal');
+            if (modal) {
+                modal.classList.add('active');
+                preventBodyScroll(true);
+            }
+        }
+
+        function actualizarBotonDevoluciones() {
+            const check = document.getElementById('devoluciones-check');
+            const btn = document.getElementById('devoluciones-aceptar-btn');
+            if (!check || !btn) return;
+            const enabled = check.checked;
+            btn.disabled = !enabled;
+            btn.style.opacity = enabled ? '1' : '0.5';
+            btn.style.cursor = enabled ? 'pointer' : 'not-allowed';
+        }
+
+        function formatFechaDDMMYYYY(d) {
+            const dd = String(d.getDate()).padStart(2, '0');
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            return `${dd}/${mm}/${d.getFullYear()}`;
+        }
+        function formatHoraHHMMSS(d) {
+            return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
+        }
+
+        async function aceptarDevoluciones() {
+            const check = document.getElementById('devoluciones-check');
+            if (!check || !check.checked) return; // no debe poder continuar sin marcar el casillero
+
+            const btn = document.getElementById('devoluciones-aceptar-btn');
+            if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+
+            const user = (firebase.auth && firebase.auth().currentUser) || null;
+            const uid = user ? user.uid : '';
+
+            // Traer nombre/apellido/teléfono/código actualizados desde Firestore
+            let nombre = window.currentUser?.nombre || '';
+            let apellido = '';
+            let telefono = localStorage.getItem('ultimoTelefonoCliente') || '';
+            let codigoVendedor = window.currentUser?.codigoVendedor || localStorage.getItem('codigoVendedorLocal') || '';
+
+            try {
+                if (uid && firebase.firestore) {
+                    const doc = await firebase.firestore().collection('usuarios').doc(uid).get();
+                    if (doc.exists) {
+                        const d = doc.data();
+                        nombre = d.nombre || nombre;
+                        apellido = d.apellido || apellido;
+                        telefono = d.telefono || telefono;
+                        codigoVendedor = d.codigoVendedor || codigoVendedor;
+                    }
+                }
+            } catch (e) {}
+
+            const ahora = new Date();
+            const payload = {
+                aceptacionId: (crypto.randomUUID ? crypto.randomUUID() : 'ACEPT-' + Date.now()),
+                uid: uid,
+                pedidoId: localStorage.getItem('ultimoPedidoId') || '',
+                nombre: nombre,
+                apellido: apellido,
+                telefono: telefono,
+                codigoVendedor: codigoVendedor,
+                aceptado: true,
+                aceptoTerminos: true,
+                versionDocumento: 'v1.0',
+                fecha: formatFechaDDMMYYYY(ahora),
+                hora: formatHoraHHMMSS(ahora),
+                timestamp: ahora.toISOString(),
+                userAgent: navigator.userAgent,
+                checkbox: true
+            };
+
+            try {
+                const res = await fetch('https://legales.tuweb.workers.dev/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) throw new Error('Respuesta no OK del worker de legales');
+
+                try { localStorage.setItem('rw_devoluciones_aceptado', uid || 'anon'); } catch(e) {}
+
+                const modal = document.getElementById('devoluciones-modal');
+                if (modal) modal.classList.remove('active');
+                preventBodyScroll(false);
+            } catch (e) {
+                alert('No pudimos registrar tu aceptación. Revisá tu conexión e intentá de nuevo.');
+            } finally {
+                if (btn) { btn.disabled = !check.checked; btn.textContent = 'Aceptar'; }
+            }
+        }
+
+        // Llena los selects de día/mes/año para el registro de fecha de nacimiento
+        // (reemplaza al calendario nativo, que en muchos navegadores obliga a pasar mes a mes)
+        function poblarSelectsFechaNacimiento() {
+            const selDia = document.getElementById('register-fecha-dia');
+            const selAnio = document.getElementById('register-fecha-anio');
+            if (!selDia || !selAnio) return;
+            if (selDia.options.length <= 1) {
+                for (let d = 1; d <= 31; d++) {
+                    const v = String(d).padStart(2, '0');
+                    selDia.insertAdjacentHTML('beforeend', `<option value="${v}">${d}</option>`);
+                }
+            }
+            if (selAnio.options.length <= 1) {
+                const anioActual = new Date().getFullYear();
+                const anioMax = anioActual - 13; // mínimo 13 años para registrarse
+                const anioMin = anioActual - 100;
+                for (let y = anioMax; y >= anioMin; y--) {
+                    selAnio.insertAdjacentHTML('beforeend', `<option value="${y}">${y}</option>`);
+                }
+            }
+        }
+
+        // Arma el input oculto register-fecha-nacimiento en formato YYYY-MM-DD
+        function actualizarFechaNacimientoOculta() {
+            const dia = document.getElementById('register-fecha-dia')?.value;
+            const mes = document.getElementById('register-fecha-mes')?.value;
+            const anio = document.getElementById('register-fecha-anio')?.value;
+            const hidden = document.getElementById('register-fecha-nacimiento');
+            if (hidden) hidden.value = (dia && mes && anio) ? `${anio}-${mes}-${dia}` : '';
+        }
+
         function openZoom(img, isFullUrl) {
             document.getElementById('zoom-image').src = isFullUrl ? img : (BASE_IMAGE_URL + img);
             document.getElementById('modal-zoom').classList.add('active');
@@ -5235,6 +5530,10 @@ window.maquillaje = [
                 ]);
 
                 console.log('💾 [FIRESTORE] Pedido guardado exitosamente:', docRef.id);
+                try {
+                    localStorage.setItem('ultimoPedidoId', docRef.id);
+                    if (checkout.telefono) localStorage.setItem('ultimoTelefonoCliente', checkout.telefono);
+                } catch(e) {}
 
                 // Sincronizar con la colección raíz a través del Worker
                 try {
@@ -6146,6 +6445,8 @@ window.maquillaje = [
         function cerrarGuiaAccion() {
             document.getElementById('accion-guide-modal').classList.remove('active');
             preventBodyScroll(false);
+            // 10 segundos después de cerrar la Guía Rápida, pedir confirmación de correo
+            setTimeout(mostrarModalConfirmarCorreo, 10000);
         }
         function irAMiTienda() { window.location.href = 'https://mitienda.revendeways.shop/'; }
 
@@ -6167,6 +6468,7 @@ window.maquillaje = [
         function switchToRegister() {
             document.getElementById('login-form-container').style.display = 'none';
             document.getElementById('register-form-container').style.display = 'block';
+            poblarSelectsFechaNacimiento();
         }
 
         // CAMBIAR A LOGIN
@@ -6252,6 +6554,20 @@ window.maquillaje = [
             }
         }
 
+        function mostrarModalUsuarioNoExiste() {
+            const modal = document.getElementById('usuario-no-existe-modal');
+            if (modal) {
+                modal.classList.add('active');
+                preventBodyScroll(true);
+            }
+        }
+
+        function cerrarModalUsuarioNoExiste() {
+            const modal = document.getElementById('usuario-no-existe-modal');
+            if (modal) modal.classList.remove('active');
+            preventBodyScroll(false);
+        }
+
         function confirmarRecordarSesion(recordar) {
             try {
                 if (recordar) {
@@ -6265,6 +6581,137 @@ window.maquillaje = [
             const modal = document.getElementById('remember-session-modal');
             if (modal) modal.classList.remove('active');
             preventBodyScroll(false);
+            // 5 segundos después de elegir una opción acá, mostrar la Guía Rápida
+            setTimeout(mostrarModalAccion, 5000);
+        }
+
+        function mostrarModalConfirmarCorreo() {
+            const user = firebase.auth && firebase.auth() && firebase.auth().currentUser;
+            if (!user || user.emailVerified) return; // ya verificado o sin sesión: no molestar
+            const emailEl = document.getElementById('confirmar-correo-email');
+            if (emailEl) emailEl.textContent = user.email || '';
+            const modal = document.getElementById('confirmar-correo-modal');
+            if (modal) {
+                modal.classList.add('active');
+                preventBodyScroll(true);
+            }
+        }
+
+        function cerrarModalConfirmarCorreo() {
+            const modal = document.getElementById('confirmar-correo-modal');
+            if (modal) modal.classList.remove('active');
+            preventBodyScroll(false);
+        }
+
+        function reenviarCorreoVerificacion() {
+            const user = firebase.auth().currentUser;
+            if (!user) return;
+            user.sendEmailVerification()
+                .then(() => alert('Te reenviamos el correo de verificación. Revisá tu bandeja de entrada (y spam).'))
+                .catch(() => alert('No pudimos reenviar el correo. Intentá de nuevo en unos minutos.'));
+        }
+
+        // ── MODAL "COMPLETÁ TUS DATOS" (fecha nacimiento + contraseña de seguridad, altas con Google) ──
+        function poblarSelectsFechaDatosAdicionales() {
+            const selDia = document.getElementById('datos-fecha-dia');
+            const selAnio = document.getElementById('datos-fecha-anio');
+            if (!selDia || !selAnio) return;
+            if (selDia.options.length <= 1) {
+                for (let d = 1; d <= 31; d++) {
+                    const v = String(d).padStart(2, '0');
+                    selDia.insertAdjacentHTML('beforeend', `<option value="${v}">${d}</option>`);
+                }
+            }
+            if (selAnio.options.length <= 1) {
+                const anioActual = new Date().getFullYear();
+                const anioMax = anioActual - 13;
+                const anioMin = anioActual - 100;
+                for (let y = anioMax; y >= anioMin; y--) {
+                    selAnio.insertAdjacentHTML('beforeend', `<option value="${y}">${y}</option>`);
+                }
+            }
+        }
+
+        function abrirModalDatosAdicionales() {
+            poblarSelectsFechaDatosAdicionales();
+            const modal = document.getElementById('datos-adicionales-modal');
+            if (modal) {
+                modal.classList.add('active');
+                preventBodyScroll(true);
+            }
+        }
+
+        async function confirmarDatosAdicionales() {
+            const dia = document.getElementById('datos-fecha-dia')?.value;
+            const mes = document.getElementById('datos-fecha-mes')?.value;
+            const anio = document.getElementById('datos-fecha-anio')?.value;
+            const password = document.getElementById('datos-password-seguridad')?.value || '';
+
+            if (!dia || !mes || !anio) { alert('Completá tu fecha de nacimiento.'); return; }
+            if (password.length < 6) { alert('La contraseña de seguridad debe tener al menos 6 caracteres.'); return; }
+
+            const fechaNacimiento = `${anio}-${mes}-${dia}`;
+            const user = firebase.auth().currentUser;
+            if (!user) return;
+
+            try {
+                await firebase.firestore().collection('usuarios').doc(user.uid).set({
+                    fechaNacimiento: fechaNacimiento,
+                    passwordSeguridad: password
+                }, { merge: true });
+            } catch (e) {}
+
+            const modal = document.getElementById('datos-adicionales-modal');
+            if (modal) modal.classList.remove('active');
+
+            // Mostrar el modal para que guarde su contraseña de seguridad
+            window.passwordSeguridadTemp = password;
+            const valorInput = document.getElementById('guardar-password-valor');
+            if (valorInput) valorInput.value = password;
+            const guardarModal = document.getElementById('guardar-password-modal');
+            if (guardarModal) guardarModal.classList.add('active');
+        }
+
+        function toggleVerPasswordSeguridad(btn) {
+            const input = document.getElementById('guardar-password-valor');
+            if (!input) return;
+            const show = input.type === 'password';
+            input.type = show ? 'text' : 'password';
+            btn.querySelector('.eye-show').style.display = show ? 'none' : '';
+            btn.querySelector('.eye-hide').style.display = show ? '' : 'none';
+        }
+
+        function copiarPasswordSeguridad(btn) {
+            const input = document.getElementById('guardar-password-valor');
+            if (!input || !input.value) return;
+            const finalizarCopia = () => {
+                const conf = document.getElementById('copiar-password-confirmacion');
+                if (conf) {
+                    conf.textContent = '✓ Contraseña copiada';
+                    setTimeout(() => { conf.textContent = ''; }, 2500);
+                }
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(input.value).then(finalizarCopia).catch(() => {
+                    input.select();
+                    document.execCommand('copy');
+                    finalizarCopia();
+                });
+            } else {
+                input.select();
+                document.execCommand('copy');
+                finalizarCopia();
+            }
+        }
+
+        function continuarDesdeGuardarPassword() {
+            const modal = document.getElementById('guardar-password-modal');
+            if (modal) modal.classList.remove('active');
+            preventBodyScroll(false);
+            window.passwordSeguridadTemp = null;
+            const valorInput = document.getElementById('guardar-password-valor');
+            if (valorInput) valorInput.value = '';
+            mostrarModalRecordarSesion();
         }
 
         // MOSTRAR/OCULTAR CONTRASEÑA
@@ -6278,7 +6725,7 @@ window.maquillaje = [
         }
 
         // LOGIN CON GOOGLE
-        async function loginWithGoogle() {
+        async function loginWithGoogle(intent) {
             try {
                 const provider = new firebase.auth.GoogleAuthProvider();
                 provider.addScope('email');
@@ -6288,6 +6735,14 @@ window.maquillaje = [
                 const docRef = firebase.firestore().collection('usuarios').doc(user.uid);
                 const doc = await docRef.get();
                 if (!doc.exists) {
+                    if (intent === 'login') {
+                        // Viene del botón "Iniciar sesión": no auto-registrar.
+                        // Cerramos la sesión recién creada y avisamos que el usuario no existe.
+                        await firebase.auth().signOut();
+                        closeAuthModal();
+                        mostrarModalUsuarioNoExiste();
+                        return;
+                    }
                     const codigoVendedor = generarCodigoVendedor();
                     await docRef.set({
                         uid: user.uid,
@@ -6298,6 +6753,9 @@ window.maquillaje = [
                         creado: new Date()
                     });
                     marcarUsuarioRegistrado(user.uid);
+                    closeAuthModal();
+                    abrirModalDatosAdicionales();
+                    return;
                 } else {
                     marcarUsuarioRegistrado(user.uid);
                 }
@@ -6414,6 +6872,7 @@ window.maquillaje = [
                     fechaNacimiento: fechaNacimiento,
                     email: email,
                     codigoVendedor: codigoVendedor,
+                    passwordSeguridad: password,
                     creado: new Date()
                 };
 
@@ -7364,17 +7823,58 @@ window.maquillaje = [
     
     <script>
         // ✅ INICIALIZAR FIREBASE - Ahora sí está disponible
-        if (!firebase.apps.length) {
-            // firebaseConfig debe estar disponible del script anterior
-            firebase.initializeApp(firebaseConfig);
+        // Todo este bloque se envuelve en try/catch + chequeo de existencia: si el SDK
+        // de Firebase no cargó a tiempo, esto ya no debe cortar el resto de los scripts
+        // de la página (lo que rompía el carrusel de Perfumería y otras funciones).
+        try {
+            if (typeof firebase !== 'undefined') {
+                if (!firebase.apps.length) {
+                    // firebaseConfig debe estar disponible del script anterior
+                    firebase.initializeApp(firebaseConfig);
+                }
+
+                // Configurar persistencia de sesión
+                firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+                    .catch(err => {
+                        // Error silencioso
+                    });
+
+                // LISTENER DE AUTENTICACIÓN - MONITOREAR CAMBIOS EN SESIÓN
+                if (!window.authListenerRegistered) {
+                    window.authListenerRegistered = true;
+                    firebase.auth().onAuthStateChanged(async (user) => {
+
+                        if (user) {
+                            // Cerrar modal de login si está abierto
+                            const authModal = document.getElementById('auth-modal');
+                            if (authModal && authModal.classList.contains('active')) {
+                                authModal.classList.remove('active');
+                                const loginForm = document.getElementById('login-form-container');
+                                const registerForm = document.getElementById('register-form-container');
+                                if (loginForm) loginForm.style.display = 'block';
+                                if (registerForm) registerForm.style.display = 'none';
+                                // El modal de "acción del día" ahora se dispara desde
+                                // confirmarRecordarSesion(), 5s después de elegir guardar sesión.
+                            }
+
+                            // Intentar cargar datos de Firestore CON REINTENTOS
+                            const userData = await loadUserDataFromFirestoreWithRetry(user.uid);
+
+                            // Inicializar sesión con datos de Firestore o datos mínimos
+                            initializeUserSession(userData, user);
+
+                        } else {
+                            // Usuario no autenticado: limpiar interfaz
+                            window.currentUser = null;
+                            updateUIForAuthentication(false);
+                        }
+                    });
+                }
+            }
+        } catch (e) {
+            console.error('Firebase no disponible al iniciar (auth listener):', e);
         }
-        
-        // Configurar persistencia de sesión
-        firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-            .catch(err => {
-                // Error silencioso
-            });
-        
+
         // SISTEMA DE REINTENTOS PARA FIRESTORE
         async function loadUserDataFromFirestoreWithRetry(uid, maxRetries = 3, delayMs = 500) {
             for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -7391,38 +7891,6 @@ window.maquillaje = [
                 }
             }
             return null;
-        }
-
-        // LISTENER DE AUTENTICACIÓN - MONITOREAR CAMBIOS EN SESIÓN
-        if (!window.authListenerRegistered) {
-            window.authListenerRegistered = true;
-            firebase.auth().onAuthStateChanged(async (user) => {
-                
-                if (user) {
-                    // Cerrar modal de login si está abierto
-                    const authModal = document.getElementById('auth-modal');
-                    if (authModal && authModal.classList.contains('active')) {
-                        authModal.classList.remove('active');
-                        const loginForm = document.getElementById('login-form-container');
-                        const registerForm = document.getElementById('register-form-container');
-                        if (loginForm) loginForm.style.display = 'block';
-                        if (registerForm) registerForm.style.display = 'none';
-                        // Mostrar modal de acción del día
-                        setTimeout(mostrarModalAccion, 300);
-                    }
-                    
-                    // Intentar cargar datos de Firestore CON REINTENTOS
-                    const userData = await loadUserDataFromFirestoreWithRetry(user.uid);
-                    
-                    // Inicializar sesión con datos de Firestore o datos mínimos
-                    initializeUserSession(userData, user);
-                    
-                } else {
-                    // Usuario no autenticado: limpiar interfaz
-                    window.currentUser = null;
-                    updateUIForAuthentication(false);
-                }
-            });
         }
     </script>
 
