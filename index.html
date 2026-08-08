@@ -6494,6 +6494,40 @@ window.maquillaje = [
             try { return !!localStorage.getItem(REGISTERED_FLAG_KEY); } catch (e) { return false; }
         }
 
+        // Envía al worker de legales los datos de aceptación de Términos y Condiciones
+        // / Política de Privacidad (consentimiento dado en el modal previo al alta).
+        // El worker de legales reenvía estos datos a su vez al worker de datos de
+        // revendedor, que los guarda en Firebase Firestore.
+        async function enviarAceptacionLegales(uid, nombre, apellido, codigoVendedor) {
+            try {
+                const ahora = new Date();
+                const payload = {
+                    aceptacionId: (crypto.randomUUID ? crypto.randomUUID() : 'ACEPT-' + Date.now()),
+                    uid: uid || '',
+                    pedidoId: '',
+                    nombre: nombre || '',
+                    apellido: apellido || '',
+                    telefono: '',
+                    codigoVendedor: codigoVendedor || '',
+                    aceptado: true,
+                    aceptoTerminos: true,
+                    versionDocumento: 'v1.0',
+                    fecha: formatFechaDDMMYYYY(ahora),
+                    hora: formatHoraHHMMSS(ahora),
+                    timestamp: ahora.toISOString(),
+                    userAgent: navigator.userAgent,
+                    checkbox: true
+                };
+                await fetch('https://legales.tuweb.workers.dev/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } catch (e) {
+                // Silencioso: no debe interrumpir el flujo de alta/login del usuario
+            }
+        }
+
         // ── MODAL DE CONSENTIMIENTO (política de privacidad + términos) ──
         function openConsentModal(method) {
             window.pendingAuthMethod = method; // 'manual' | 'google'
@@ -6762,14 +6796,17 @@ window.maquillaje = [
                         return;
                     }
                     const codigoVendedor = generarCodigoVendedor();
+                    const nombreGoogle = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
+                    const apellidoGoogle = user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '';
                     await docRef.set({
                         uid: user.uid,
-                        nombre: user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0],
-                        apellido: user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '',
+                        nombre: nombreGoogle,
+                        apellido: apellidoGoogle,
                         email: user.email,
                         codigoVendedor: codigoVendedor,
                         creado: new Date()
                     });
+                    enviarAceptacionLegales(user.uid, nombreGoogle, apellidoGoogle, codigoVendedor);
                     marcarUsuarioRegistrado(user.uid);
                     closeAuthModal();
                     abrirModalDatosAdicionales();
@@ -6896,6 +6933,8 @@ window.maquillaje = [
 
                 localStorage.setItem('codigoVendedorLocal', codigoVendedor);
                 marcarUsuarioRegistrado(user.uid);
+
+                enviarAceptacionLegales(user.uid, nombre, apellido, codigoVendedor);
 
                 if (firebase.firestore) {
                     firebase.firestore().collection('usuarios').doc(user.uid).set(userData)
