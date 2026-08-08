@@ -6552,6 +6552,9 @@ window.maquillaje = [
                 modal.classList.add('active');
                 preventBodyScroll(true);
             }
+            // El modal de confirmar correo electrónico debe aparecer 15 segundos
+            // después de este modal (solo la primera vez que se muestra)
+            setTimeout(mostrarEmailConfirmationModalPrimeraVez, 15000);
         }
 
         function mostrarModalUsuarioNoExiste() {
@@ -6583,6 +6586,21 @@ window.maquillaje = [
             preventBodyScroll(false);
             // 5 segundos después de elegir una opción acá, mostrar la Guía Rápida
             setTimeout(mostrarModalAccion, 5000);
+        }
+
+        // Muestra el modal "Confirmá tu correo electrónico" (emailConfirmationModal)
+        // 15 segundos después del modal de "¿Guardar el inicio de sesión?"
+        // Se muestra siempre (aunque el correo ya esté confirmado en la base de datos);
+        // solo deja de mostrarse cuando el usuario toca el botón "Confirmar correo electrónico".
+        function mostrarEmailConfirmationModalPrimeraVez() {
+            const yaConfirmoDesdeEsteModal = localStorage.getItem('emailConfirmationModalConfirmado');
+            if (firebase.auth().currentUser && !yaConfirmoDesdeEsteModal) {
+                const modal = document.getElementById('emailConfirmationModal');
+                if (modal && !modal.classList.contains('active')) {
+                    modal.classList.add('active');
+                    preventBodyScroll(true);
+                }
+            }
         }
 
         function mostrarModalConfirmarCorreo() {
@@ -7083,6 +7101,9 @@ window.maquillaje = [
         function confirmEmailPrompt() {
             // Marcar email como confirmado
             localStorage.setItem('emailConfirmado', 'true');
+            // Marcar que el usuario tocó el botón de este modal específico,
+            // para que deje de mostrarse de ahora en adelante
+            localStorage.setItem('emailConfirmationModalConfirmado', 'true');
             // Abrir el formulario de Brevo
             window.open('https://8cc1455f.sibforms.com/serve/MUIFAOe2caIUk_JszJEAGAXuWMAooq9jBLGOvdN8R2ecTP9XnIzhvmcJIr6sHXcB-ap4DPs38CfVHsbJyu1Nc6djziTbM7FfS-bGHzYXXhYj1V_wcohxKLoFy4sbfPH_xNmDgwVR4xVaaf4dyK_QlVjLzdj4E012J39XFQGdXYOvmNEzae4U9jt0_pRuCZHcElDfRt6XW7T4QwrXbA==', '_blank');
             closeEmailConfirmationModal();
@@ -7466,18 +7487,6 @@ window.maquillaje = [
 
             // Actualizar interfaz
             updateUIForAuthentication(true);
-            
-            // Mostrar modal de confirmación de email después de 5 segundos (solo si no está confirmado)
-            setTimeout(() => {
-                const emailConfirmado = localStorage.getItem('emailConfirmado');
-                if (firebase.auth().currentUser && !emailConfirmado) {
-                    const modal = document.getElementById('emailConfirmationModal');
-                    if (modal && !modal.classList.contains('active')) {
-                        modal.classList.add('active');
-                        preventBodyScroll(true);
-                    }
-                }
-            }, 5000);
             
             // ⚠️ VERIFICACIÓN CRÍTICA: Si codigoVendedor está vacío, intentar cargar de nuevo
             if (!window.currentUser?.codigoVendedor || window.currentUser.codigoVendedor === '') {
