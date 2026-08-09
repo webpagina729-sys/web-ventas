@@ -5131,6 +5131,7 @@ window.maquillaje = [
                 codigoVendedor: codigoVendedor,
                 aceptado: true,
                 aceptoTerminos: true,
+                tipo: 'revendedor',
                 versionDocumento: 'v1.0',
                 fecha: formatFechaDDMMYYYY(ahora),
                 hora: formatHoraHHMMSS(ahora),
@@ -6494,6 +6495,41 @@ window.maquillaje = [
             try { return !!localStorage.getItem(REGISTERED_FLAG_KEY); } catch (e) { return false; }
         }
 
+        // Envía al worker de legales los datos de aceptación de Términos y Condiciones
+        // / Política de Privacidad (consentimiento dado en el modal previo al alta).
+        // El worker de legales reenvía estos datos a su vez al worker de datos de
+        // revendedor, que los guarda en Firebase Firestore.
+        async function enviarAceptacionLegales(uid, nombre, apellido, codigoVendedor) {
+            try {
+                const ahora = new Date();
+                const payload = {
+                    aceptacionId: (crypto.randomUUID ? crypto.randomUUID() : 'ACEPT-' + Date.now()),
+                    uid: uid || '',
+                    pedidoId: '',
+                    nombre: nombre || '',
+                    apellido: apellido || '',
+                    telefono: '',
+                    codigoVendedor: codigoVendedor || '',
+                    aceptado: true,
+                    aceptoTerminos: true,
+                    tipo: 'revendedor',
+                    versionDocumento: 'v1.0',
+                    fecha: formatFechaDDMMYYYY(ahora),
+                    hora: formatHoraHHMMSS(ahora),
+                    timestamp: ahora.toISOString(),
+                    userAgent: navigator.userAgent,
+                    checkbox: true
+                };
+                await fetch('https://legales.tuweb.workers.dev/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } catch (e) {
+                // Silencioso: no debe interrumpir el flujo de alta/login del usuario
+            }
+        }
+
         // ── MODAL DE CONSENTIMIENTO (política de privacidad + términos) ──
         function openConsentModal(method) {
             window.pendingAuthMethod = method; // 'manual' | 'google'
@@ -6552,6 +6588,9 @@ window.maquillaje = [
                 modal.classList.add('active');
                 preventBodyScroll(true);
             }
+            // El modal de confirmar correo electrónico debe aparecer 15 segundos
+            // después de este modal (solo la primera vez que se muestra)
+            setTimeout(mostrarEmailConfirmationModalPrimeraVez, 15000);
         }
 
         function mostrarModalUsuarioNoExiste() {
@@ -6583,6 +6622,21 @@ window.maquillaje = [
             preventBodyScroll(false);
             // 5 segundos después de elegir una opción acá, mostrar la Guía Rápida
             setTimeout(mostrarModalAccion, 5000);
+        }
+
+        // Muestra el modal "Confirmá tu correo electrónico" (emailConfirmationModal)
+        // 15 segundos después del modal de "¿Guardar el inicio de sesión?"
+        // Se muestra siempre (aunque el correo ya esté confirmado en la base de datos);
+        // solo deja de mostrarse cuando el usuario toca el botón "Confirmar correo electrónico".
+        function mostrarEmailConfirmationModalPrimeraVez() {
+            const yaConfirmoDesdeEsteModal = localStorage.getItem('emailConfirmationModalConfirmado');
+            if (firebase.auth().currentUser && !yaConfirmoDesdeEsteModal) {
+                const modal = document.getElementById('emailConfirmationModal');
+                if (modal && !modal.classList.contains('active')) {
+                    modal.classList.add('active');
+                    preventBodyScroll(true);
+                }
+            }
         }
 
         function mostrarModalConfirmarCorreo() {
@@ -6725,45 +6779,6 @@ window.maquillaje = [
         }
 
         // LOGIN CON GOOGLE
-        // Envía la aceptación de Términos y Condiciones / Política de Privacidad
-        // al Worker de legales, ya con el UID confirmado (recién creado el
-        // usuario). Antes, el modal de consentimiento del registro (checkboxes
-        // de "Aceptar política de privacidad" / "Aceptar términos y condiciones")
-        // solo habilitaba el botón "Continuar" y seguía con el login/registro:
-        // nunca mandaba nada al Worker, por eso no quedaba ningún registro en
-        // la base de datos aunque el usuario sí hubiera aceptado.
-        async function enviarAceptacionLegalesRegistro(uid, nombre, apellido, codigoVendedor) {
-            try {
-                const ahora = new Date();
-                const payload = {
-                    aceptacionId: (crypto.randomUUID ? crypto.randomUUID() : 'ACEPT-' + Date.now()),
-                    uid: uid || '',
-                    pedidoId: '',
-                    nombre: nombre || '',
-                    apellido: apellido || '',
-                    telefono: '',
-                    codigoVendedor: codigoVendedor || '',
-                    aceptado: true,
-                    versionDocumento: 'v1.0',
-                    fecha: formatFechaDDMMYYYY(ahora),
-                    hora: formatHoraHHMMSS(ahora),
-                    timestamp: ahora.toISOString(),
-                    userAgent: navigator.userAgent,
-                    checkbox: true
-                };
-                const res = await fetch('https://legales.tuweb.workers.dev/', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                if (!res.ok) {
-                    console.error('[legales] El worker respondió con error al registrar la aceptación:', res.status, await res.text().catch(()=>''));
-                }
-            } catch (e) {
-                console.error('[legales] No se pudo enviar la aceptación de registro:', e);
-            }
-        }
-
         async function loginWithGoogle(intent) {
             try {
                 const provider = new firebase.auth.GoogleAuthProvider();
@@ -6783,17 +6798,17 @@ window.maquillaje = [
                         return;
                     }
                     const codigoVendedor = generarCodigoVendedor();
-                    const nombreNuevo = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
-                    const apellidoNuevo = user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '';
+                    const nombreGoogle = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
+                    const apellidoGoogle = user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '';
                     await docRef.set({
                         uid: user.uid,
-                        nombre: nombreNuevo,
-                        apellido: apellidoNuevo,
+                        nombre: nombreGoogle,
+                        apellido: apellidoGoogle,
                         email: user.email,
                         codigoVendedor: codigoVendedor,
                         creado: new Date()
                     });
-                    enviarAceptacionLegalesRegistro(user.uid, nombreNuevo, apellidoNuevo, codigoVendedor);
+                    enviarAceptacionLegales(user.uid, nombreGoogle, apellidoGoogle, codigoVendedor);
                     marcarUsuarioRegistrado(user.uid);
                     closeAuthModal();
                     abrirModalDatosAdicionales();
@@ -6920,7 +6935,8 @@ window.maquillaje = [
 
                 localStorage.setItem('codigoVendedorLocal', codigoVendedor);
                 marcarUsuarioRegistrado(user.uid);
-                enviarAceptacionLegalesRegistro(user.uid, nombre, apellido, codigoVendedor);
+
+                enviarAceptacionLegales(user.uid, nombre, apellido, codigoVendedor);
 
                 if (firebase.firestore) {
                     firebase.firestore().collection('usuarios').doc(user.uid).set(userData)
@@ -7126,6 +7142,9 @@ window.maquillaje = [
         function confirmEmailPrompt() {
             // Marcar email como confirmado
             localStorage.setItem('emailConfirmado', 'true');
+            // Marcar que el usuario tocó el botón de este modal específico,
+            // para que deje de mostrarse de ahora en adelante
+            localStorage.setItem('emailConfirmationModalConfirmado', 'true');
             // Abrir el formulario de Brevo
             window.open('https://8cc1455f.sibforms.com/serve/MUIFAOe2caIUk_JszJEAGAXuWMAooq9jBLGOvdN8R2ecTP9XnIzhvmcJIr6sHXcB-ap4DPs38CfVHsbJyu1Nc6djziTbM7FfS-bGHzYXXhYj1V_wcohxKLoFy4sbfPH_xNmDgwVR4xVaaf4dyK_QlVjLzdj4E012J39XFQGdXYOvmNEzae4U9jt0_pRuCZHcElDfRt6XW7T4QwrXbA==', '_blank');
             closeEmailConfirmationModal();
@@ -7509,18 +7528,6 @@ window.maquillaje = [
 
             // Actualizar interfaz
             updateUIForAuthentication(true);
-            
-            // Mostrar modal de confirmación de email después de 5 segundos (solo si no está confirmado)
-            setTimeout(() => {
-                const emailConfirmado = localStorage.getItem('emailConfirmado');
-                if (firebase.auth().currentUser && !emailConfirmado) {
-                    const modal = document.getElementById('emailConfirmationModal');
-                    if (modal && !modal.classList.contains('active')) {
-                        modal.classList.add('active');
-                        preventBodyScroll(true);
-                    }
-                }
-            }, 5000);
             
             // ⚠️ VERIFICACIÓN CRÍTICA: Si codigoVendedor está vacío, intentar cargar de nuevo
             if (!window.currentUser?.codigoVendedor || window.currentUser.codigoVendedor === '') {
