@@ -6520,13 +6520,21 @@ window.maquillaje = [
                     userAgent: navigator.userAgent,
                     checkbox: true
                 };
-                await fetch('https://legales.tuweb.workers.dev/', {
+                const _resLegales = await fetch('https://legales.tuweb.workers.dev/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
+                const _dataLegales = await _resLegales.json().catch(() => null);
+                if (!_resLegales.ok) {
+                    console.error('[legales] El worker respondió con error:', _resLegales.status, _dataLegales);
+                } else {
+                    console.log('[legales] Aceptación de revendedor guardada correctamente:', _dataLegales);
+                }
             } catch (e) {
-                // Silencioso: no debe interrumpir el flujo de alta/login del usuario
+                // No debe interrumpir el flujo de alta/login del usuario, pero
+                // sí queda visible en consola para poder diagnosticar.
+                console.error('[legales] No se pudo contactar al worker (red/CORS):', e);
             }
         }
 
