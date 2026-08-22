@@ -3594,16 +3594,37 @@
         </div>
     </div>
 
+    <!-- MODAL "CREÁ TU CONTRASEÑA DE SEGURIDAD" (solo alta MANUAL — sin fecha de nacimiento, porque ya se pidió en el formulario de registro) -->
+    <div class="modal-overlay" id="password-seguridad-manual-modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Creá tu contraseña de seguridad</h2>
+            </div>
+            <p style="font-size: 13px; line-height: 1.5; color: var(--text-light); margin: 4px 0 18px; text-align:left;">
+                Definí una contraseña de seguridad. La vas a necesitar más adelante para confirmar ciertos cambios en tu cuenta.
+            </p>
+            <label for="password-seguridad-manual-input" style="display:block; font-size:12px; color: var(--text-light); margin: 0 0 4px; text-align:left;">Contraseña de seguridad</label>
+            <div class="password-input-wrapper" style="margin-bottom:16px;">
+                <input type="password" id="password-seguridad-manual-input" placeholder="Mínimo 6 caracteres" minlength="6">
+                <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('password-seguridad-manual-input', this)" tabindex="-1" aria-label="Mostrar contraseña">
+                    <svg class="eye-show" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <svg class="eye-hide" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                </button>
+            </div>
+            <button type="button" class="confirmation-button confirmation-button-primary" style="width: 100%;" onclick="confirmarPasswordSeguridadManual()">Aceptar</button>
+        </div>
+    </div>
+
     <!-- MODAL "GUARDÁ TU CONTRASEÑA DE SEGURIDAD" -->
     <div class="modal-overlay" id="guardar-password-modal">
         <div class="modal-content" style="max-width: 400px; text-align: center;">
             <div class="modal-header" style="justify-content: center;">
                 <h2 class="modal-title">Guardá tu contraseña de seguridad</h2>
             </div>
-            <p style="font-size: 13px; line-height: 1.5; color: var(--text-light); margin: 4px 0 18px;">
+            <p style="font-size: 13px; line-height: 1.6; color: var(--text-light); margin: 4px 0 14px;">
                 Guardala muy bien: la vas a necesitar para confirmar algunos cambios en tu cuenta más adelante.
             </p>
-            <div style="display:flex; align-items:center; gap:8px; border:1px solid #e0e0e0; border-radius:10px; padding:10px 12px; margin-bottom:20px;">
+            <div style="display:flex; align-items:center; gap:8px; border:1px solid #e0e0e0; border-radius:10px; padding:10px 12px; margin-bottom:14px;">
                 <input type="password" id="guardar-password-valor" readonly style="flex:1; border:none; outline:none; font-size:15px; letter-spacing:2px; background:transparent;">
                 <button type="button" onclick="toggleVerPasswordSeguridad(this)" aria-label="Mostrar contraseña" style="background:none; border:none; cursor:pointer; color: var(--text-light); display:flex; padding:4px;">
                     <svg class="eye-show" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -3613,7 +3634,10 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                 </button>
             </div>
-            <p id="copiar-password-confirmacion" style="font-size:12px; color:#2e8b57; font-weight:600; height:16px; margin:-12px 0 12px;"></p>
+            <p id="copiar-password-confirmacion" style="font-size:12px; color:#2e8b57; font-weight:600; height:16px; margin:-6px 0 6px;"></p>
+            <p style="font-size: 12px; line-height: 1.6; color: var(--text-light); margin: 0 0 18px;">
+                Tu código de revendedor lo vas a encontrar siempre en la opción <strong style="color: var(--text);">"Perfil"</strong>.
+            </p>
             <button type="button" class="confirmation-button confirmation-button-primary" style="width: 100%;" onclick="continuarDesdeGuardarPassword()">Ya la guardé, continuar</button>
         </div>
     </div>
@@ -6446,8 +6470,13 @@ window.maquillaje = [
         function cerrarGuiaAccion() {
             document.getElementById('accion-guide-modal').classList.remove('active');
             preventBodyScroll(false);
-            // 10 segundos después de cerrar la Guía Rápida, pedir confirmación de correo
-            setTimeout(mostrarModalConfirmarCorreo, 10000);
+            // 🔧 FIX: se encolan los próximos avisos automáticos (confirmar
+            // correo / recordatorio de correo) en vez de dispararlos con un
+            // setTimeout suelto de 10s. Van a aparecer de a uno, cada uno 2
+            // segundos después de que se cierre el anterior.
+            encolarModalAutomatico(mostrarModalConfirmarCorreo);
+            encolarModalAutomatico(mostrarEmailConfirmationModalPrimeraVez);
+            avanzarColaModales();
         }
         function irAMiTienda() { window.location.href = 'https://mitienda.revendeways.shop/'; }
 
@@ -6614,6 +6643,60 @@ window.maquillaje = [
             window.pendingAuthMethod = null;
         }
 
+        // ═══════════════════════════════════════════════════════════════
+        // 🔧 FIX: COLA DE MODALES AUTOMÁTICOS POST LOGIN/REGISTRO
+        // ═══════════════════════════════════════════════════════════════
+        // Antes, cada aviso posterior al login/registro (¿guardar sesión?,
+        // guía de "stock o vender", confirmar correo, etc.) se programaba
+        // con su propio setTimeout independiente (5s, 10s, 15s...). Como
+        // esos tiempos se contaban desde momentos distintos, terminaban
+        // superponiéndose: aparecían varios modales flotando al mismo
+        // tiempo, algo invasivo y confuso.
+        //
+        // Ahora todos esos avisos pasan por esta cola: se muestran de a
+        // UNO por vez, y recién 2 segundos después de que el usuario cierra
+        // (por "Continuar" o por "Cerrar") el modal actual aparece el
+        // siguiente. Nunca hay dos modales de esta cola abiertos a la vez.
+        window._modalQueue = [];
+        window._modalQueueBusy = false;
+
+        // Agrega un modal a la cola. Si la cola está libre, lo muestra ya;
+        // si está ocupada (hay un modal abierto, o esperando los 2s), se
+        // mostrará en su turno.
+        function encolarModalAutomatico(mostrarFn) {
+            window._modalQueue.push(mostrarFn);
+            _procesarColaModales();
+        }
+
+        function _procesarColaModales() {
+            if (window._modalQueueBusy) return;
+            const siguiente = window._modalQueue.shift();
+            if (!siguiente) return;
+            window._modalQueueBusy = true;
+            siguiente();
+        }
+
+        // Se llama cuando el modal actual de la cola se cierra (sea que el
+        // usuario haya tocado "Continuar" o "Cerrar"): libera el turno y,
+        // 2 segundos después, muestra el próximo modal encolado (si hay).
+        function avanzarColaModales() {
+            window._modalQueueBusy = false;
+            setTimeout(_procesarColaModales, 2000);
+        }
+
+        // Arranca (o reinicia) la secuencia completa de avisos automáticos
+        // posteriores a un login/registro exitoso: primero "¿Guardar
+        // sesión?", y desde ahí se van encadenando los siguientes (guía de
+        // acción del día, confirmación de correo), siempre de a uno y con
+        // la pausa de 2 segundos entre cada cierre y el próximo aviso.
+        // Se resetea la cola cada vez para no arrastrar avisos pendientes
+        // de una sesión anterior ni duplicar modales.
+        function iniciarSecuenciaPostAuth() {
+            window._modalQueue = [];
+            window._modalQueueBusy = false;
+            encolarModalAutomatico(mostrarModalRecordarSesion);
+        }
+
         // ── MODAL "¿GUARDAR EL INICIO DE SESIÓN?" ──
         const REMEMBER_SESSION_KEY = 'rw_remember_session';
 
@@ -6622,10 +6705,11 @@ window.maquillaje = [
             if (modal) {
                 modal.classList.add('active');
                 preventBodyScroll(true);
+            } else {
+                // Si por algún motivo el modal no existe en el DOM, no nos
+                // quedamos trabados: liberamos la cola para el siguiente aviso.
+                avanzarColaModales();
             }
-            // El modal de confirmar correo electrónico debe aparecer 15 segundos
-            // después de este modal (solo la primera vez que se muestra)
-            setTimeout(mostrarEmailConfirmationModalPrimeraVez, 15000);
         }
 
         function mostrarModalUsuarioNoExiste() {
@@ -6655,14 +6739,17 @@ window.maquillaje = [
             const modal = document.getElementById('remember-session-modal');
             if (modal) modal.classList.remove('active');
             preventBodyScroll(false);
-            // 5 segundos después de elegir una opción acá, mostrar la Guía Rápida
-            setTimeout(mostrarModalAccion, 5000);
+            // 🔧 FIX: en vez de un setTimeout independiente, se encola el
+            // siguiente aviso ("¿Qué querés hacer hoy?") y se libera el
+            // turno — va a aparecer recién 2 segundos después de este cierre.
+            encolarModalAutomatico(mostrarModalAccion);
+            avanzarColaModales();
         }
 
-        // Muestra el modal "Confirmá tu correo electrónico" (emailConfirmationModal)
-        // 15 segundos después del modal de "¿Guardar el inicio de sesión?"
-        // Se muestra siempre (aunque el correo ya esté confirmado en la base de datos);
-        // solo deja de mostrarse cuando el usuario toca el botón "Confirmar correo electrónico".
+        // Muestra el modal "Confirmá tu correo electrónico" (emailConfirmationModal).
+        // 🔧 FIX: ahora forma parte de la cola de modales automáticos en vez
+        // de dispararse con un setTimeout propio de 15s (que antes podía
+        // superponerse con el resto de la cadena de avisos).
         function mostrarEmailConfirmationModalPrimeraVez() {
             const yaConfirmoDesdeEsteModal = localStorage.getItem('emailConfirmationModalConfirmado');
             if (firebase.auth().currentUser && !yaConfirmoDesdeEsteModal) {
@@ -6670,19 +6757,31 @@ window.maquillaje = [
                 if (modal && !modal.classList.contains('active')) {
                     modal.classList.add('active');
                     preventBodyScroll(true);
+                    return;
                 }
             }
+            // No corresponde mostrarlo (ya confirmado, o sin sesión): liberar
+            // el turno de la cola para no dejarla trabada.
+            avanzarColaModales();
         }
 
         function mostrarModalConfirmarCorreo() {
             const user = firebase.auth && firebase.auth() && firebase.auth().currentUser;
-            if (!user || user.emailVerified) return; // ya verificado o sin sesión: no molestar
+            if (!user || user.emailVerified) {
+                // Ya verificado o sin sesión: no hay nada que mostrar, pero
+                // igual hay que liberar el turno para que la cola continúe
+                // con el siguiente aviso.
+                avanzarColaModales();
+                return;
+            }
             const emailEl = document.getElementById('confirmar-correo-email');
             if (emailEl) emailEl.textContent = user.email || '';
             const modal = document.getElementById('confirmar-correo-modal');
             if (modal) {
                 modal.classList.add('active');
                 preventBodyScroll(true);
+            } else {
+                avanzarColaModales();
             }
         }
 
@@ -6690,6 +6789,7 @@ window.maquillaje = [
             const modal = document.getElementById('confirmar-correo-modal');
             if (modal) modal.classList.remove('active');
             preventBodyScroll(false);
+            avanzarColaModales();
         }
 
         function reenviarCorreoVerificacion() {
@@ -6754,6 +6854,51 @@ window.maquillaje = [
             if (modal) modal.classList.remove('active');
 
             // Mostrar el modal para que guarde su contraseña de seguridad
+            window.pendingPasswordFlowOrigin = 'google';
+            window.passwordSeguridadTemp = password;
+            const valorInput = document.getElementById('guardar-password-valor');
+            if (valorInput) valorInput.value = password;
+            const guardarModal = document.getElementById('guardar-password-modal');
+            if (guardarModal) guardarModal.classList.add('active');
+        }
+
+        // ── MODAL "CREÁ TU CONTRASEÑA DE SEGURIDAD" (solo altas MANUALES) ──
+        // Análogo al modal de arriba, pero SIN pedir fecha de nacimiento,
+        // porque en el alta manual esa fecha ya se completó en el propio
+        // formulario de registro.
+        function abrirModalPasswordSeguridadManual() {
+            const modal = document.getElementById('password-seguridad-manual-modal');
+            if (modal) {
+                const input = document.getElementById('password-seguridad-manual-input');
+                if (input) input.value = '';
+                modal.classList.add('active');
+                preventBodyScroll(true);
+            }
+        }
+
+        async function confirmarPasswordSeguridadManual() {
+            const password = document.getElementById('password-seguridad-manual-input')?.value || '';
+            if (password.length < 6) { alert('La contraseña de seguridad debe tener al menos 6 caracteres.'); return; }
+
+            const user = firebase.auth().currentUser;
+            if (!user) return;
+
+            try {
+                await firebase.firestore().collection('usuarios').doc(user.uid).set({
+                    passwordSeguridad: password
+                }, { merge: true });
+            } catch (e) {
+                console.error('No se pudo guardar la contraseña de seguridad:', e);
+            }
+
+            const modal = document.getElementById('password-seguridad-manual-modal');
+            if (modal) modal.classList.remove('active');
+
+            // Mismo modal de "guardá tu contraseña" que usa el alta con
+            // Google, marcando el origen para que, al continuar, se muestre
+            // la pantalla de "Registro Completado" en vez de la secuencia
+            // habitual de recordar sesión / elegir acción del día.
+            window.pendingPasswordFlowOrigin = 'manual';
             window.passwordSeguridadTemp = password;
             const valorInput = document.getElementById('guardar-password-valor');
             if (valorInput) valorInput.value = password;
@@ -6800,7 +6945,19 @@ window.maquillaje = [
             window.passwordSeguridadTemp = null;
             const valorInput = document.getElementById('guardar-password-valor');
             if (valorInput) valorInput.value = '';
-            mostrarModalRecordarSesion();
+
+            // 🔧 FIX: si esta contraseña de seguridad se creó durante un
+            // registro MANUAL, ahora corresponde mostrar la pantalla
+            // "¡Registro Completado!" con el código de revendedor (igual
+            // que antes se mostraba justo después de registrarse, pero
+            // ahora recién después de definir la contraseña). Si vino del
+            // alta con Google, se sigue con la secuencia habitual.
+            if (window.pendingPasswordFlowOrigin === 'manual') {
+                showRegistrationConfirmation(window.currentCodigoVendedor, window.currentUserName);
+            } else {
+                iniciarSecuenciaPostAuth();
+            }
+            window.pendingPasswordFlowOrigin = null;
         }
 
         // MOSTRAR/OCULTAR CONTRASEÑA
@@ -6852,7 +7009,7 @@ window.maquillaje = [
                     marcarUsuarioRegistrado(user.uid);
                 }
                 closeAuthModal();
-                mostrarModalRecordarSesion();
+                iniciarSecuenciaPostAuth();
             } catch (error) {
                 if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') return;
                 if (error.code === 'auth/popup-blocked') {
@@ -6975,7 +7132,6 @@ window.maquillaje = [
                     fechaNacimiento: fechaNacimiento,
                     email: email,
                     codigoVendedor: codigoVendedor,
-                    passwordSeguridad: password,
                     creado: new Date()
                 };
 
@@ -6995,7 +7151,20 @@ window.maquillaje = [
 
                 enviarAceptacionLegales(user.uid, nombre, apellido, codigoVendedor);
 
-                showRegistrationConfirmation(codigoVendedor, nombre);
+                // 🔧 FIX: el registro manual antes NO pedía la contraseña de
+                // seguridad (a diferencia del alta con Google) y directamente
+                // guardaba la contraseña de LOGIN como si fuera la de
+                // seguridad, sin que el usuario la eligiera. Ahora, igual que
+                // en Google, se le pide explícitamente que cree su propia
+                // contraseña de seguridad — pero sin pedirle de nuevo la
+                // fecha de nacimiento, porque esa ya la completó a mano en
+                // el formulario de registro.
+                window.currentCodigoVendedor = codigoVendedor;
+                window.currentUserName = nombre;
+                hideLoadingOverlay();
+                setRegisterButtonLoading(false);
+                closeAuthModal();
+                abrirModalPasswordSeguridadManual();
 
             } catch (error) {
                 if (userCreatedSuccessfully && codigoVendedor) {
@@ -7007,11 +7176,16 @@ window.maquillaje = [
                         if (user) {
                             await firebase.firestore().collection('usuarios').doc(user.uid).set({
                                 uid: user.uid, nombre, apellido, fechaNacimiento, email,
-                                codigoVendedor, passwordSeguridad: password, creado: new Date()
+                                codigoVendedor, creado: new Date()
                             }, { merge: true });
                             localStorage.setItem('codigoVendedorLocal', codigoVendedor);
                             enviarAceptacionLegales(user.uid, nombre, apellido, codigoVendedor);
-                            showRegistrationConfirmation(codigoVendedor, nombre);
+                            window.currentCodigoVendedor = codigoVendedor;
+                            window.currentUserName = nombre;
+                            hideLoadingOverlay();
+                            setRegisterButtonLoading(false);
+                            closeAuthModal();
+                            abrirModalPasswordSeguridadManual();
                         } else {
                             showRegistrationError(error);
                         }
@@ -7050,7 +7224,7 @@ window.maquillaje = [
                 // onAuthStateChanged() se disparará automáticamente
                 closeAuthModal();
                 if (userCredential.user) marcarUsuarioRegistrado(userCredential.user.uid);
-                mostrarModalRecordarSesion();
+                iniciarSecuenciaPostAuth();
                 
                 // Guardar en Firestore si no existe (en background, sin bloquear)
                 // IMPORTANTE: NO regenerar el codigoVendedor si ya existe
@@ -7174,7 +7348,12 @@ window.maquillaje = [
         function closeConfirmationAndContinue() {
             preventBodyScroll(false);
             document.getElementById('registration-confirmation-modal').classList.remove('active');
-            // El usuario ya está autenticado por Firebase, simplemente cerramos el modal
+            // 🔧 FIX: el usuario ya está autenticado por Firebase; ahora
+            // arrancamos acá la cola de avisos automáticos (¿guardar
+            // sesión?, elegir acción del día, confirmar correo) para que un
+            // alta manual pase por el mismo circuito que una con Google,
+            // siempre de a un modal por vez.
+            iniciarSecuenciaPostAuth();
         }
         
         function copyCodigoVendedor() {
@@ -7202,6 +7381,7 @@ window.maquillaje = [
             if (modal) {
                 modal.classList.remove('active');
                 preventBodyScroll(false);
+                avanzarColaModales();
             }
         }
 
