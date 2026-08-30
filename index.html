@@ -3842,25 +3842,11 @@
             </div>
 
             <div style="padding: 6px 0 4px;">
-                <!-- Total de Inversión -->
-                <div style="margin-bottom: 12px; padding: 14px 16px; background: #f9fafb; border-radius: 10px;">
+                <!-- Total de Inversión (única estadística de stock.html) -->
+                <div style="padding: 14px 16px; background: #f9fafb; border-radius: 10px;">
                     <div style="font-size: 11px; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; font-weight: 600;">Total de Inversión</div>
                     <div style="font-size: 22px; font-weight: 800; color: var(--primary);" id="stat-total-investment">$0</div>
-                    <div style="font-size: 11px; color: var(--text-light); margin-top: 3px;">Suma del valor original de productos</div>
-                </div>
-
-                <!-- Total de Ganancia Neta -->
-                <div style="margin-bottom: 12px; padding: 14px 16px; background: #f9fafb; border-radius: 10px;">
-                    <div style="font-size: 11px; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; font-weight: 600;">Total de Ganancia Neta</div>
-                    <div style="font-size: 22px; font-weight: 800; color: #00a650;" id="stat-total-profit">$0</div>
-                    <div style="font-size: 11px; color: var(--text-light); margin-top: 3px;">Ganancia generada por venta</div>
-                </div>
-
-                <!-- Total Final -->
-                <div style="padding: 14px 16px; background: #f9fafb; border-radius: 10px;">
-                    <div style="font-size: 11px; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; font-weight: 600;">Total Final</div>
-                    <div style="font-size: 22px; font-weight: 800; color: var(--primary);" id="stat-total-final">$0</div>
-                    <div style="font-size: 11px; color: var(--text-light); margin-top: 3px;">Producto + Ganancia</div>
+                    <div style="font-size: 11px; color: var(--text-light); margin-top: 3px;">Suma del valor original de productos stockeados</div>
                 </div>
             </div>
 
@@ -7560,19 +7546,13 @@ window.maquillaje = [
                 if (userDoc.exists && userDoc.data().estadisticas) {
                     const stats = userDoc.data().estadisticas;
                     document.getElementById('stat-total-investment').textContent = '$' + (stats.totalInversion || 0).toLocaleString();
-                    document.getElementById('stat-total-profit').textContent = '$' + (stats.totalGanancia || 0).toLocaleString();
-                    document.getElementById('stat-total-final').textContent = '$' + (stats.totalFinal || 0).toLocaleString();
                 } else {
                     // Si no hay estadísticas, mostrar 0
                     document.getElementById('stat-total-investment').textContent = '$0';
-                    document.getElementById('stat-total-profit').textContent = '$0';
-                    document.getElementById('stat-total-final').textContent = '$0';
                 }
             } catch (error) {
                 console.error('Error cargando estadísticas:', error);
                 document.getElementById('stat-total-investment').textContent = '$0';
-                document.getElementById('stat-total-profit').textContent = '$0';
-                document.getElementById('stat-total-final').textContent = '$0';
             }
         }
 
