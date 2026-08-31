@@ -6433,10 +6433,10 @@ window.maquillaje = [
             const item = (n, t) => '<div class="guide-item"><span class="guide-number">' + n + '</span><span class="guide-text">' + t + '</span></div>';
             if (tipo === 'stock') {
                 title.textContent = 'Cómo usar el Catálogo (Stock)';
-                subtitle.textContent = 'Acá ves todos los productos disponibles para revender.';
+                subtitle.textContent = 'Acá ves todos los productos disponibles para stockearte.';
                 body.innerHTML =
-                    item(1, 'Explorá los productos con el buscador y los filtros por categoría para encontrar lo que querés vender.') +
-                    item(2, 'Tocá un producto para ver sus detalles, fotos, el precio de revendedor y tu ganancia estimada.') +
+                    item(1, 'Explorá los productos en la sección de Inicio y mirá los minimos requeridos por categoría.') +
+                    item(2, 'Tocá una categoría para ver los productos y mirá sus detalles, fotos, el precio mayorista y calcula tu ganancia estimada.') +
                     item(3, 'Agregá los productos al carrito con la cantidad que necesites para armar tu pedido.') +
                     item(4, 'Cuando termines, abrí el carrito (arriba a la derecha) y completá tu encargue.');
                 footer.innerHTML = '<button type="button" class="confirmation-button confirmation-button-primary" style="width:100%;" onclick="cerrarGuiaAccion()">Entendido, ver catálogo</button>';
