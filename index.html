@@ -8496,35 +8496,36 @@ async function validarCodigoRevendedor() {
                 // la config pública de Firebase podía repetir la misma
                 // consulta directo, sin límite. Ahora pasa por el mismo
                 // Worker protegido que ya usan los demás paneles.
-                const candidatos = new Set([codigo, codigo.toLowerCase()]);
-                if (codigo.startsWith('RW-')) candidatos.add(codigo.substring(3));
+                const candidatos = [...new Set([codigo, codigo.toLowerCase()])];
+                if (codigo.startsWith('RW-')) candidatos.push(codigo.substring(3));
 
+                // 🔒 FIX: los tokens de Turnstile son de un solo uso — antes se
+                // mandaba una petición POR CADA variante del código con el
+                // MISMO token, y la primera ya lo consumía. Ahora se mandan
+                // todas las variantes juntas en una sola petición.
                 const turnstileToken = await obtenerTokenTurnstileLogin();
 
                 let usuarioEncontrado = null;
-                for (const candidato of candidatos) {
-                    try {
-                        const res = await fetch('https://datosderevendedor.tuweb.workers.dev/api/login-vendedor', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ codigo: candidato, turnstileToken })
-                        });
-                        if (res.ok) {
-                            const data = await res.json();
-                            if (data && data.success && data.vendedor) {
-                                usuarioEncontrado = data.vendedor;
-                                break;
-                            }
-                        } else if (res.status === 429 || res.status === 403) {
-                            const data = await res.json().catch(() => ({}));
-                            error.textContent = data.error || 'No se pudo validar el código. Intentá de nuevo en unos minutos.';
-                            error.classList.add('show');
-                            btnValidar.textContent = textOriginal;
-                            btnValidar.disabled = false;
-                            return;
+                try {
+                    const res = await fetch('https://datosderevendedor.tuweb.workers.dev/api/login-vendedor', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ candidatos, turnstileToken })
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data && data.success && data.vendedor) {
+                            usuarioEncontrado = data.vendedor;
                         }
-                    } catch (_e) { /* se prueba el siguiente candidato */ }
-                }
+                    } else if (res.status === 429 || res.status === 403) {
+                        const data = await res.json().catch(() => ({}));
+                        error.textContent = data.error || 'No se pudo validar el código. Intentá de nuevo en unos minutos.';
+                        error.classList.add('show');
+                        btnValidar.textContent = textOriginal;
+                        btnValidar.disabled = false;
+                        return;
+                    }
+                } catch (_e) { /* se maneja como código no encontrado */ }
 
                 if (!usuarioEncontrado) {
                     // Código NO válido
