@@ -8,6 +8,8 @@
     <link rel="icon" type="image/png" href="logo.png?v=2">
     <link rel="shortcut icon" type="image/png" href="logo.png?v=2">
     <link rel="apple-touch-icon" href="logo.png?v=2">
+    <!-- 🔒 NUEVO: Cloudflare Turnstile — protección anti-bot para la creación de pedidos. -->
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -3418,6 +3420,8 @@
                     <label for="checkout-codigo-revendedor">Código de Revendedor *</label>
                     <input type="text" id="checkout-codigo-revendedor" placeholder="Ej: RW-XXXXX" required>
                 </div>
+                <!-- 🔒 NUEVO: Cloudflare Turnstile — protección anti-bot. -->
+                <div class="cf-turnstile" id="turnstile-pedido-stock" data-sitekey="0x4AAAAAAEuP7UTtW1odDnHM" data-size="invisible" data-callback="onTurnstilePedidoOk"></div>
             </form>
             <div class="checkout-footer">
                 <button class="btn-checkout-cancel" onclick="closeCheckout()">Cancelar</button>
@@ -5496,7 +5500,24 @@ window.maquillaje = [
         }
 
         // Guardar pedido en Firestore
-        async function savePedidoToFirestore(checkout, cartItems, totales) {
+        // 🔒 NUEVO: dispara el desafío invisible de Turnstile y espera el token
+// antes de crear el pedido.
+window._turnstilePedidoResolve = null;
+function onTurnstilePedidoOk(token) {
+    if (window._turnstilePedidoResolve) window._turnstilePedidoResolve(token);
+}
+function obtenerTokenTurnstilePedido() {
+    if (typeof turnstile === 'undefined') return Promise.resolve(null);
+    return new Promise((resolve) => {
+        window._turnstilePedidoResolve = resolve;
+        try {
+            turnstile.execute('#turnstile-pedido-stock');
+        } catch (_e) { resolve(null); }
+        setTimeout(() => resolve(null), 6000);
+    });
+}
+
+async function savePedidoToFirestore(checkout, cartItems, totales) {
             const user = firebase.auth().currentUser;
             if (!user) return null;
 
@@ -5548,6 +5569,7 @@ window.maquillaje = [
 
                 // Sincronizar con la colección raíz a través del Worker
                 try {
+                    const turnstileToken = await obtenerTokenTurnstilePedido();
                     await fetch('https://workerpagos.tuweb.workers.dev/api/pedido', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -5562,7 +5584,8 @@ window.maquillaje = [
                             total: pedidoData.totalFinal,
                             codigoVendedor: pedidoData.codigoVendedor,
                             fecha: Date.now(),
-                            nicho: getPedidoNicho(cartItems)
+                            nicho: getPedidoNicho(cartItems),
+                            turnstileToken
                         })
                     });
                 } catch (e) {
@@ -8186,6 +8209,7 @@ window.maquillaje = [
                 placeholder="Código de revendedor" 
                 onkeyup="if(event.key === 'Enter') validarCodigoRevendedor()"
             >
+            <div class="cf-turnstile" id="turnstile-login" data-sitekey="0x4AAAAAAEuP7UTtW1odDnHM" data-size="invisible" data-callback="onTurnstileLoginOk"></div>
             <button class="codigo-modal-button" onclick="validarCodigoRevendedor()">Ingresar</button>
             <button class="codigo-modal-close" onclick="cerrarModalCodigo()">Cancelar</button>
         </div>
@@ -8400,7 +8424,24 @@ window.maquillaje = [
         }
 
         // Validar código de revendedor
-        async function validarCodigoRevendedor() {
+        // 🔒 NUEVO: dispara el desafío invisible de Turnstile del login y espera
+// el token antes de validar el código.
+window._turnstileLoginResolve = null;
+function onTurnstileLoginOk(token) {
+    if (window._turnstileLoginResolve) window._turnstileLoginResolve(token);
+}
+function obtenerTokenTurnstileLogin() {
+    if (typeof turnstile === 'undefined') return Promise.resolve(null);
+    return new Promise((resolve) => {
+        window._turnstileLoginResolve = resolve;
+        try {
+            turnstile.execute('#turnstile-login');
+        } catch (_e) { resolve(null); }
+        setTimeout(() => resolve(null), 6000);
+    });
+}
+
+async function validarCodigoRevendedor() {
             const codigoInput = document.getElementById('codigo-input');
             const error = document.getElementById('codigo-error');
             // Normalizar: eliminar TODOS los espacios y convertir a MAYÚSCULAS
@@ -8445,38 +8486,51 @@ window.maquillaje = [
                     }
                 }
 
-                // ESTRATEGIA 2: Buscar en Firestore (para usuarios no logueados o código no coincide)
-                let resultado = await firebase.firestore()
-                    .collection('usuarios')
-                    .where('codigoVendedor', '==', codigo)
-                    .get();
+                // ESTRATEGIA 2: Validar contra el Worker protegido (Turnstile +
+                // límite de intentos), igual que index.html/mas-categorias.html.
+                // 🔒 FIX: antes esto consultaba Firestore DIRECTO desde el
+                // navegador con `.where('codigoVendedor', '==', codigo)` — una
+                // búsqueda abierta sobre toda la colección de usuarios, sin
+                // pasar por ningún Worker. Eso significaba que ni Turnstile ni
+                // el límite de intentos protegían este login: cualquiera con
+                // la config pública de Firebase podía repetir la misma
+                // consulta directo, sin límite. Ahora pasa por el mismo
+                // Worker protegido que ya usan los demás paneles.
+                const candidatos = new Set([codigo, codigo.toLowerCase()]);
+                if (codigo.startsWith('RW-')) candidatos.add(codigo.substring(3));
 
-                // Si no encuentra, intentar búsquedas alternativas
-                if (resultado.empty) {
-                    // Intentar búsqueda 2: convertir a minúsculas
-                    resultado = await firebase.firestore()
-                        .collection('usuarios')
-                        .where('codigoVendedor', '==', codigo.toLowerCase())
-                        .get();
+                const turnstileToken = await obtenerTokenTurnstileLogin();
+
+                let usuarioEncontrado = null;
+                for (const candidato of candidatos) {
+                    try {
+                        const res = await fetch('https://datosderevendedor.tuweb.workers.dev/api/login-vendedor', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ codigo: candidato, turnstileToken })
+                        });
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data && data.success && data.vendedor) {
+                                usuarioEncontrado = data.vendedor;
+                                break;
+                            }
+                        } else if (res.status === 429 || res.status === 403) {
+                            const data = await res.json().catch(() => ({}));
+                            error.textContent = data.error || 'No se pudo validar el código. Intentá de nuevo en unos minutos.';
+                            error.classList.add('show');
+                            btnValidar.textContent = textOriginal;
+                            btnValidar.disabled = false;
+                            return;
+                        }
+                    } catch (_e) { /* se prueba el siguiente candidato */ }
                 }
 
-                // Intentar búsqueda 3: sin el prefijo "RW-" por si acaso
-                if (resultado.empty && codigo.startsWith('RW-')) {
-                    const codigoSinPrefijo = codigo.substring(3);
-                    
-                    resultado = await firebase.firestore()
-                        .collection('usuarios')
-                        .where('codigoVendedor', '==', codigoSinPrefijo)
-                        .get();
-                }
-
-                if (resultado.empty) {
+                if (!usuarioEncontrado) {
                     // Código NO válido
                     error.textContent = 'Código de revendedor inválido. Verifica que sea exacto (sin espacios extras) e intenta de nuevo.';
                     error.classList.add('show');
                 } else {
-                    const usuarioDoc = resultado.docs[0];
-                    
                     // Código VÁLIDO
                     error.classList.remove('show');
                     
