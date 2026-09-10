@@ -6482,7 +6482,12 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             // 🔧 FIX: se encolan los próximos avisos automáticos (confirmar
             // correo / recordatorio de correo) en vez de dispararlos con un
             // setTimeout suelto de 10s. Van a aparecer de a uno, cada uno 2
-            // segundos después de que se cierre el anterior.
+            // segundos después de que se cierre el anterior. El turno de la
+            // cola sigue "ocupado" desde que se mostró mostrarModalAccion()
+            // (accionStock/accionVender/mostrarGuiaAccion no lo liberan por
+            // su cuenta, ya que son parte del mismo paso visual) — por eso
+            // hace falta avanzarColaModales() acá, recién cuando el usuario
+            // termina de ver la guía y la cierra.
             encolarModalAutomatico(mostrarModalConfirmarCorreo);
             encolarModalAutomatico(mostrarEmailConfirmationModalPrimeraVez);
             avanzarColaModales();
@@ -7050,18 +7055,43 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                 firebase.auth().getRedirectResult().then(function(result) {
                     if (result && result.user) {
                         const user = result.user;
+                        // 🔧 FIX: antes, cuando el popup de Google se bloqueaba y
+                        // se caía a signInWithRedirect (que recarga la página
+                        // entera), este handler SOLO creaba el documento en
+                        // Firestore si no existía — pero nunca continuaba el
+                        // flujo visual (cerrar modales, mostrar la pantalla
+                        // siguiente). La cuenta quedaba creada correctamente
+                        // atrás de escena, pero la página recargada mostraba de
+                        // nuevo el modal de registro inicial, dando la
+                        // sensación de que el registro había fallado. Ahora
+                        // completa exactamente la misma secuencia que ya usa
+                        // el flujo de popup (loginWithGoogle).
+                        window.currentUser = { ...(window.currentUser || {}), uid: user.uid };
                         const docRef = firebase.firestore().collection('usuarios').doc(user.uid);
                         docRef.get().then(function(doc) {
                             if (!doc.exists) {
                                 const codigoVendedor = generarCodigoVendedor();
+                                const nombreGoogle = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
+                                const apellidoGoogle = user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '';
                                 docRef.set({
                                     uid: user.uid,
-                                    nombre: user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0],
-                                    apellido: user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '',
+                                    nombre: nombreGoogle,
+                                    apellido: apellidoGoogle,
                                     email: user.email,
                                     codigoVendedor: codigoVendedor,
                                     creado: new Date()
+                                }).then(function() {
+                                    enviarAceptacionLegales(user.uid, nombreGoogle, apellidoGoogle, codigoVendedor);
+                                    marcarUsuarioRegistrado(user.uid);
+                                    closeAuthModal();
+                                    closeConsentModal();
+                                    abrirModalDatosAdicionales();
                                 }).catch(function(){});
+                            } else {
+                                marcarUsuarioRegistrado(user.uid);
+                                closeAuthModal();
+                                closeConsentModal();
+                                iniciarSecuenciaPostAuth();
                             }
                         }).catch(function(){});
                     }
@@ -7726,17 +7756,30 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                 creado: new Date()
             };
 
-            // Verificar si hay código en localStorage
+            // 🔧 FIX: Firestore es la ÚNICA fuente de verdad para el código
+            // de revendedor — exactamente el mismo criterio que ya se aplicó
+            // en openProfileModal(). Antes esta función (que corre en CADA
+            // inicio de sesión / carga de página, vía onAuthStateChanged)
+            // priorizaba localStorage por encima de Firestore: si el
+            // navegador tenía guardado un código viejo o de otra cuenta
+            // (por ejemplo, de un intento de registro anterior que falló a
+            // mitad de camino), ese valor incorrecto se usaba SIEMPRE,
+            // incluso teniendo el código correcto ya guardado en Firestore.
+            // Eso explicaba que el código copiado desde acá diera "inválido"
+            // al usarlo en index.html, que sí valida contra Firestore.
             const codigoLocalStorage = localStorage.getItem('codigoVendedorLocal');
 
-            // ✅ PRIORIDAD: localStorage > Firestore > generar nuevo
             let codigoFinal = '';
-            if (codigoLocalStorage && codigoLocalStorage.trim() !== '') {
-                codigoFinal = codigoLocalStorage;
-            } else if (safeUserData.codigoVendedor && safeUserData.codigoVendedor.trim() !== '') {
-                codigoFinal = safeUserData.codigoVendedor;
+            if (safeUserData.codigoVendedor && safeUserData.codigoVendedor.trim() !== '') {
+                // Firestore manda siempre que tenga un valor real.
+                codigoFinal = safeUserData.codigoVendedor.trim();
+            } else if (codigoLocalStorage && codigoLocalStorage.trim() !== '') {
+                // Sin nada en Firestore todavía: usar el de localStorage
+                // como último recurso, pero queda escrito en Firestore más
+                // abajo para que a partir de ahora sea la fuente real.
+                codigoFinal = codigoLocalStorage.trim();
             } else {
-                // ✅ FALLBACK: Generar código si no existe
+                // Fallback: Generar código si no existe en ningún lado
                 codigoFinal = generarCodigoVendedor();
             }
             
