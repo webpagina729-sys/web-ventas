@@ -6651,6 +6651,13 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
 
             if (method === 'google') {
                 loginWithGoogle();
+            } else if (method === 'google-ya-autenticado') {
+                // 🔧 NUEVO: la sesión de Google ya está abierta (viene del
+                // intento de "Iniciar sesión" sin cuenta todavía) — no hace
+                // falta volver a mostrar el popup, se completa directo.
+                const user = window._googleUserPendienteRegistro;
+                window._googleUserPendienteRegistro = null;
+                if (user) finalizeGoogleRegister(user);
             } else if (method === 'manual') {
                 finalizeManualRegister();
             }
@@ -6995,29 +7002,18 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                 const docRef = firebase.firestore().collection('usuarios').doc(user.uid);
                 const doc = await docRef.get();
                 if (!doc.exists) {
-                    if (intent === 'login') {
-                        // Viene del botón "Iniciar sesión": no auto-registrar.
-                        // Cerramos la sesión recién creada y avisamos que el usuario no existe.
-                        await firebase.auth().signOut();
-                        closeAuthModal();
-                        mostrarModalUsuarioNoExiste();
-                        return;
-                    }
-                    const codigoVendedor = generarCodigoVendedor();
-                    const nombreGoogle = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
-                    const apellidoGoogle = user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '';
-                    await docRef.set({
-                        uid: user.uid,
-                        nombre: nombreGoogle,
-                        apellido: apellidoGoogle,
-                        email: user.email,
-                        codigoVendedor: codigoVendedor,
-                        creado: new Date()
-                    });
-                    enviarAceptacionLegales(user.uid, nombreGoogle, apellidoGoogle, codigoVendedor);
-                    marcarUsuarioRegistrado(user.uid);
+                    // 🔧 FIX: antes, si venía del botón "Iniciar sesión" y la
+                    // cuenta no existía, se cerraba la sesión de Google que el
+                    // usuario RECIÉN acababa de abrir con éxito, y se lo
+                    // mandaba a un modal de "no encontramos tu cuenta" — desde
+                    // ahí, si tocaba "Registrarme", tenía que repetir TODO el
+                    // popup de Google de nuevo desde cero. Ahora se sigue con
+                    // la MISMA sesión ya autenticada: solo se pide el
+                    // consentimiento (términos y política) y se completa el
+                    // registro directo, sin repetir el login de Google.
+                    window._googleUserPendienteRegistro = user;
                     closeAuthModal();
-                    abrirModalDatosAdicionales();
+                    openConsentModal('google-ya-autenticado');
                     return;
                 } else {
                     marcarUsuarioRegistrado(user.uid);
@@ -7046,6 +7042,29 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             }
         }
 
+        // 🔧 NUEVO: completa el registro con Google usando una sesión que YA
+        // está autenticada (sin volver a abrir el popup) — se usa tanto para
+        // el botón "Registrarse con Google" común como para el caso de
+        // "intenté iniciar sesión pero no tenía cuenta todavía".
+        async function finalizeGoogleRegister(user) {
+            const docRef = firebase.firestore().collection('usuarios').doc(user.uid);
+            const codigoVendedor = generarCodigoVendedor();
+            const nombreGoogle = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
+            const apellidoGoogle = user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '';
+            await docRef.set({
+                uid: user.uid,
+                nombre: nombreGoogle,
+                apellido: apellidoGoogle,
+                email: user.email,
+                codigoVendedor: codigoVendedor,
+                creado: new Date()
+            });
+            enviarAceptacionLegales(user.uid, nombreGoogle, apellidoGoogle, codigoVendedor);
+            marcarUsuarioRegistrado(user.uid);
+            closeAuthModal();
+            abrirModalDatosAdicionales();
+        }
+
         // Manejar resultado de redirect de Google (para cuando se usa signInWithRedirect)
         // Envuelto en try/catch + chequeo de existencia: si el SDK de Firebase todavía
         // no cargó (bloqueador de anuncios, extensión, timing de red), esto ya no debe
@@ -7064,29 +7083,13 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                         // atrás de escena, pero la página recargada mostraba de
                         // nuevo el modal de registro inicial, dando la
                         // sensación de que el registro había fallado. Ahora
-                        // completa exactamente la misma secuencia que ya usa
-                        // el flujo de popup (loginWithGoogle).
+                        // completa exactamente la misma secuencia que el resto
+                        // de los flujos de Google (finalizeGoogleRegister).
                         window.currentUser = { ...(window.currentUser || {}), uid: user.uid };
                         const docRef = firebase.firestore().collection('usuarios').doc(user.uid);
                         docRef.get().then(function(doc) {
                             if (!doc.exists) {
-                                const codigoVendedor = generarCodigoVendedor();
-                                const nombreGoogle = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
-                                const apellidoGoogle = user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '';
-                                docRef.set({
-                                    uid: user.uid,
-                                    nombre: nombreGoogle,
-                                    apellido: apellidoGoogle,
-                                    email: user.email,
-                                    codigoVendedor: codigoVendedor,
-                                    creado: new Date()
-                                }).then(function() {
-                                    enviarAceptacionLegales(user.uid, nombreGoogle, apellidoGoogle, codigoVendedor);
-                                    marcarUsuarioRegistrado(user.uid);
-                                    closeAuthModal();
-                                    closeConsentModal();
-                                    abrirModalDatosAdicionales();
-                                }).catch(function(){});
+                                finalizeGoogleRegister(user).catch(function(){});
                             } else {
                                 marcarUsuarioRegistrado(user.uid);
                                 closeAuthModal();
