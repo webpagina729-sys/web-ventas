@@ -5507,13 +5507,22 @@ function onTurnstilePedidoOk(token) {
     if (window._turnstilePedidoResolve) window._turnstilePedidoResolve(token);
 }
 function obtenerTokenTurnstilePedido() {
-    if (typeof turnstile === 'undefined') return Promise.resolve(null);
     return new Promise((resolve) => {
-        window._turnstilePedidoResolve = resolve;
-        try {
-            turnstile.execute('#turnstile-pedido-stock');
-        } catch (_e) { resolve(null); }
-        setTimeout(() => resolve(null), 6000);
+        let intentos = 0;
+        const esperarLibreria = setInterval(() => {
+            intentos++;
+            if (typeof turnstile !== 'undefined' && document.getElementById('turnstile-pedido-stock')) {
+                clearInterval(esperarLibreria);
+                window._turnstilePedidoResolve = resolve;
+                try {
+                    turnstile.execute('#turnstile-pedido-stock');
+                } catch (_e) { resolve(null); }
+                setTimeout(() => resolve(null), 6000);
+            } else if (intentos > 40) {
+                clearInterval(esperarLibreria);
+                resolve(null);
+            }
+        }, 100);
     });
 }
 
@@ -8477,13 +8486,22 @@ function onTurnstileLoginOk(token) {
     if (window._turnstileLoginResolve) window._turnstileLoginResolve(token);
 }
 function obtenerTokenTurnstileLogin() {
-    if (typeof turnstile === 'undefined') return Promise.resolve(null);
     return new Promise((resolve) => {
-        window._turnstileLoginResolve = resolve;
-        try {
-            turnstile.execute('#turnstile-login');
-        } catch (_e) { resolve(null); }
-        setTimeout(() => resolve(null), 6000);
+        let intentos = 0;
+        const esperarLibreria = setInterval(() => {
+            intentos++;
+            if (typeof turnstile !== 'undefined' && document.getElementById('turnstile-login')) {
+                clearInterval(esperarLibreria);
+                window._turnstileLoginResolve = resolve;
+                try {
+                    turnstile.execute('#turnstile-login');
+                } catch (_e) { resolve(null); }
+                setTimeout(() => resolve(null), 6000);
+            } else if (intentos > 40) {
+                clearInterval(esperarLibreria);
+                resolve(null);
+            }
+        }, 100);
     });
 }
 
