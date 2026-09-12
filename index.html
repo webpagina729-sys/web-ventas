@@ -3421,7 +3421,7 @@
                     <input type="text" id="checkout-codigo-revendedor" placeholder="Ej: RW-XXXXX" required>
                 </div>
                 <!-- 🔒 NUEVO: Cloudflare Turnstile — protección anti-bot. -->
-                <div class="cf-turnstile" id="turnstile-pedido-stock" data-sitekey="0x4AAAAAAEuP7UTtW1odDnHM" data-size="invisible" data-callback="onTurnstilePedidoOk"></div>
+                <div class="cf-turnstile" id="turnstile-pedido-stock" data-sitekey="0x4AAAAAAEuP7UTtW1odDnHM" data-size="normal" data-execution="execute" data-callback="onTurnstilePedidoOk"></div>
             </form>
             <div class="checkout-footer">
                 <button class="btn-checkout-cancel" onclick="closeCheckout()">Cancelar</button>
@@ -8264,7 +8264,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                 placeholder="Código de revendedor" 
                 onkeyup="if(event.key === 'Enter') validarCodigoRevendedor()"
             >
-            <div class="cf-turnstile" id="turnstile-login" data-sitekey="0x4AAAAAAEuP7UTtW1odDnHM" data-size="invisible" data-callback="onTurnstileLoginOk"></div>
+            <div class="cf-turnstile" id="turnstile-login" data-sitekey="0x4AAAAAAEuP7UTtW1odDnHM" data-size="normal" data-execution="execute" data-callback="onTurnstileLoginOk"></div>
             <button class="codigo-modal-button" onclick="validarCodigoRevendedor()">Ingresar</button>
             <button class="codigo-modal-close" onclick="cerrarModalCodigo()">Cancelar</button>
         </div>
