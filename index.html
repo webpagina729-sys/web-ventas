@@ -6659,7 +6659,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             preventBodyScroll(false);
 
             if (method === 'google') {
-                loginWithGoogle();
+                loginWithGoogle('registro');
             } else if (method === 'google-ya-autenticado') {
                 // 🔧 NUEVO: la sesión de Google ya está abierta (viene del
                 // intento de "Iniciar sesión" sin cuenta todavía) — no hace
@@ -7020,6 +7020,16 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                     // la MISMA sesión ya autenticada: solo se pide el
                     // consentimiento (términos y política) y se completa el
                     // registro directo, sin repetir el login de Google.
+                    //
+                    // 🔧 FIX (duplicado de consentimiento): si venimos del
+                    // botón "Registrarme con Google" (intent === 'registro'),
+                    // el usuario YA aceptó términos y política en el modal de
+                    // consentimiento antes de llegar acá — no hay que
+                    // volver a pedirlo, se completa el registro directo.
+                    if (intent === 'registro') {
+                        finalizeGoogleRegister(user);
+                        return;
+                    }
                     window._googleUserPendienteRegistro = user;
                     closeAuthModal();
                     openConsentModal('google-ya-autenticado');
