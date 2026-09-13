@@ -5122,14 +5122,17 @@ window.maquillaje = [
             let codigoVendedor = window.currentUser?.codigoVendedor || localStorage.getItem('codigoVendedorLocal') || '';
 
             try {
-                if (uid && firebase.firestore) {
-                    const doc = await firebase.firestore().collection('usuarios').doc(uid).get();
-                    if (doc.exists) {
-                        const d = doc.data();
-                        nombre = d.nombre || nombre;
-                        apellido = d.apellido || apellido;
-                        telefono = d.telefono || telefono;
-                        codigoVendedor = d.codigoVendedor || codigoVendedor;
+                if (uid) {
+                    const res = await fetch(`https://datosderevendedor.tuweb.workers.dev/api/perfil?uid=${encodeURIComponent(uid)}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        const d = (data && data.ok) ? data.perfil : null;
+                        if (d) {
+                            nombre = d.nombre || nombre;
+                            apellido = d.apellido || apellido;
+                            telefono = d.telefono || telefono;
+                            codigoVendedor = d.codigoVendedor || codigoVendedor;
+                        }
                     }
                 }
             } catch (e) {}
@@ -5369,68 +5372,70 @@ window.maquillaje = [
         // CARRITO PERSISTENTE EN FIREBASE
         // ═══════════════════════════════════════════════════════════════════════════
 
-        // Guardar carrito en Firebase
+        // Guardar carrito (vía Worker — antes iba directo a Firestore desde el navegador)
         async function saveCartToFirebase(cartItems) {
             const user = firebase.auth().currentUser;
             if (!user) return false;
 
             try {
-                const cartData = {
-                    uid: user.uid,
-                    codigoVendedor: window.currentUser?.codigoVendedor || '',
-                    items: cartItems.map(item => ({
-                        id: item.id,
-                        nombre: item.nombre,
-                        precio: item.precio,
-                        precioOriginal: item.precioOriginal,
-                        cantidad: item.cantidad,
-                        categoria: item.categoria,
-                        catalogo: item.catalogo || (item.talle ? 'calzados' : 'perfumes'),
-                        talle: item.talle || null,
-                        imagen: item.imagen
-                    })),
-                    actualizado: new Date()
-                };
+                const items = cartItems.map(item => ({
+                    id: item.id,
+                    nombre: item.nombre,
+                    precio: item.precio,
+                    precioOriginal: item.precioOriginal,
+                    cantidad: item.cantidad,
+                    categoria: item.categoria,
+                    catalogo: item.catalogo || (item.talle ? 'calzados' : 'perfumes'),
+                    talle: item.talle || null,
+                    imagen: item.imagen
+                }));
 
-                await firebase.firestore().collection('usuarios').doc(user.uid).collection('carrito').doc('actual').set(cartData);
-                return true;
+                const res = await fetch('https://datosderevendedor.tuweb.workers.dev/api/carrito', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        uid: user.uid,
+                        codigoVendedor: window.currentUser?.codigoVendedor || '',
+                        items
+                    })
+                });
+                return res.ok;
             } catch (error) {
-                console.error('Error guardando carrito en Firebase:', error);
+                console.error('Error guardando carrito:', error);
                 return false;
             }
         }
 
-        // Cargar carrito desde Firebase
+        // Cargar carrito (vía Worker)
         async function loadCartFromFirebase() {
             const user = firebase.auth().currentUser;
             if (!user) return [];
 
             try {
-                const doc = await firebase.firestore().collection('usuarios').doc(user.uid).collection('carrito').doc('actual').get();
-                if (doc.exists) {
-                    const data = doc.data();
-                    return data.items || [];
-                }
-                return [];
+                const res = await fetch(`https://datosderevendedor.tuweb.workers.dev/api/carrito?uid=${encodeURIComponent(user.uid)}`);
+                if (!res.ok) return [];
+                const data = await res.json();
+                return (data && Array.isArray(data.items)) ? data.items : [];
             } catch (error) {
-                // No loguear errores de conexión offline (esperados)
-                if (error.code !== 'unavailable' && !error.message.includes('offline')) {
-                    console.warn('Error cargando carrito:', error.message);
-                }
+                console.warn('Error cargando carrito:', error.message);
                 return [];
             }
         }
 
-        // Limpiar carrito de Firebase
+        // Limpiar carrito (vía Worker)
         async function clearCartFromFirebase() {
             const user = firebase.auth().currentUser;
             if (!user) return false;
 
             try {
-                await firebase.firestore().collection('usuarios').doc(user.uid).collection('carrito').doc('actual').delete();
-                return true;
+                const res = await fetch('https://datosderevendedor.tuweb.workers.dev/api/carrito/borrar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ uid: user.uid })
+                });
+                return res.ok;
             } catch (error) {
-                console.error('Error limpiando carrito de Firebase:', error);
+                console.error('Error limpiando carrito:', error);
                 return false;
             }
         }
@@ -5559,16 +5564,20 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                     intentos_sincronizacion: 0  // 🔴 Contador de intentos de sincronización
                 };
 
-                // Guardar con ID auto-generado
-                const docRef = await Promise.race([
-                    firebase.firestore()
-                        .collection('usuarios').doc(user.uid)
-                        .collection('pedidos')
-                        .add(pedidoData),
-                    new Promise((_, reject) => 
-                        setTimeout(() => reject(new Error('Firestore timeout - tardó más de 10 segundos')), 10000)
+                // Guardar con ID auto-generado (vía Worker — antes iba
+                // directo a Firestore desde el navegador)
+                const _resCrearPedido = await Promise.race([
+                    fetch('https://datosderevendedor.tuweb.workers.dev/api/pedido-personal', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ uid: user.uid, pedidoData })
+                    }).then(r => r.json()),
+                    new Promise((_, reject) =>
+                        setTimeout(() => reject(new Error('Timeout - tardó más de 10 segundos')), 10000)
                     )
                 ]);
+                if (!_resCrearPedido || !_resCrearPedido.ok) throw new Error('No se pudo guardar el pedido');
+                const docRef = { id: _resCrearPedido.id };
 
                 console.log('💾 [FIRESTORE] Pedido guardado exitosamente:', docRef.id);
                 try {
@@ -5608,35 +5617,36 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             }
         }
 
-        // Actualizar estadísticas del usuario
+        // Actualizar estadísticas del usuario (vía Worker)
         async function updateUserStatistics(uid) {
             try {
                 // Obtener todos los pedidos del usuario
-                const snapshot = await firebase.firestore()
-                    .collection('usuarios').doc(uid)
-                    .collection('pedidos')
-                    .get();
+                const res = await fetch(`https://datosderevendedor.tuweb.workers.dev/api/pedidos-personales?uid=${encodeURIComponent(uid)}`);
+                const data = await res.json();
+                const pedidos = (data && data.ok && Array.isArray(data.pedidos)) ? data.pedidos : [];
 
                 let totalInversion = 0;
                 let totalGanancia = 0;
 
-                snapshot.forEach(doc => {
-                    const pedido = doc.data();
+                pedidos.forEach(pedido => {
                     totalInversion += pedido.totalInversion || 0;
                     totalGanancia += pedido.totalGanancia || 0;
                 });
 
                 // Guardar estadísticas
-                await firebase.firestore()
-                    .collection('usuarios').doc(uid)
-                    .update({
+                await fetch('https://datosderevendedor.tuweb.workers.dev/api/estadisticas-usuario', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        uid,
                         estadisticas: {
-                            totalInversion: totalInversion,
-                            totalGanancia: totalGanancia,
+                            totalInversion,
+                            totalGanancia,
                             totalFinal: totalInversion + totalGanancia,
-                            actualizadoEn: new Date()
+                            actualizadoEn: Date.now()
                         }
-                    });
+                    })
+                });
             } catch (error) {
                 console.error('Error actualizando estadísticas:', error);
             }
@@ -5654,18 +5664,18 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             try {
                 console.log('🔄 [SINCRONIZACIÓN] Sincronizando pedido:', pedidoId);
 
-                // 1. Obtener datos del pedido local
-                const pedidoDoc = await firebase.firestore()
-                    .collection('usuarios').doc(user.uid)
-                    .collection('pedidos').doc(pedidoId)
-                    .get();
-
-                if (!pedidoDoc.exists) {
+                // 1. Obtener datos del pedido local (vía Worker)
+                const resPedido = await fetch(`https://datosderevendedor.tuweb.workers.dev/api/pedido-personal?uid=${encodeURIComponent(user.uid)}&pedidoId=${encodeURIComponent(pedidoId)}`);
+                if (!resPedido.ok) {
                     console.error('Pedido no encontrado:', pedidoId);
                     return { success: false, error: 'Pedido no encontrado' };
                 }
-
-                const pedidoData = pedidoDoc.data();
+                const dataPedido = await resPedido.json();
+                const pedidoData = (dataPedido && dataPedido.ok) ? dataPedido.pedido : null;
+                if (!pedidoData) {
+                    console.error('Pedido no encontrado:', pedidoId);
+                    return { success: false, error: 'Pedido no encontrado' };
+                }
 
                 // 2. Si el estado ya es 'pagado', no hay nada que hacer
                 if (pedidoData.estado === 'pagado') {
@@ -5685,15 +5695,20 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                     if (mpStatus.status === 'approved') {
                         console.log('✅ [SINCRONIZACIÓN] Pago confirmado en Mercado Pago');
                         
-                        // Actualizar estado a pagado
-                        await firebase.firestore()
-                            .collection('usuarios').doc(user.uid)
-                            .collection('pedidos').doc(pedidoId)
-                            .update({
-                                estado: 'pagado',
-                                fechaPago: new Date(),
-                                mp_sincronizado: true
-                            });
+                        // Actualizar estado a pagado (vía Worker)
+                        await fetch('https://datosderevendedor.tuweb.workers.dev/api/pedido-personal/actualizar', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                uid: user.uid,
+                                pedidoId,
+                                campos: {
+                                    estado: 'pagado',
+                                    fechaPago: Date.now(),
+                                    mp_sincronizado: true
+                                }
+                            })
+                        });
 
                         return { success: true, message: 'Pago sincronizado correctamente' };
                     } else if (mpStatus.status === 'pending') {
@@ -6149,9 +6164,11 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             if (firebase.auth().currentUser) {
                 const uid = firebase.auth().currentUser.uid;
                 try {
-                    const docSnap = await firebase.firestore().collection('usuarios').doc(uid).get();
-                    if (docSnap.exists) {
-                        const userData = docSnap.data();
+                    const res = await fetch(`https://datosderevendedor.tuweb.workers.dev/api/perfil?uid=${encodeURIComponent(uid)}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        const userData = (data && data.ok) ? data.perfil : null;
+                        if (userData) {
                         // Rellenar campos del formulario
                         if (userData.nombre) document.getElementById('checkout-nombre').value = userData.nombre;
                         if (userData.email) document.getElementById('checkout-email').value = userData.email;
@@ -6164,6 +6181,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                         if (userData.codigoVendedor) {
                             document.getElementById('checkout-codigo-revendedor').value = userData.codigoVendedor;
                         }
+                        }
                     }
                 } catch (error) {
                     console.error('Error cargando datos del usuario:', error);
@@ -6171,25 +6189,10 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             }
         }
 
-        // Validar que el código de revendedor existe en Firebase
-        async function validarCodigoRevendedorEnFirestore(codigo) {
-            try {
-                // Normalizar el código como se hace en la validación
-                const codigoNormalizado = codigo.trim().replace(/\s+/g, '').toUpperCase();
-                
-                // Buscar en la colección usuarios si existe un documento con este codigoVendedor
-                const snapshot = await firebase.firestore()
-                    .collection('usuarios')
-                    .where('codigoVendedor', '==', codigoNormalizado)
-                    .get();
-                
-                // Si encuentra al menos un documento, el código es válido
-                return !snapshot.empty;
-            } catch (error) {
-                console.error('Error validando código de revendedor:', error);
-                return false;
-            }
-        }
+        // 🔧 FIX: se eliminó validarCodigoRevendedorEnFirestore() — hacía una
+        // consulta directa a Firestore desde el navegador (nunca se llamaba
+        // desde ningún lado, era código muerto e inseguro). Toda validación
+        // real de código pasa por el Worker datosderevendedor.
 
         // Función centralizada para obtener el código de revendedor del usuario logueado desde Firestore
         // Función robusta para obtener código de revendedor con fallbacks
@@ -6215,17 +6218,16 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                     return null;
                 }
 
-                const doc = await firebase.firestore()
-                    .collection('usuarios')
-                    .doc(usuarioActual.uid)
-                    .get({ source: 'default' });  // intenta server primero
+                // 🔧 Antes esto leía directo de Firestore desde el navegador.
+                const res = await fetch(`https://datosderevendedor.tuweb.workers.dev/api/perfil?uid=${encodeURIComponent(usuarioActual.uid)}`);
+                const data = res.ok ? await res.json() : null;
 
-                if (doc.exists) {
-                    const codigo = doc.data().codigoVendedor;
+                if (data && data.ok && data.perfil) {
+                    const codigo = data.perfil.codigoVendedor;
                     if (codigo) {
                         localStorage.setItem('codigoVendedorLocal', codigo);
                         if (window.currentUser) window.currentUser.codigoVendedor = codigo;
-                        console.log('✅ Código obtenido de Firestore:', codigo);
+                        console.log('✅ Código obtenido del Worker:', codigo);
                         return codigo;
                     }
                 }
@@ -6603,14 +6605,19 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             // usuarios/{uid} — junto al resto de los datos del revendedor —
             // para que la prueba de aceptación quede visible ahí mismo, sin
             // depender de que el reenvío entre workers no falle en silencio.
-            if (uid && firebase.firestore) {
+            if (uid) {
                 try {
-                    await firebase.firestore().collection('usuarios').doc(uid).set({
-                        terminosCondicionesAceptado: true,
-                        politicaPrivacidadAceptado: true,
-                        legalAceptacionId: aceptacionId,
-                        fechaAceptacionLegales: ahora.toISOString()
-                    }, { merge: true });
+                    await fetch('https://datosderevendedor.tuweb.workers.dev/api/guardar-datos-registro', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            uid,
+                            terminosCondicionesAceptado: true,
+                            politicaPrivacidadAceptado: true,
+                            legalAceptacionId: aceptacionId,
+                            fechaAceptacionLegales: ahora.toISOString()
+                        })
+                    });
                 } catch (e) {
                     console.error('[legales] No se pudo guardar la aceptación directamente en usuarios/{uid}:', e);
                 }
@@ -6874,10 +6881,11 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             if (!user) return;
 
             try {
-                await firebase.firestore().collection('usuarios').doc(user.uid).set({
-                    fechaNacimiento: fechaNacimiento,
-                    passwordSeguridad: password
-                }, { merge: true });
+                await fetch('https://datosderevendedor.tuweb.workers.dev/api/guardar-datos-registro', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ uid: user.uid, fechaNacimiento, passwordSeguridad: password })
+                });
             } catch (e) {}
 
             const modal = document.getElementById('datos-adicionales-modal');
@@ -6914,9 +6922,11 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             if (!user) return;
 
             try {
-                await firebase.firestore().collection('usuarios').doc(user.uid).set({
-                    passwordSeguridad: password
-                }, { merge: true });
+                await fetch('https://datosderevendedor.tuweb.workers.dev/api/guardar-datos-registro', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ uid: user.uid, passwordSeguridad: password })
+                });
             } catch (e) {
                 console.error('No se pudo guardar la contraseña de seguridad:', e);
             }
@@ -7008,9 +7018,9 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                 provider.addScope('profile');
                 const result = await firebase.auth().signInWithPopup(provider);
                 const user = result.user;
-                const docRef = firebase.firestore().collection('usuarios').doc(user.uid);
-                const doc = await docRef.get();
-                if (!doc.exists) {
+                const resPerfil = await fetch(`https://datosderevendedor.tuweb.workers.dev/api/perfil?uid=${encodeURIComponent(user.uid)}`);
+                const existeCuenta = resPerfil.ok;
+                if (!existeCuenta) {
                     // 🔧 FIX: antes, si venía del botón "Iniciar sesión" y la
                     // cuenta no existía, se cerraba la sesión de Google que el
                     // usuario RECIÉN acababa de abrir con éxito, y se lo
@@ -7066,17 +7076,22 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
         // el botón "Registrarse con Google" común como para el caso de
         // "intenté iniciar sesión pero no tenía cuenta todavía".
         async function finalizeGoogleRegister(user) {
-            const docRef = firebase.firestore().collection('usuarios').doc(user.uid);
             const codigoVendedor = generarCodigoVendedor();
             const nombreGoogle = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
             const apellidoGoogle = user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '';
-            await docRef.set({
-                uid: user.uid,
-                nombre: nombreGoogle,
-                apellido: apellidoGoogle,
-                email: user.email,
-                codigoVendedor: codigoVendedor,
-                creado: new Date()
+            await fetch('https://datosderevendedor.tuweb.workers.dev/api/crear-cuenta', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    uid: user.uid,
+                    datos: {
+                        nombre: nombreGoogle,
+                        apellido: apellidoGoogle,
+                        email: user.email,
+                        codigoVendedor: codigoVendedor,
+                        creado: Date.now()
+                    }
+                })
             });
             enviarAceptacionLegales(user.uid, nombreGoogle, apellidoGoogle, codigoVendedor);
             marcarUsuarioRegistrado(user.uid);
@@ -7105,9 +7120,8 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                         // completa exactamente la misma secuencia que el resto
                         // de los flujos de Google (finalizeGoogleRegister).
                         window.currentUser = { ...(window.currentUser || {}), uid: user.uid };
-                        const docRef = firebase.firestore().collection('usuarios').doc(user.uid);
-                        docRef.get().then(function(doc) {
-                            if (!doc.exists) {
+                        fetch(`https://datosderevendedor.tuweb.workers.dev/api/perfil?uid=${encodeURIComponent(user.uid)}`).then(function(resPerfil) {
+                            if (!resPerfil.ok) {
                                 finalizeGoogleRegister(user).catch(function(){});
                             } else {
                                 marcarUsuarioRegistrado(user.uid);
@@ -7205,7 +7219,12 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                 // quedar mostrado en pantalla / guardado en localStorage sin
                 // haberse guardado nunca en la base — y ese código, al
                 // copiarlo, después daba "inválido" en el login.
-                await firebase.firestore().collection('usuarios').doc(user.uid).set(userData);
+                const resCrear = await fetch('https://datosderevendedor.tuweb.workers.dev/api/crear-cuenta', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ uid: user.uid, datos: userData })
+                });
+                if (!resCrear.ok) throw new Error('No se pudo guardar la cuenta');
 
                 localStorage.setItem('codigoVendedorLocal', codigoVendedor);
                 window.currentUser = { ...(window.currentUser || {}), ...userData };
@@ -7235,10 +7254,14 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                     try {
                         const user = firebase.auth().currentUser;
                         if (user) {
-                            await firebase.firestore().collection('usuarios').doc(user.uid).set({
-                                uid: user.uid, nombre, apellido, fechaNacimiento, email,
-                                codigoVendedor, creado: new Date()
-                            }, { merge: true });
+                            await fetch('https://datosderevendedor.tuweb.workers.dev/api/crear-cuenta', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    uid: user.uid,
+                                    datos: { nombre, apellido, fechaNacimiento, email, codigoVendedor, creado: Date.now() }
+                                })
+                            });
                             localStorage.setItem('codigoVendedorLocal', codigoVendedor);
                             enviarAceptacionLegales(user.uid, nombre, apellido, codigoVendedor);
                             window.currentCodigoVendedor = codigoVendedor;
@@ -7290,19 +7313,25 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                 // Guardar en Firestore si no existe (en background, sin bloquear)
                 // IMPORTANTE: NO regenerar el codigoVendedor si ya existe
                 if (userCredential.user) {
-                    firebase.firestore().collection('usuarios').doc(userCredential.user.uid).get()
-                        .then(doc => {
-                            if (!doc.exists) {
-                                // Usuario no en Firestore, crear documento SOLO SI NO EXISTE
+                    fetch(`https://datosderevendedor.tuweb.workers.dev/api/perfil?uid=${encodeURIComponent(userCredential.user.uid)}`)
+                        .then(resPerfil => {
+                            if (!resPerfil.ok) {
+                                // Usuario no en la base, crear documento SOLO SI NO EXISTE
                                 // El código se genera UNA SOLA VEZ
                                 const nuevoCodigoVendedor = generarCodigoVendedor();
-                                
-                                firebase.firestore().collection('usuarios').doc(userCredential.user.uid).set({
-                                    uid: userCredential.user.uid,
-                                    email: userCredential.user.email,
-                                    nombre: userCredential.user.email.split('@')[0],
-                                    codigoVendedor: nuevoCodigoVendedor,
-                                    creado: new Date()
+
+                                fetch('https://datosderevendedor.tuweb.workers.dev/api/crear-cuenta', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        uid: userCredential.user.uid,
+                                        datos: {
+                                            email: userCredential.user.email,
+                                            nombre: userCredential.user.email.split('@')[0],
+                                            codigoVendedor: nuevoCodigoVendedor,
+                                            creado: Date.now()
+                                        }
+                                    })
                                 }).catch(err => {});
                             }
                         })
@@ -7500,12 +7529,14 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             let codigoFinal = '';
 
             try {
-                const doc = await firebase.firestore().collection('usuarios').doc(user.uid).get();
+                // 🔧 Antes esto leía directo de Firestore desde el navegador.
+                const res = await fetch(`https://datosderevendedor.tuweb.workers.dev/api/perfil?uid=${encodeURIComponent(user.uid)}`);
+                const data = res.ok ? await res.json() : null;
 
-                if (doc.exists) {
-                    const userData = doc.data();
+                if (data && data.ok && data.perfil) {
+                    const userData = data.perfil;
 
-                    // Mantener window.currentUser sincronizado con Firestore
+                    // Mantener window.currentUser sincronizado con el Worker
                     window.currentUser = {
                         ...(window.currentUser || {}),
                         uid: user.uid,
@@ -7514,44 +7545,54 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                     };
 
                     if (userData.codigoVendedor && userData.codigoVendedor.trim() !== '') {
-                        // Caso normal: el usuario ya tiene código guardado en Firestore.
+                        // Caso normal: el usuario ya tiene código guardado.
                         codigoFinal = userData.codigoVendedor.trim();
                     } else {
                         // El documento existe pero NUNCA se guardó el código
-                        // (ej: falló silenciosamente el .set() del registro).
+                        // (ej: falló silenciosamente el guardado del registro).
                         // Se genera UNA VEZ, determinista por UID, y se
-                        // ESCRIBE Y CONFIRMA en Firestore antes de mostrarlo,
-                        // para no volver a mostrar un código "fantasma".
+                        // ESCRIBE Y CONFIRMA a través del Worker antes de
+                        // mostrarlo, para no volver a mostrar un código "fantasma".
                         codigoFinal = generarCodigoVendedor();
-                        await firebase.firestore().collection('usuarios').doc(user.uid)
-                            .set({ codigoVendedor: codigoFinal }, { merge: true });
+                        await fetch('https://datosderevendedor.tuweb.workers.dev/api/perfil', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ uid: user.uid, campos: { codigoVendedor: codigoFinal } })
+                        });
                         window.currentUser.codigoVendedor = codigoFinal;
                     }
                 } else {
-                    // No existe ni siquiera el documento del usuario en Firestore
-                    // (caso raro/legacy). Se crea con un código determinista
-                    // por UID y recién ahí se muestra.
+                    // No existe ni siquiera el registro del usuario (caso raro/
+                    // legacy). Se crea con un código determinista por UID y
+                    // recién ahí se muestra.
                     codigoFinal = generarCodigoVendedor();
-                    await firebase.firestore().collection('usuarios').doc(user.uid).set({
-                        uid: user.uid,
-                        email: user.email,
-                        nombre: window.currentUser?.nombre || user.email.split('@')[0],
-                        codigoVendedor: codigoFinal,
-                        creado: new Date()
-                    }, { merge: true });
+                    await fetch('https://datosderevendedor.tuweb.workers.dev/api/perfil', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            uid: user.uid,
+                            campos: {
+                                uid: user.uid,
+                                email: user.email,
+                                nombre: window.currentUser?.nombre || user.email.split('@')[0],
+                                codigoVendedor: codigoFinal,
+                                creado: new Date().toISOString(),
+                            }
+                        })
+                    });
                     window.currentUser = { ...(window.currentUser || {}), uid: user.uid, email: user.email, codigoVendedor: codigoFinal };
                 }
 
                 // La caché local se actualiza SOLO después de confirmar el valor
-                // real de Firestore; nunca se usa para decidir qué mostrar.
+                // real del Worker; nunca se usa para decidir qué mostrar.
                 localStorage.setItem('codigoVendedorLocal', codigoFinal);
                 document.getElementById('profileCode').textContent = codigoFinal;
 
             } catch (error) {
-                // Sin conexión a Firestore: como último recurso mostramos el
-                // último valor confirmado que quedó en caché (si existe),
-                // dejando claro que puede no ser el más reciente.
-                console.error('No se pudo leer el código de revendedor desde Firestore:', error);
+                // Sin conexión: como último recurso mostramos el último valor
+                // confirmado que quedó en caché (si existe), dejando claro que
+                // puede no ser el más reciente.
+                console.error('No se pudo leer el código de revendedor:', error);
                 const codigoCache = localStorage.getItem('codigoVendedorLocal');
                 if (codigoCache && codigoCache.trim() !== '') {
                     document.getElementById('profileCode').textContent = codigoCache + ' (sin conexión)';
@@ -7616,10 +7657,12 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             if (!user) return;
 
             try {
-                // Obtener documento del usuario
-                const userDoc = await firebase.firestore().collection('usuarios').doc(user.uid).get();
-                if (userDoc.exists && userDoc.data().estadisticas) {
-                    const stats = userDoc.data().estadisticas;
+                // Obtener documento del usuario (vía Worker)
+                const res = await fetch(`https://datosderevendedor.tuweb.workers.dev/api/perfil?uid=${encodeURIComponent(user.uid)}`);
+                const data = res.ok ? await res.json() : null;
+                const perfil = (data && data.ok) ? data.perfil : null;
+                if (perfil && perfil.estadisticas) {
+                    const stats = perfil.estadisticas;
                     document.getElementById('stat-total-investment').textContent = '$' + (stats.totalInversion || 0).toLocaleString();
                 } else {
                     // Si no hay estadísticas, mostrar 0
@@ -7653,12 +7696,16 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             // Guardar selección en localStorage
             localStorage.setItem('selectedProductCategory', category);
             
-            // Guardar en Firestore si usuario está autenticado
+            // Guardar categoría (vía Worker)
             const user = firebase.auth().currentUser;
             if (user) {
-                firebase.firestore().collection('usuarios').doc(user.uid).update({
-                    categoriaProductos: category,
-                    fechaSeleccion: new Date()
+                fetch('https://datosderevendedor.tuweb.workers.dev/api/perfil', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        uid: user.uid,
+                        campos: { categoriaProductos: category, fechaSeleccion: Date.now() }
+                    })
                 }).catch(err => {
                     // Error guardando categoría
                 });
@@ -7818,12 +7865,15 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                 localStorage.setItem('codigoVendedorLocal', window.currentUser.codigoVendedor);
             }
             
-            // ✅ CRÍTICO: Si se generó código nuevo, actualizar Firestore en background
+            // ✅ CRÍTICO: Si se generó código nuevo, actualizar en el Worker en background
             if (!safeUserData.codigoVendedor || safeUserData.codigoVendedor.trim() === '') {
                 if (codigoFinal && codigoFinal.trim() !== '') {
-                    // Actualizar en Firestore sin bloquear
-                    firebase.firestore().collection('usuarios').doc(authUser.uid).update({
-                        codigoVendedor: codigoFinal
+                    // 🔧 Antes esto escribía directo a Firestore desde el
+                    // navegador. Ahora pasa por el Worker.
+                    fetch('https://datosderevendedor.tuweb.workers.dev/api/perfil', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ uid: authUser.uid, campos: { codigoVendedor: codigoFinal } })
                     }).catch(err => {
                         // Silencioso en background
                     });
@@ -7846,19 +7896,16 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             
             // ⚠️ VERIFICACIÓN CRÍTICA: Si codigoVendedor está vacío, intentar cargar de nuevo
             if (!window.currentUser?.codigoVendedor || window.currentUser.codigoVendedor === '') {
-                // Si userData era null, intentar cargar de Firestore AHORA
+                // 🔧 Antes esto leía directo de Firestore desde el navegador.
                 if (!userData) {
-                    firebase.firestore().collection('usuarios').doc(authUser.uid).get()
-                        .then(doc => {
-                            if (doc.exists) {
-                                const fullData = doc.data();
-                                
-                                if (fullData.codigoVendedor) {
-                                    window.currentUser = {
-                                        ...window.currentUser,
-                                        ...fullData
-                                    };
-                                }
+                    fetch(`https://datosderevendedor.tuweb.workers.dev/api/perfil?uid=${encodeURIComponent(authUser.uid)}`)
+                        .then(r => r.ok ? r.json() : null)
+                        .then(data => {
+                            if (data && data.ok && data.perfil && data.perfil.codigoVendedor) {
+                                window.currentUser = {
+                                    ...window.currentUser,
+                                    ...data.perfil
+                                };
                             }
                         })
                         .catch(err => {});
@@ -8240,15 +8287,15 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             console.error('Firebase no disponible al iniciar (auth listener):', e);
         }
 
-        // SISTEMA DE REINTENTOS PARA FIRESTORE
+        // SISTEMA DE REINTENTOS — vía Worker (antes iba directo a Firestore desde el navegador)
         async function loadUserDataFromFirestoreWithRetry(uid, maxRetries = 3, delayMs = 500) {
             for (let attempt = 1; attempt <= maxRetries; attempt++) {
                 try {
-                    const userDoc = await firebase.firestore().collection('usuarios').doc(uid).get();
-                    if (userDoc.exists) {
-                        return userDoc.data();
-                    }
-                    return null;
+                    const res = await fetch(`https://datosderevendedor.tuweb.workers.dev/api/perfil?uid=${encodeURIComponent(uid)}`);
+                    if (res.status === 404) return null;
+                    if (!res.ok) throw new Error('Error al obtener perfil');
+                    const data = await res.json();
+                    return (data && data.ok) ? data.perfil : null;
                 } catch (error) {
                     if (attempt < maxRetries) {
                         await new Promise(resolve => setTimeout(resolve, delayMs * attempt));
@@ -8449,9 +8496,14 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                 window.currentUser.codigoVendedor = nuevoCodigoVendedor;
                 localStorage.setItem('codigoVendedorLocal', nuevoCodigoVendedor);
                 
-                // Actualizar en Firestore en background
-                firebase.firestore().collection('usuarios').doc(firebase.auth().currentUser.uid).update({
-                    codigoVendedor: nuevoCodigoVendedor
+                // Actualizar en el Worker en background
+                fetch('https://datosderevendedor.tuweb.workers.dev/api/perfil', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        uid: firebase.auth().currentUser.uid,
+                        campos: { codigoVendedor: nuevoCodigoVendedor }
+                    })
                 }).catch(err => {});
             }
             
