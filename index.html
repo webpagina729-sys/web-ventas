@@ -3545,7 +3545,7 @@
             <p style="font-size: 13px; line-height: 1.5; color: var(--text-light); margin: 4px 0 22px;">
                 Esa cuenta de Google todavía no está registrada en Revende Ways. Registrate para empezar a vender.
             </p>
-            <button type="button" class="confirmation-button confirmation-button-primary" style="width: 100%;" onclick="cerrarModalUsuarioNoExiste(); abrirRegistro();">Registrarme</button>
+            <button type="button" class="confirmation-button confirmation-button-primary" style="width: 100%;" onclick="cerrarModalUsuarioNoExiste(); openConsentModal('google-ya-autenticado');">Registrarme</button>
             <button type="button" class="confirmation-button" style="width: 100%; margin-top: 10px; background: #f5f5f5; color: var(--text);" onclick="cerrarModalUsuarioNoExiste()">Cancelar</button>
         </div>
     </div>
@@ -3594,6 +3594,7 @@
                     <svg class="eye-hide" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
                 </button>
             </div>
+            <p id="datos-password-seguridad-error" style="display:none; color:#dc2626; font-size:11px; margin:-12px 0 12px; text-align:left;">Esta clave ya existe</p>
             <button type="button" class="confirmation-button confirmation-button-primary" style="width: 100%;" onclick="confirmarDatosAdicionales()">Aceptar</button>
         </div>
     </div>
@@ -3615,6 +3616,7 @@
                     <svg class="eye-hide" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
                 </button>
             </div>
+            <p id="password-seguridad-manual-error" style="display:none; color:#dc2626; font-size:11px; margin:-12px 0 12px; text-align:left;">Esta clave ya existe</p>
             <button type="button" class="confirmation-button confirmation-button-primary" style="width: 100%;" onclick="confirmarPasswordSeguridadManual()">Aceptar</button>
         </div>
     </div>
@@ -6872,6 +6874,8 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             const mes = document.getElementById('datos-fecha-mes')?.value;
             const anio = document.getElementById('datos-fecha-anio')?.value;
             const password = document.getElementById('datos-password-seguridad')?.value || '';
+            const errorEl = document.getElementById('datos-password-seguridad-error');
+            if (errorEl) errorEl.style.display = 'none';
 
             if (!dia || !mes || !anio) { alert('Completá tu fecha de nacimiento.'); return; }
             if (password.length < 6) { alert('La contraseña de seguridad debe tener al menos 6 caracteres.'); return; }
@@ -6879,6 +6883,20 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             const fechaNacimiento = `${anio}-${mes}-${dia}`;
             const user = firebase.auth().currentUser;
             if (!user) return;
+
+            // 🔒 NUEVO: no permitir una clave que ya use otro usuario.
+            try {
+                const resCheck = await fetch('https://datosderevendedor.tuweb.workers.dev/api/verificar-password-unica', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ passwordSeguridad: password, uidExcluir: user.uid })
+                });
+                const dataCheck = resCheck.ok ? await resCheck.json() : null;
+                if (dataCheck && dataCheck.ok && dataCheck.existe) {
+                    if (errorEl) errorEl.style.display = 'block';
+                    return;
+                }
+            } catch (e) {}
 
             try {
                 await fetch('https://datosderevendedor.tuweb.workers.dev/api/guardar-datos-registro', {
@@ -6916,10 +6934,26 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
 
         async function confirmarPasswordSeguridadManual() {
             const password = document.getElementById('password-seguridad-manual-input')?.value || '';
+            const errorEl = document.getElementById('password-seguridad-manual-error');
+            if (errorEl) errorEl.style.display = 'none';
             if (password.length < 6) { alert('La contraseña de seguridad debe tener al menos 6 caracteres.'); return; }
 
             const user = firebase.auth().currentUser;
             if (!user) return;
+
+            // 🔒 NUEVO: no permitir una clave que ya use otro usuario.
+            try {
+                const resCheck = await fetch('https://datosderevendedor.tuweb.workers.dev/api/verificar-password-unica', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ passwordSeguridad: password, uidExcluir: user.uid })
+                });
+                const dataCheck = resCheck.ok ? await resCheck.json() : null;
+                if (dataCheck && dataCheck.ok && dataCheck.existe) {
+                    if (errorEl) errorEl.style.display = 'block';
+                    return;
+                }
+            } catch (e) {}
 
             try {
                 await fetch('https://datosderevendedor.tuweb.workers.dev/api/guardar-datos-registro', {
@@ -7040,9 +7074,22 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                         finalizeGoogleRegister(user);
                         return;
                     }
+                    // 🔧 FIX: por pedido explícito, cuando alguien intenta
+                    // "Iniciar sesión" con una cuenta de Google que todavía
+                    // no está registrada, se le muestra el modal "No
+                    // encontramos tu cuenta" con el botón "Registrarme" —
+                    // en vez de saltar directo al consentimiento. Al tocar
+                    // "Registrarme" se sigue usando esta MISMA sesión de
+                    // Google ya autenticada (no hace falta repetir el popup).
                     window._googleUserPendienteRegistro = user;
                     closeAuthModal();
-                    openConsentModal('google-ya-autenticado');
+                    const modalNoExiste = document.getElementById('usuario-no-existe-modal');
+                    if (modalNoExiste) {
+                        modalNoExiste.classList.add('active');
+                        preventBodyScroll(true);
+                    } else {
+                        openConsentModal('google-ya-autenticado');
+                    }
                     return;
                 } else {
                     marcarUsuarioRegistrado(user.uid);
