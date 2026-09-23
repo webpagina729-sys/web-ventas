@@ -7045,7 +7045,23 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
         }
 
         // LOGIN CON GOOGLE
+        // 🔧 NUEVO: navegadores "in-app" (el mini-navegador que abren
+        // Instagram, TikTok, Facebook o WhatsApp cuando alguien toca un
+        // link SIN salir de esa app) bloquean el login con Google por
+        // política del propio Google — no hay forma de evitarlo desde acá,
+        // pero si al menos se lo avisamos claro, la persona sabe qué
+        // hacer (tocar los 3 puntitos → "Abrir en el navegador") en vez
+        // de encontrarse con un error críptico de Google sin explicación.
+        function esNavegadorInApp() {
+            const ua = navigator.userAgent || navigator.vendor || window.opera || '';
+            return /Instagram|FBAN|FBAV|Line\/|BytedanceWebview|TikTok|Twitter|LinkedInApp/i.test(ua);
+        }
+
         async function loginWithGoogle(intent) {
+            if (esNavegadorInApp()) {
+                alert('Para iniciar sesión con Google necesitás abrir esta página en tu navegador (Chrome, Safari, etc.), no dentro de esta app.\n\nTocá los ⋮ o ••• (los 3 puntitos) arriba a la derecha y elegí "Abrir en el navegador".');
+                return;
+            }
             try {
                 const provider = new firebase.auth.GoogleAuthProvider();
                 provider.addScope('email');
