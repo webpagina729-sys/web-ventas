@@ -8393,6 +8393,42 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             if (cartCountEl) cartCountEl.textContent = count;
         }
 
+        // ── Reporte en vivo del carrito a "Pedidos de Stock" (pedidos.html) ──
+        // Cada mutación del carrito (agregar/quitar/editar cantidad, vaciar) pasa
+        // por updateCartDisplay(), así que enganchamos el reporte ahí: un solo
+        // punto cubre todas las addToCart*/changeItemQty/removeItemFromCart sin
+        // tener que tocar cada una. Se manda un snapshot liviano del carrito EN
+        // CONSTRUCCIÓN (antes de pagar) a una colección Firestore nueva y
+        // separada ("carritosStock", NO "pedidosStock" que son pedidos ya
+        // pagados) para que pedidos.html lo muestre como Pendiente/Aprobado en
+        // vivo. Debounced con el mismo patrón de setTimeout/clearTimeout ya
+        // usado en el archivo (ver searchProductsTimeout etc.) para no spamear
+        // el backend en cada click/tecla seguidos.
+        function reportarCarritoStockEnVivo() {
+            clearTimeout(window.carritoStockReportTimeout);
+            window.carritoStockReportTimeout = setTimeout(() => {
+                const codigoVendedor = window.currentUser?.codigoVendedor;
+                if (!codigoVendedor) return; // sin código de vendedor no hay a quién asociar el snapshot
+
+                const cartItems = window.cart || [];
+                const payload = {
+                    codigoVendedor,
+                    categoria: cartItems.length > 0 ? getItemCatalog(cartItems[0]) : '',
+                    productos: cartItems.map(i => ({ nombre: i.nombre, cantidad: i.cantidad, precio: i.precio })),
+                    totalMayorista: cartItems.reduce((sum, i) => sum + (i.precio * i.cantidad), 0),
+                    cumpleMinimo: cartItems.length > 0 ? getCartMinimumStatus(cartItems).isValid : false
+                };
+
+                // Best-effort: si falla, no debe romper la experiencia de compra
+                // (el checkout/pago real no depende de este reporte).
+                fetch('https://workerpagos.tuweb.workers.dev/api/carrito-stock', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                }).catch(() => {});
+            }, 500);
+        }
+
         function updateCartDisplay() {
             const modalCartItems = document.getElementById('modal-cart-items');
             const payButton = document.getElementById('btn-pay');
@@ -8408,6 +8444,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                 const cartTotalElEmpty = document.getElementById('cart-total');
                 if (cartSubtotalElEmpty) cartSubtotalElEmpty.textContent = '$0';
                 if (cartTotalElEmpty) cartTotalElEmpty.textContent = '$0';
+                reportarCarritoStockEnVivo();
                 return;
             }
 
@@ -8463,6 +8500,8 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                 if (warningElement) warningElement.classList.add('hidden');
                 if (payButton) payButton.disabled = false;
             }
+
+            reportarCarritoStockEnVivo();
         }
 
         function changeItemQty(index, change) {
