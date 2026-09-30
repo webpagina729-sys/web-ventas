@@ -6565,6 +6565,8 @@ window.productsMultishop = [
 
             const talleSeleccionado = window.selectedTalleLenceria || null;
 
+            if (!_puedeAgregarAlCarrito('lenceria')) return;
+
             const existingItem = window.cart.find(item =>
                 getItemCatalog(item) === 'lenceria' && item.id === productId && (item.talleLenceria || null) === talleSeleccionado
             );
@@ -6738,6 +6740,8 @@ window.productsMultishop = [
 
             const product = (window.productsSuplementos || []).find(p => p.id === productId);
             if (!product) return;
+
+            if (!_puedeAgregarAlCarrito('suplementos')) return;
 
             const existingItem = window.cart.find(item =>
                 getItemCatalog(item) === 'suplementos' && item.id === productId
@@ -6915,6 +6919,8 @@ window.productsMultishop = [
             const product = (window.productsBazar || []).find(p => p.id === productId);
             if (!product) return;
 
+            if (!_puedeAgregarAlCarrito('bazar')) return;
+
             const existingItem = window.cart.find(item =>
                 getItemCatalog(item) === 'bazar' && item.id === productId
             );
@@ -7086,6 +7092,8 @@ window.productsMultishop = [
 
             const product = (window.productsLibreria || []).find(p => p.id === productId);
             if (!product) return;
+
+            if (!_puedeAgregarAlCarrito('libreria')) return;
 
             const existingItem = window.cart.find(item =>
                 getItemCatalog(item) === 'libreria' && item.id === productId
@@ -7266,6 +7274,8 @@ window.productsMultishop = [
 
             const product = (window.productsMultishop || []).find(p => p.id === productId);
             if (!product) return;
+
+            if (!_puedeAgregarAlCarrito('multishop')) return;
 
             const existingItem = window.cart.find(item =>
                 getItemCatalog(item) === 'multishop' && item.id === productId
@@ -7806,39 +7816,40 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                     if (checkout.telefono) localStorage.setItem('ultimoTelefonoCliente', checkout.telefono);
                 } catch(e) {}
 
-                // Sincronizar con la colección raíz a través del Worker
-                // 🔧 FIX: este fetch creaba en workerpagos.js (colección Firestore
-                // "pedidos", la que de verdad lee pedidos.html) un pedidoId PROPIO
-                // ('PED-'+timestamp), totalmente distinto del docRef.id de la copia
-                // personal en datosderevendedor que esta función devolvía. Como
-                // ese docRef.id (el equivocado) era el que se usaba después como
-                // external_reference/metadata.pedidoId de la preferencia de Mercado
-                // Pago, el webhook de pago (/api/mp/webhook) nunca podía encontrar
-                // el documento real en "pedidos" para marcarlo como APROBADO — el
-                // pedido de stock.html quedaba PENDIENTE para siempre y jamás se
-                // reflejaba como confirmado en pedidos.html. Ahora se captura la
-                // respuesta real del Worker y se devuelve SU pedidoId (el que
-                // corresponde a la colección "pedidos" que sí lee pedidos.html),
-                // para que sea ese el que viaje a Mercado Pago de acá en más.
+                // Sincronizar con la colección dedicada de stock a través del Worker
+                // 🔧 Tarea #56: antes este fetch iba a /api/pedido (colección
+                // Firestore compartida "pedidos"). Ahora los pedidos de stock/
+                // reposición tienen su propio endpoint y su propia colección
+                // ("pedidosStock"), con pedidoId prefijado 'PSTK-'. Igual que en
+                // el fix anterior, se captura la respuesta real del Worker y se
+                // devuelve SU pedidoId (el que corresponde a "pedidosStock"),
+                // para que sea ese el que viaje a Mercado Pago de acá en más —
+                // el webhook de pago ya sabe reconocer el prefijo 'PSTK-' y
+                // marcar el documento correcto como APROBADO/CONFIRMADO.
                 let pedidoIdBackend = null;
                 try {
-                    const turnstileToken = await obtenerTokenTurnstilePedido();
-                    const _resPedidoBackend = await fetch('https://workerpagos.tuweb.workers.dev/api/pedido', {
+                    const _resPedidoBackend = await fetch('https://workerpagos.tuweb.workers.dev/api/pedido-stock', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            uid: user.uid,
-                            cliente: pedidoData.cliente,
-                            productos: pedidoData.items.map(i => ({
+                            codigoVendedor: pedidoData.codigoVendedor,
+                            categoria: getItemCatalog(cartItems[0]),
+                            productos: cartItems.map(i => ({
                                 nombre: i.nombre,
                                 cantidad: i.cantidad,
-                                precio: i.precio
+                                precio: i.precio,
+                                variante: i.variante || i.talle || i.talleLenceria || ''
                             })),
-                            total: pedidoData.totalFinal,
-                            codigoVendedor: pedidoData.codigoVendedor,
-                            fecha: Date.now(),
-                            nicho: getPedidoNicho(cartItems),
-                            turnstileToken
+                            datosEnvio: {
+                                nombre: pedidoData.cliente.nombre,
+                                apellido: pedidoData.cliente.apellido,
+                                telefono: pedidoData.cliente.telefono,
+                                provincia: pedidoData.cliente.provincia,
+                                ciudad: pedidoData.cliente.ciudad,
+                                codigoPostal: pedidoData.cliente.cp,
+                                direccion: pedidoData.cliente.direccion
+                            },
+                            totalMayorista: pedidoData.totalInversion
                         })
                     }).then(r => r.json());
                     if (_resPedidoBackend && _resPedidoBackend.ok && _resPedidoBackend.pedidoId) {
@@ -7849,7 +7860,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                 }
 
                 // Guardamos también en la copia personal a qué pedidoId real
-                // (colección "pedidos") quedó vinculada, para poder cruzarlos
+                // (colección "pedidosStock") quedó vinculada, para poder cruzarlos
                 // más adelante si hiciera falta (ej. soporte/recuperación).
                 if (pedidoIdBackend) {
                     try {
@@ -8014,6 +8025,48 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             return item.catalogo || (item.talle ? 'calzados' : 'perfumes');
         }
 
+        // ✅ Restricción: el carrito de stock.html solo puede contener productos
+        // de UNA sola categoría a la vez (Tarea #53). Si el carrito ya tiene
+        // productos de otra categoría, se pide confirmación para vaciarlo antes
+        // de agregar el nuevo producto. Se usa desde todas las addToCart*.
+        const CATALOGO_NOMBRES = {
+            perfumes: 'Perfumes',
+            calzados: 'Calzados',
+            belleza: 'Belleza y Cuidado Personal',
+            lenceria: 'Lencería',
+            suplementos: 'Salud y Suplementos',
+            bazar: 'Bazar',
+            libreria: 'Librería',
+            multishop: 'Multishop'
+        };
+
+        function _puedeAgregarAlCarrito(nuevaCategoria) {
+            if (!window.cart || window.cart.length === 0) return true;
+
+            const categoriaActual = getItemCatalog(window.cart[0]);
+            if (categoriaActual === nuevaCategoria) return true;
+
+            const nombreActual = CATALOGO_NOMBRES[categoriaActual] || categoriaActual;
+            const nombreNueva = CATALOGO_NOMBRES[nuevaCategoria] || nuevaCategoria;
+
+            const confirmado = confirm(
+                `Tu carrito ya tiene productos de "${nombreActual}".\n\n` +
+                `El carrito de stock solo puede tener productos de una sola categoría a la vez.\n\n` +
+                `¿Querés vaciar el carrito para agregar este producto de "${nombreNueva}"?`
+            );
+
+            if (!confirmado) return false;
+
+            window.cart = [];
+            try {
+                if (firebase.auth().currentUser) clearCartFromFirebase();
+            } catch (e) {}
+            updateCartCount();
+            updateCartDisplay();
+
+            return true;
+        }
+
         function getCartMinimumStatus(cartItems = window.cart) {
             const perfumeItems = cartItems.filter(item => getItemCatalog(item) === 'perfumes');
             const shoeItems = cartItems.filter(item => getItemCatalog(item) === 'calzados');
@@ -8074,7 +8127,9 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                 return;
             }
 
-            const existingItem = window.cart.find(item => 
+            if (!_puedeAgregarAlCarrito('calzados')) return;
+
+            const existingItem = window.cart.find(item =>
                 getItemCatalog(item) === 'calzados' && item.id === productId && item.talle === window.selectedTalle
             );
 
@@ -8169,6 +8224,8 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                     return;
                 }
 
+                if (!_puedeAgregarAlCarrito('belleza')) return;
+
                 const variante = window.selectedVariante || null;
                 const existingItem = window.cart.find(cartItem =>
                     getItemCatalog(cartItem) === 'belleza' && cartItem.id === item.id && (cartItem.variante || null) === variante
@@ -8199,7 +8256,9 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                 alert('No se pudo agregar el perfume seleccionado. Volvé a elegirlo.');
                 return;
             }
-            
+
+            if (!_puedeAgregarAlCarrito('perfumes')) return;
+
             const existingItem = window.cart.find(item => getItemCatalog(item) === 'perfumes' && item.id === productToAdd.id);
             if (existingItem) {
                 existingItem.cantidad += (currentQty || 1);
