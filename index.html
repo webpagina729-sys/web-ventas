@@ -3215,7 +3215,7 @@
 
                 <!-- BADGE + BOTÓN -->
                 <div class="nicho-footer">
-                    <div class="nicho-badge">Monto mínimo: $150.000</div>
+                    <div class="nicho-badge">Monto mínimo: $200.000</div>
                     <button class="nicho-button" onclick="abrirModalCodigo('lenceria')">Stockearme Acá</button>
                 </div>
             </div>
@@ -3237,7 +3237,7 @@
 
                 <!-- BADGE + BOTÓN -->
                 <div class="nicho-footer">
-                    <div class="nicho-badge">Monto mínimo: $150.000</div>
+                    <div class="nicho-badge">Monto mínimo: 15 productos</div>
                     <button class="nicho-button" onclick="abrirModalCodigo('suplementos')">Stockearme Acá</button>
                 </div>
             </div>
@@ -3303,7 +3303,7 @@
 
                 <!-- BADGE + BOTÓN -->
                 <div class="nicho-footer">
-                    <div class="nicho-badge">Monto mínimo: $150.000</div>
+                    <div class="nicho-badge">Monto mínimo: $250.000</div>
                     <button class="nicho-button" onclick="abrirModalCodigo('multishop')">Stockearme Acá</button>
                 </div>
             </div>
@@ -3657,6 +3657,19 @@
             </p>
             <button type="button" class="confirmation-button confirmation-button-primary" style="width: 100%;" onclick="cerrarModalUsuarioNoExiste(); openConsentModal('google-ya-autenticado');">Registrarme</button>
             <button type="button" class="confirmation-button" style="width: 100%; margin-top: 10px; background: #f5f5f5; color: var(--text);" onclick="cerrarModalUsuarioNoExiste()">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- MODAL "MÍNIMO DE COMPRA NO ALCANZADO" -->
+    <div class="modal-overlay" id="carrito-minimo-modal" onclick="if(event.target.id==='carrito-minimo-modal') cerrarModalCarritoMinimo()">
+        <div class="modal-content" style="max-width: 360px; text-align: center;">
+            <div class="modal-header" style="justify-content: center;">
+                <h2 class="modal-title">Mínimo de compra</h2>
+            </div>
+            <p style="font-size: 13px; line-height: 1.5; color: var(--text-light); margin: 4px 0 22px;">
+                Completa el mínimo de compra para enviar el carrito
+            </p>
+            <button type="button" class="confirmation-button confirmation-button-primary" style="width: 100%;" onclick="cerrarModalCarritoMinimo()">Entendido</button>
         </div>
     </div>
 
@@ -4118,9 +4131,14 @@
         const WORKER_URL = 'https://workerpagos.tuweb.workers.dev';
         const MP_PUBLIC_KEY = 'TEST-f86ff695-f4bd-4bb9-9d81-28a2e39ce685';
         const MP_ENDPOINT = '/api/mp/create-preference';
-        const MIN_ORDER_PERFUMES = 150000;  // Mínimo en dinero para perfumes
-        const MIN_ORDER_SHOES_QTY = 12;     // Mínimo en cantidad para zapatillas
-        const MIN_ORDER_BELLEZA = 200000;   // Mínimo en dinero para Belleza y Cuidado Personal
+        const MIN_ORDER_PERFUMES = 150000;      // Mínimo en dinero para perfumes
+        const MIN_ORDER_SHOES_QTY = 12;         // Mínimo en cantidad para zapatillas
+        const MIN_ORDER_BELLEZA = 200000;       // Mínimo en dinero para Belleza y Cuidado Personal
+        const MIN_ORDER_LENCERIA = 200000;      // Mínimo en dinero para Lencería
+        const MIN_ORDER_SUPLEMENTOS_QTY = 15;   // Mínimo en cantidad para Salud/Suplementos
+        const MIN_ORDER_BAZAR = 150000;         // Mínimo en dinero para Bazar
+        const MIN_ORDER_LIBRERIA = 150000;      // Mínimo en dinero para Librería
+        const MIN_ORDER_MULTISHOP = 250000;     // Mínimo en dinero para Multishop
         
         // Función para obtener el MIN_ORDER según el catálogo actual
         function getMinOrder() {
@@ -7308,6 +7326,16 @@ window.productsMultishop = [
                 loadMoreShoesProducts();
             } else if (window.currentCatalog === 'belleza') {
                 loadMoreBellezaProducts();
+            } else if (window.currentCatalog === 'lenceria') {
+                loadMoreLenceriaProducts();
+            } else if (window.currentCatalog === 'suplementos') {
+                loadMoreSuplementosProducts();
+            } else if (window.currentCatalog === 'bazar') {
+                loadMoreBazarProducts();
+            } else if (window.currentCatalog === 'libreria') {
+                loadMoreLibreriaProducts();
+            } else if (window.currentCatalog === 'multishop') {
+                loadMoreMultishopProducts();
             } else {
                 loadMoreProducts();
             }
@@ -7316,6 +7344,51 @@ window.productsMultishop = [
         function loadMoreBellezaProducts() {
             window.bellezaItemsDisplayed = (window.bellezaItemsDisplayed || 6) + 6;
             renderBellezaProducts();
+            setTimeout(() => {
+                const grid = document.getElementById('products-grid');
+                if (grid && grid.lastChild) grid.lastChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+
+        function loadMoreLenceriaProducts() {
+            window.lenceriaItemsDisplayed = (window.lenceriaItemsDisplayed || 6) + 6;
+            renderLenceriaProducts();
+            setTimeout(() => {
+                const grid = document.getElementById('products-grid');
+                if (grid && grid.lastChild) grid.lastChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+
+        function loadMoreSuplementosProducts() {
+            window.suplementosItemsDisplayed = (window.suplementosItemsDisplayed || 6) + 6;
+            renderSuplementosProducts();
+            setTimeout(() => {
+                const grid = document.getElementById('products-grid');
+                if (grid && grid.lastChild) grid.lastChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+
+        function loadMoreBazarProducts() {
+            window.bazarItemsDisplayed = (window.bazarItemsDisplayed || 6) + 6;
+            renderBazarProducts();
+            setTimeout(() => {
+                const grid = document.getElementById('products-grid');
+                if (grid && grid.lastChild) grid.lastChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+
+        function loadMoreLibreriaProducts() {
+            window.libreriaItemsDisplayed = (window.libreriaItemsDisplayed || 6) + 6;
+            renderLibreriaProducts();
+            setTimeout(() => {
+                const grid = document.getElementById('products-grid');
+                if (grid && grid.lastChild) grid.lastChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+
+        function loadMoreMultishopProducts() {
+            window.multishopItemsDisplayed = (window.multishopItemsDisplayed || 6) + 6;
+            renderMultishopProducts();
             setTimeout(() => {
                 const grid = document.getElementById('products-grid');
                 if (grid && grid.lastChild) grid.lastChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -8071,9 +8144,19 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             const perfumeItems = cartItems.filter(item => getItemCatalog(item) === 'perfumes');
             const shoeItems = cartItems.filter(item => getItemCatalog(item) === 'calzados');
             const bellezaItems = cartItems.filter(item => getItemCatalog(item) === 'belleza');
+            const lenceriaItems = cartItems.filter(item => getItemCatalog(item) === 'lenceria');
+            const suplementosItems = cartItems.filter(item => getItemCatalog(item) === 'suplementos');
+            const bazarItems = cartItems.filter(item => getItemCatalog(item) === 'bazar');
+            const libreriaItems = cartItems.filter(item => getItemCatalog(item) === 'libreria');
+            const multishopItems = cartItems.filter(item => getItemCatalog(item) === 'multishop');
             const perfumeTotal = perfumeItems.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
             const shoesQty = shoeItems.reduce((sum, item) => sum + item.cantidad, 0);
             const bellezaTotal = bellezaItems.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+            const lenceriaTotal = lenceriaItems.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+            const suplementosQty = suplementosItems.reduce((sum, item) => sum + item.cantidad, 0);
+            const bazarTotal = bazarItems.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+            const libreriaTotal = libreriaItems.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+            const multishopTotal = multishopItems.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
             const missing = [];
 
             if (perfumeItems.length > 0 && perfumeTotal < MIN_ORDER_PERFUMES) {
@@ -8086,14 +8169,40 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             if (bellezaItems.length > 0 && bellezaTotal < MIN_ORDER_BELLEZA) {
                 missing.push(`Belleza y Cuidado Personal: faltan $${(MIN_ORDER_BELLEZA - bellezaTotal).toLocaleString()}`);
             }
+            if (lenceriaItems.length > 0 && lenceriaTotal < MIN_ORDER_LENCERIA) {
+                missing.push(`Lencería: faltan $${(MIN_ORDER_LENCERIA - lenceriaTotal).toLocaleString()}`);
+            }
+            if (suplementosItems.length > 0 && suplementosQty < MIN_ORDER_SUPLEMENTOS_QTY) {
+                const falta = MIN_ORDER_SUPLEMENTOS_QTY - suplementosQty;
+                missing.push(`Salud/Suplementos: faltan ${falta} ${falta === 1 ? 'producto' : 'productos'}`);
+            }
+            if (bazarItems.length > 0 && bazarTotal < MIN_ORDER_BAZAR) {
+                missing.push(`Bazar: faltan $${(MIN_ORDER_BAZAR - bazarTotal).toLocaleString()}`);
+            }
+            if (libreriaItems.length > 0 && libreriaTotal < MIN_ORDER_LIBRERIA) {
+                missing.push(`Librería: faltan $${(MIN_ORDER_LIBRERIA - libreriaTotal).toLocaleString()}`);
+            }
+            if (multishopItems.length > 0 && multishopTotal < MIN_ORDER_MULTISHOP) {
+                missing.push(`Multishop: faltan $${(MIN_ORDER_MULTISHOP - multishopTotal).toLocaleString()}`);
+            }
 
             return {
                 perfumeItems,
                 shoeItems,
                 bellezaItems,
+                lenceriaItems,
+                suplementosItems,
+                bazarItems,
+                libreriaItems,
+                multishopItems,
                 perfumeTotal,
                 shoesQty,
                 bellezaTotal,
+                lenceriaTotal,
+                suplementosQty,
+                bazarTotal,
+                libreriaTotal,
+                multishopTotal,
                 missing,
                 isValid: cartItems.length > 0 && missing.length === 0
             };
@@ -8471,10 +8580,22 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
         // ═══════════════════════════════════════════════════════════════════
         
         // Abrir modal de checkout antes de pagar
+        function abrirModalCarritoMinimo() {
+            const modal = document.getElementById('carrito-minimo-modal');
+            if (modal) modal.classList.add('active');
+            preventBodyScroll(true);
+        }
+
+        function cerrarModalCarritoMinimo() {
+            const modal = document.getElementById('carrito-minimo-modal');
+            if (modal) modal.classList.remove('active');
+            preventBodyScroll(false);
+        }
+
         async function proceedToPayment() {
             const status = getCartMinimumStatus(window.cart);
             if (!status.isValid) {
-                alert('Completá el mínimo obligatorio:\n' + status.missing.join('\n'));
+                abrirModalCarritoMinimo();
                 return;
             }
 
