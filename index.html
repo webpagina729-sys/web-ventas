@@ -698,22 +698,34 @@
             font-weight: 700;
             color: var(--text);
             margin-bottom: 8px;
+            text-align: left;
         }
         .modal-details-price {
             display: flex;
             align-items: baseline;
             gap: 8px;
             margin-bottom: 16px;
+            text-align: left;
         }
+        /* Bloques de datos del modal (Características / Información / Momento
+           Ideal / Variante): compactos y separados entre sí por una línea
+           sutil, en vez de márgenes grandes, para una lectura ordenada tipo
+           lista de datos. */
         .modal-details-section {
-            margin-bottom: 24px;
+            margin-bottom: 0;
+            padding: 12px 0;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
         }
+        .modal-details-section:first-of-type { padding-top: 0; }
+        .modal-details-section:last-of-type { border-bottom: none; padding-bottom: 4px; }
         .modal-details-section-title {
             font-weight: 700;
             color: var(--primary);
-            font-size: 14px;
+            font-size: 12px;
             text-transform: uppercase;
-            margin-bottom: 8px;
+            letter-spacing: 0.02em;
+            margin-bottom: 6px;
         }
         .modal-details-section-content {
             font-size: 14px;
@@ -735,14 +747,16 @@
             font-weight: 700;
         }
         .variant-chip {
-            padding: 8px 14px;
+            padding: 6px 12px;
             border: 1.5px solid var(--border);
-            border-radius: 20px;
+            border-radius: 16px;
             background: white;
             color: var(--text);
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             cursor: pointer;
+            flex-shrink: 0;
+            line-height: 1.3;
             transition: all 0.15s ease;
         }
         .variant-chip:hover { border-color: var(--primary); }
@@ -750,6 +764,42 @@
             background: var(--primary);
             border-color: var(--primary);
             color: white;
+        }
+        /* Botones compactos de talle/variante (zapatillas, lencería, etc.) —
+           mismo tamaño chico que .variant-chip, en fila con wrap para que
+           nunca se superpongan ni queden gigantes dentro del modal. */
+        .size-btn {
+            padding: 6px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+            line-height: 1.3;
+            color: var(--text);
+            flex-shrink: 0;
+            transition: border-color 0.15s ease;
+        }
+        .size-btn:hover { border-color: var(--primary); }
+        /* Fila de talles/variantes: siempre en una sola línea cuando entran,
+           con wrap prolijo a una segunda línea si son muchas opciones. */
+        .variant-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        /* Cuando un producto tiene varios grupos de variantes (ej. Talle y
+           Color), cada grupo va en su propio bloque/fila, separado del
+           siguiente, nunca mezclados en un mismo contenedor. */
+        .variant-group { margin-top: 16px; }
+        .variant-group + .variant-group { margin-top: 14px; }
+        .variant-group-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--text);
         }
         .add-to-cart-modal {
             background: var(--primary);
@@ -3529,34 +3579,34 @@
     <!-- MODAL DETALLES PERFUMES -->
     <div class="modal-details" id="modal-details" onclick="closeDetailsIfClickBackground(event)">
         <div class="modal-details-content">
-            <div style="width: 100%; display: flex; flex-direction: column; align-items: center; text-align: center;">
+            <div style="width: 100%; display: flex; flex-direction: column; align-items: flex-start; text-align: left;">
                 <div style="width: 100%; margin-bottom: 20px;">
                     <img id="modal-details-image" src="" alt="Producto" style="width: 100%; border-radius: 8px; object-fit: cover;" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23f3f4f6%22 width=%22300%22 height=%22300%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-family=%22Arial%22 font-size=%2216%22 fill=%22%23999%22%3EProducto%3C/text%3E%3C/svg%3E'">
                     <div id="modal-details-image-dots" style="display:flex; justify-content:center; gap:6px; margin-top:10px;"></div>
                 </div>
-                <div style="width: 100%; display: flex; flex-direction: column; align-items: center;">
-                    <div class="modal-details-name" id="modal-details-name" style="font-size: 24px; font-weight: 600; margin-bottom: 15px; color: var(--text); width: 100%;"></div>
-                    <div class="modal-details-price" style="margin-bottom: 20px; width: 100%;">
-                        <div class="price-current" id="modal-details-price" style="font-size: 28px; font-weight: 700; color: var(--primary); margin-bottom: 5px;"></div>
-                        <div class="price-original" id="modal-details-price-original" style="font-size: 14px; color: var(--text-light); text-decoration: line-through;"></div>
+                <div style="width: 100%; display: flex; flex-direction: column; align-items: flex-start; text-align: left;">
+                    <div class="modal-details-name" id="modal-details-name" style="font-size: 20px; font-weight: 700; width: 100%;"></div>
+                    <div class="modal-details-price" style="width: 100%;">
+                        <div class="price-current" id="modal-details-price" style="font-size: 24px; font-weight: 700; color: var(--primary);"></div>
+                        <div class="price-original" id="modal-details-price-original" style="font-size: 13px; color: var(--text-light); text-decoration: line-through;"></div>
                     </div>
-                    <div class="modal-details-section" style="margin-bottom: 15px; width: 100%; text-align: left;">
-                        <div class="modal-details-section-title" style="font-weight: 600; margin-bottom: 10px; color: var(--text);">Características</div>
+                    <div class="modal-details-section" style="width: 100%;">
+                        <div class="modal-details-section-title">Características</div>
                         <ul class="characteristics-list" id="modal-details-characteristics" style="margin: 0; padding-left: 20px; color: var(--text-light);"></ul>
                     </div>
-                    <div class="modal-details-section" style="margin-bottom: 15px; width: 100%; text-align: left;">
-                        <div class="modal-details-section-title" style="font-weight: 600; margin-bottom: 10px; color: var(--text);">Información</div>
+                    <div class="modal-details-section" style="width: 100%;">
+                        <div class="modal-details-section-title">Información</div>
                         <div class="modal-details-section-content" id="modal-details-info" style="color: var(--text); line-height: 1.5;"></div>
                     </div>
-                    <div class="modal-details-section" style="margin-bottom: 25px; width: 100%; text-align: left;">
-                        <div class="modal-details-section-title" style="font-weight: 600; margin-bottom: 10px; color: var(--text);">Momento Ideal</div>
+                    <div class="modal-details-section" style="width: 100%;">
+                        <div class="modal-details-section-title">Momento Ideal</div>
                         <div class="modal-details-section-content" id="modal-details-moment" style="color: var(--text-light); font-size: 12px; font-style: italic;"></div>
                     </div>
-                    <div class="modal-details-section variant-section hidden" id="modal-details-variant-section" style="margin-bottom: 20px; width: 100%; text-align: left;">
-                        <div class="modal-details-section-title" style="font-weight: 600; margin-bottom: 10px; color: var(--text);">Elegí una variante <span style="color: var(--primary); font-weight: 700;">*</span></div>
-                        <div id="modal-details-variants" class="variant-chips" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+                    <div class="modal-details-section variant-section hidden" id="modal-details-variant-section" style="width: 100%;">
+                        <div class="modal-details-section-title">Elegí una variante <span style="color: var(--primary); font-weight: 700;">*</span></div>
+                        <div id="modal-details-variants" class="variant-chips variant-row"></div>
                     </div>
-                    <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 300px;">
+                    <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 16px;">
                         <button class="add-to-cart-modal" id="modal-details-add-btn" onclick="addToCartFromModal()" style="width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Agregar Producto</button>
                         <button class="btn-secondary" onclick="closeDetails()" style="width: 100%; padding: 12px; background: var(--border); color: var(--text); border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Cerrar</button>
                     </div>
@@ -6629,13 +6679,11 @@ window.productsMultishop = [
             let tallesHtml = '';
             if (product.talles && product.talles.length > 0) {
                 tallesHtml = `
-                    <div style="margin-top: 20px;">
-                        <label style="display: block; margin-bottom: 10px; font-weight: 600; color: var(--text);">Talle disponible:</label>
-                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    <div class="variant-group">
+                        <label class="variant-group-label">Talle disponible:</label>
+                        <div class="variant-row">
                             ${product.talles.map(talle => `
-                                <button class="size-btn" onclick="selectTalleLenceria(this, '${talle}')" style="padding: 8px 15px; border: 2px solid var(--border); border-radius: 4px; background: white; cursor: pointer; font-weight: 600; color: var(--text); flex-shrink: 0;">
-                                    ${talle}
-                                </button>
+                                <button type="button" class="size-btn" onclick="selectTalleLenceria(this, '${talle}')">${talle}</button>
                             `).join('')}
                         </div>
                     </div>
@@ -6655,11 +6703,11 @@ window.productsMultishop = [
             }
 
             detailsContent.innerHTML = `
-                <div style="width: 100%; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                <div style="width: 100%; display: flex; flex-direction: column; align-items: flex-start; text-align: left;">
                     <div style="width: 100%; margin-bottom: 20px;">
                         <img src="${product.imagen}" alt="${product.nombre}" style="width: 100%; border-radius: 8px; object-fit: cover;" onerror="this.style.display='none'">
                     </div>
-                    <div style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+                    <div style="width: 100%; display: flex; flex-direction: column; align-items: flex-start;">
                         <h2 style="margin: 0 0 15px 0; color: var(--text); font-size: 24px; width: 100%;">${product.nombre}</h2>
 
                         <div style="margin: 20px 0; width: 100%;">
@@ -6675,7 +6723,7 @@ window.productsMultishop = [
 
                         ${tallesHtml}
 
-                        <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 300px;">
+                        <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px; width: 100%;">
                             <button class="btn-primary" onclick="addToCartLenceria(${product.id})" style="width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Agregar Producto</button>
                             <button class="btn-secondary" onclick="closeDetailsShoes()" style="width: 100%; padding: 12px; background: var(--border); color: var(--text); border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Cerrar</button>
                         </div>
@@ -6845,11 +6893,11 @@ window.productsMultishop = [
             }
 
             detailsContent.innerHTML = `
-                <div style="width: 100%; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                <div style="width: 100%; display: flex; flex-direction: column; align-items: flex-start; text-align: left;">
                     <div style="width: 100%; margin-bottom: 20px;">
                         <img src="${product.imagen}" alt="${product.nombre}" style="width: 100%; border-radius: 8px; object-fit: cover;" onerror="this.style.display='none'">
                     </div>
-                    <div style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+                    <div style="width: 100%; display: flex; flex-direction: column; align-items: flex-start;">
                         <h2 style="margin: 0 0 15px 0; color: var(--text); font-size: 24px; width: 100%;">${product.nombre}</h2>
 
                         <div style="margin: 20px 0; width: 100%;">
@@ -6859,7 +6907,7 @@ window.productsMultishop = [
 
                         ${caracteristicasHtml}
 
-                        <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 300px;">
+                        <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px; width: 100%;">
                             <button class="btn-primary" onclick="addToCartSuplementos(${product.id})" style="width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Agregar Producto</button>
                             <button class="btn-secondary" onclick="closeDetailsShoes()" style="width: 100%; padding: 12px; background: var(--border); color: var(--text); border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Cerrar</button>
                         </div>
@@ -7019,11 +7067,11 @@ window.productsMultishop = [
             }
 
             detailsContent.innerHTML = `
-                <div style="width: 100%; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                <div style="width: 100%; display: flex; flex-direction: column; align-items: flex-start; text-align: left;">
                     <div style="width: 100%; margin-bottom: 20px;">
                         <img src="${product.imagen}" alt="${product.nombre}" style="width: 100%; border-radius: 8px; object-fit: cover;" onerror="this.style.display='none'">
                     </div>
-                    <div style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+                    <div style="width: 100%; display: flex; flex-direction: column; align-items: flex-start;">
                         <h2 style="margin: 0 0 15px 0; color: var(--text); font-size: 24px; width: 100%;">${product.nombre}</h2>
 
                         <div style="margin: 20px 0; width: 100%;">
@@ -7037,7 +7085,7 @@ window.productsMultishop = [
                             <p style="margin: 0; color: var(--text); line-height: 1.5;">${product.info || ''}</p>
                         </div>
 
-                        <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 300px;">
+                        <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px; width: 100%;">
                             <button class="btn-primary" onclick="addToCartBazar(${product.id})" style="width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Agregar Producto</button>
                             <button class="btn-secondary" onclick="closeDetailsShoes()" style="width: 100%; padding: 12px; background: var(--border); color: var(--text); border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Cerrar</button>
                         </div>
@@ -7193,11 +7241,11 @@ window.productsMultishop = [
             }
 
             detailsContent.innerHTML = `
-                <div style="width: 100%; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                <div style="width: 100%; display: flex; flex-direction: column; align-items: flex-start; text-align: left;">
                     <div style="width: 100%; margin-bottom: 20px;">
                         <img src="${product.imagen}" alt="${product.nombre}" style="width: 100%; border-radius: 8px; object-fit: cover;" onerror="this.style.display='none'">
                     </div>
-                    <div style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+                    <div style="width: 100%; display: flex; flex-direction: column; align-items: flex-start;">
                         <h2 style="margin: 0 0 15px 0; color: var(--text); font-size: 24px; width: 100%;">${product.nombre}</h2>
 
                         <div style="margin: 20px 0; width: 100%;">
@@ -7211,7 +7259,7 @@ window.productsMultishop = [
                             <p style="margin: 0; color: var(--text); line-height: 1.5;">${product.info || ''}</p>
                         </div>
 
-                        <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 300px;">
+                        <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px; width: 100%;">
                             <button class="btn-primary" onclick="addToCartLibreria(${product.id})" style="width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Agregar Producto</button>
                             <button class="btn-secondary" onclick="closeDetailsShoes()" style="width: 100%; padding: 12px; background: var(--border); color: var(--text); border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Cerrar</button>
                         </div>
@@ -7375,11 +7423,11 @@ window.productsMultishop = [
             }
 
             detailsContent.innerHTML = `
-                <div style="width: 100%; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                <div style="width: 100%; display: flex; flex-direction: column; align-items: flex-start; text-align: left;">
                     <div style="width: 100%; margin-bottom: 20px;">
                         <img src="${product.imagen}" alt="${product.nombre}" style="width: 100%; border-radius: 8px; object-fit: cover;" onerror="this.style.display='none'">
                     </div>
-                    <div style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+                    <div style="width: 100%; display: flex; flex-direction: column; align-items: flex-start;">
                         <h2 style="margin: 0 0 15px 0; color: var(--text); font-size: 24px; width: 100%;">${product.nombre}</h2>
 
                         <div style="margin: 20px 0; width: 100%;">
@@ -7393,7 +7441,7 @@ window.productsMultishop = [
                             <p style="margin: 0; color: var(--text); line-height: 1.5;">${product.info || ''}</p>
                         </div>
 
-                        <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 300px;">
+                        <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px; width: 100%;">
                             <button class="btn-primary" onclick="addToCartMultishop(${product.id})" style="width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Agregar Producto</button>
                             <button class="btn-secondary" onclick="closeDetailsShoes()" style="width: 100%; padding: 12px; background: var(--border); color: var(--text); border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Cerrar</button>
                         </div>
@@ -10838,13 +10886,11 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             let tallesHtml = '';
             if (product.talle && product.talle.length > 0) {
                 tallesHtml = `
-                    <div style="margin-top: 20px;">
-                        <label style="display: block; margin-bottom: 10px; font-weight: 600; color: var(--text);">Seleccionar talle:</label>
-                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    <div class="variant-group">
+                        <label class="variant-group-label">Seleccionar talle:</label>
+                        <div class="variant-row">
                             ${product.talle.map((talle, idx) => `
-                                <button class="size-btn" onclick="selectTalle(this, '${talle}')" style="padding: 8px 15px; border: 2px solid var(--border); border-radius: 4px; background: white; cursor: pointer; font-weight: 600; color: var(--text); flex-shrink: 0;">
-                                    ${talle}
-                                </button>
+                                <button type="button" class="size-btn" onclick="selectTalle(this, '${talle}')">${talle}</button>
                             `).join('')}
                         </div>
                     </div>
@@ -10865,11 +10911,11 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             }
             
             detailsContent.innerHTML = `
-                <div style="width: 100%; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                <div style="width: 100%; display: flex; flex-direction: column; align-items: flex-start; text-align: left;">
                     <div style="width: 100%; margin-bottom: 20px;">
                         <img src="${BASE_IMAGE_URL}${product.imagen}" alt="${product.nombre}" style="width: 100%; border-radius: 8px; object-fit: cover;" onerror="this.src='${BASE_IMAGE_URL}portadauno.png'">
                     </div>
-                    <div style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+                    <div style="width: 100%; display: flex; flex-direction: column; align-items: flex-start;">
                         <h2 style="margin: 0 0 15px 0; color: var(--text); font-size: 24px; width: 100%;">${product.nombre}</h2>
                         
                         <div style="margin: 20px 0; width: 100%;">
@@ -10885,7 +10931,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                         
                         ${tallesHtml}
                         
-                        <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 300px;">
+                        <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px; width: 100%;">
                             <button class="btn-primary" onclick="addToCart(${product.id})" style="width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Agregar Producto</button>
                             <button class="btn-secondary" onclick="closeDetailsShoes()" style="width: 100%; padding: 12px; background: var(--border); color: var(--text); border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Cerrar</button>
                         </div>
@@ -11630,6 +11676,17 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                 if (codigoEnSesion) {
                     // Usuario logueado y código validado: mostrar catálogo
                     window.codigoValidado = true;
+                    // 🔧 FIX: si no hay un catálogo elegido explícitamente (ej. primer
+                    // ingreso tras recargar la página con el código ya guardado),
+                    // mostrarCatalogo() no matcheaba ninguna rama de su if/else
+                    // (todas comparan contra 'perfumes'/'belleza'/'calzados'/etc.,
+                    // ninguna contra null) y dejaba filters-container/products-container
+                    // con la clase "hidden" puesta, o sea la grilla de Perfumería
+                    // (catálogo por defecto) quedaba vacía/oculta a pesar de tener
+                    // productos cargados. Perfumes es el catálogo por defecto
+                    // (ver abrirModalCodigo(catalogo = 'perfumes')), así que se
+                    // mantiene ese mismo valor por defecto acá.
+                    if (!window.currentCatalog) window.currentCatalog = 'perfumes';
                     mostrarCatalogo();
                 } else {
                     // Usuario logueado pero sin código validado: mostrar nichos
