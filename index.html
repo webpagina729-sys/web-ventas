@@ -6676,6 +6676,22 @@ window.productsMultishop = [
             const detailsContent = document.getElementById('details-content-shoes');
             if (!modal || !detailsContent) return;
 
+            window.selectedColorLenceria = null;
+
+            let coloresHtml = '';
+            if (product.colores && product.colores.length > 0) {
+                coloresHtml = `
+                    <div class="variant-group">
+                        <label class="variant-group-label">Color disponible:</label>
+                        <div class="variant-row">
+                            ${product.colores.map(color => `
+                                <button type="button" class="size-btn color-btn-lenceria" onclick="selectColorLenceria(this, '${color.replace(/'/g, "\\'")}')">${color}</button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
             let tallesHtml = '';
             if (product.talles && product.talles.length > 0) {
                 tallesHtml = `
@@ -6683,7 +6699,7 @@ window.productsMultishop = [
                         <label class="variant-group-label">Talle disponible:</label>
                         <div class="variant-row">
                             ${product.talles.map(talle => `
-                                <button type="button" class="size-btn" onclick="selectTalleLenceria(this, '${talle}')">${talle}</button>
+                                <button type="button" class="size-btn talle-btn-lenceria" onclick="selectTalleLenceria(this, '${talle}')">${talle}</button>
                             `).join('')}
                         </div>
                     </div>
@@ -6721,6 +6737,8 @@ window.productsMultishop = [
                             <p style="margin: 0; color: var(--text); line-height: 1.5;">${product.info || ''}</p>
                         </div>
 
+                        ${coloresHtml}
+
                         ${tallesHtml}
 
                         <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px; width: 100%;">
@@ -6735,9 +6753,15 @@ window.productsMultishop = [
         }
 
         function selectTalleLenceria(btn, talle) {
-            document.querySelectorAll('.size-btn').forEach(b => b.style.borderColor = 'var(--border)');
+            document.querySelectorAll('.talle-btn-lenceria').forEach(b => b.style.borderColor = 'var(--border)');
             btn.style.borderColor = 'var(--primary)';
             window.selectedTalleLenceria = talle;
+        }
+
+        function selectColorLenceria(btn, color) {
+            document.querySelectorAll('.color-btn-lenceria').forEach(b => b.style.borderColor = 'var(--border)');
+            btn.style.borderColor = 'var(--primary)';
+            window.selectedColorLenceria = color;
         }
 
         function addToCartLenceria(productId) {
@@ -6754,11 +6778,14 @@ window.productsMultishop = [
             if (!product) return;
 
             const talleSeleccionado = window.selectedTalleLenceria || null;
+            const colorSeleccionado = window.selectedColorLenceria || null;
 
             if (!_puedeAgregarAlCarrito('lenceria')) return;
 
             const existingItem = window.cart.find(item =>
-                getItemCatalog(item) === 'lenceria' && item.id === productId && (item.talleLenceria || null) === talleSeleccionado
+                getItemCatalog(item) === 'lenceria' && item.id === productId &&
+                (item.talleLenceria || null) === talleSeleccionado &&
+                (item.colorLenceria || null) === colorSeleccionado
             );
 
             if (existingItem) {
@@ -6768,6 +6795,7 @@ window.productsMultishop = [
                     ...product,
                     cantidad: 1,
                     talleLenceria: talleSeleccionado,
+                    colorLenceria: colorSeleccionado,
                     catalogo: 'lenceria'
                 });
             }
@@ -6779,6 +6807,7 @@ window.productsMultishop = [
             closeDetailsShoes();
             document.getElementById('modal-cart').classList.add('active');
             window.selectedTalleLenceria = null;
+            window.selectedColorLenceria = null;
         }
 
         // ═══════════════════════════════════════════════════════════════════════════
@@ -7405,6 +7434,7 @@ window.productsMultishop = [
 
             window.currentProduct = product;
             window.currentProductCatalog = 'multishop';
+            window.selectedVarianteMultishop = null;
 
             const modal = document.getElementById('modal-details-shoes');
             const detailsContent = document.getElementById('details-content-shoes');
@@ -7418,6 +7448,20 @@ window.productsMultishop = [
                         <ul style="margin: 0; padding-left: 20px; color: var(--text-light); line-height: 1.6;">
                             ${product.caracteristicas.map(car => `<li>${car}</li>`).join('')}
                         </ul>
+                    </div>
+                `;
+            }
+
+            let variantesHtml = '';
+            if (product.variantes && product.variantes.length > 0) {
+                variantesHtml = `
+                    <div class="variant-group">
+                        <label class="variant-group-label">Elegí una variante:</label>
+                        <div class="variant-row">
+                            ${product.variantes.map(v => `
+                                <button type="button" class="size-btn variante-btn-multishop" onclick="selectVarianteMultishop(this, '${String(v).replace(/'/g, "\\'")}')">${v}</button>
+                            `).join('')}
+                        </div>
                     </div>
                 `;
             }
@@ -7441,6 +7485,8 @@ window.productsMultishop = [
                             <p style="margin: 0; color: var(--text); line-height: 1.5;">${product.info || ''}</p>
                         </div>
 
+                        ${variantesHtml}
+
                         <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px; width: 100%;">
                             <button class="btn-primary" onclick="addToCartMultishop(${product.id})" style="width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Agregar Producto</button>
                             <button class="btn-secondary" onclick="closeDetailsShoes()" style="width: 100%; padding: 12px; background: var(--border); color: var(--text); border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Cerrar</button>
@@ -7450,6 +7496,12 @@ window.productsMultishop = [
             `;
 
             modal.classList.add('active');
+        }
+
+        function selectVarianteMultishop(btn, variante) {
+            document.querySelectorAll('.variante-btn-multishop').forEach(b => b.style.borderColor = 'var(--border)');
+            btn.style.borderColor = 'var(--primary)';
+            window.selectedVarianteMultishop = variante;
         }
 
         function addToCartMultishop(productId) {
@@ -7465,10 +7517,13 @@ window.productsMultishop = [
             const product = (window.productsMultishop || []).find(p => p.id === productId);
             if (!product) return;
 
+            const varianteSeleccionada = window.selectedVarianteMultishop || null;
+
             if (!_puedeAgregarAlCarrito('multishop')) return;
 
             const existingItem = window.cart.find(item =>
-                getItemCatalog(item) === 'multishop' && item.id === productId
+                getItemCatalog(item) === 'multishop' && item.id === productId &&
+                (item.varianteMultishop || null) === varianteSeleccionada
             );
 
             if (existingItem) {
@@ -7481,6 +7536,7 @@ window.productsMultishop = [
                 window.cart.push({
                     ...product,
                     cantidad: 1,
+                    varianteMultishop: varianteSeleccionada,
                     catalogo: 'multishop'
                 });
             }
@@ -7491,6 +7547,7 @@ window.productsMultishop = [
 
             closeDetailsShoes();
             document.getElementById('modal-cart').classList.add('active');
+            window.selectedVarianteMultishop = null;
         }
 
         function loadMore() {
