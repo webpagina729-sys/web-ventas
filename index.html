@@ -4326,6 +4326,9 @@
         // Usar ruta local para imágenes
         const BASE_URL = window.location.origin;
         const BASE_IMAGE_URL = BASE_URL + '/';
+        // Las imágenes de productos cargados desde pedidos.html vienen como URL completa (repositorio de GitHub);
+        // las del catálogo original son solo el nombre del archivo y se completan con su base.
+        const _imgUrl = (base, img) => /^https?:\/\//i.test(img || '') ? img : base + img;
         // Imágenes y productos de Maquillaje se cargan desde el repositorio externo
         // Se usa raw.githubusercontent.com directo (en vez de jsDelivr) para que cualquier
         // actualización subida al repositorio de GitHub se refleje automáticamente en la
@@ -6214,7 +6217,7 @@ window.productsMultishop = [
                 const quitar = (arr, cat) => {
                     if (!arr) return;
                     for (let i = arr.length - 1; i >= 0; i--) {
-                        const c = cat || catDeId(arr[i].id);
+                        const c = arr[i]._catCentral || cat || catDeId(arr[i].id);
                         if (vivos[c] && !vivos[c].has(arr[i].id)) arr.splice(i, 1);
                     }
                 };
@@ -6374,7 +6377,7 @@ window.productsMultishop = [
                 <div class="product-card">
                     <div class="product-image" onclick="openZoom('${p.imagen}')">
                         <div class="zoom-icon"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-0.15em"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
-                        <img src="${BASE_IMAGE_URL}${p.imagen}" alt="${p.nombre}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23f5f5f5%22 width=%22200%22 height=%22200%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-family=%22Arial%22 font-size=%2214%22 fill=%22%23999%22%3EProducto%3C/text%3E%3C/svg%3E'">
+                        <img src="${_imgUrl(BASE_IMAGE_URL, p.imagen)}" alt="${p.nombre}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23f5f5f5%22 width=%22200%22 height=%22200%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-family=%22Arial%22 font-size=%2214%22 fill=%22%23999%22%3EProducto%3C/text%3E%3C/svg%3E'">
                     </div>
                     <div class="product-info">
                         <div class="product-name">${p.nombre}</div>
@@ -6469,9 +6472,9 @@ window.productsMultishop = [
                 const imgBase = p.origenBelleza === 'maquillaje' ? BASE_MAQUILLAJE_IMAGE_URL : BASE_IMAGE_URL;
                 html += `
                 <div class="product-card">
-                    <div class="product-image" onclick="openZoom('${imgBase}${p.imagen}', true)">
+                    <div class="product-image" onclick="openZoom('${_imgUrl(imgBase, p.imagen)}', true)">
                         <div class="zoom-icon"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-0.15em"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
-                        <img src="${imgBase}${p.imagen}" alt="${p.nombre}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23f5f5f5%22 width=%22200%22 height=%22200%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-family=%22Arial%22 font-size=%2214%22 fill=%22%23999%22%3EProducto%3C/text%3E%3C/svg%3E'">
+                        <img src="${_imgUrl(imgBase, p.imagen)}" alt="${p.nombre}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23f5f5f5%22 width=%22200%22 height=%22200%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-family=%22Arial%22 font-size=%2214%22 fill=%22%23999%22%3EProducto%3C/text%3E%3C/svg%3E'">
                     </div>
                     <div class="product-info">
                         <div class="product-name">${p.nombre}</div>
@@ -6529,7 +6532,7 @@ window.productsMultishop = [
                 <div class="product-card">
                     <div class="product-image" onclick="openZoom('${p.imagen}')">
                         <div class="zoom-icon"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-0.15em"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
-                        <img src="${BASE_IMAGE_URL}${p.imagen}" alt="${p.nombre}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23f5f5f5%22 width=%22200%22 height=%22200%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-family=%22Arial%22 font-size=%2214%22 fill=%22%23999%22%3EProducto%3C/text%3E%3C/svg%3E'">
+                        <img src="${_imgUrl(BASE_IMAGE_URL, p.imagen)}" alt="${p.nombre}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23f5f5f5%22 width=%22200%22 height=%22200%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-family=%22Arial%22 font-size=%2214%22 fill=%22%23999%22%3EProducto%3C/text%3E%3C/svg%3E'">
                     </div>
                     <div class="product-info">
                         <div class="product-name">${p.nombre}</div>
@@ -7719,7 +7722,7 @@ window.productsMultishop = [
         }
 
         function openZoom(img, isFullUrl) {
-            document.getElementById('zoom-image').src = isFullUrl ? img : (BASE_IMAGE_URL + img);
+            document.getElementById('zoom-image').src = isFullUrl ? img : _imgUrl(BASE_IMAGE_URL, img);
             document.getElementById('modal-zoom').classList.add('active');
         }
 
@@ -7766,7 +7769,7 @@ window.productsMultishop = [
             window.modalDetailsImageBase = imgBase;
             window.modalDetailsImageIndex = 0;
 
-            mainImg.src = imgBase + imagenes[0];
+            mainImg.src = _imgUrl(imgBase, imagenes[0]);
 
             if (dotsContainer) {
                 if (imagenes.length > 1) {
@@ -7784,7 +7787,7 @@ window.productsMultishop = [
             const imagenes = window.modalDetailsImages || [];
             if (!mainImg || !imagenes[index]) return;
             window.modalDetailsImageIndex = index;
-            mainImg.src = window.modalDetailsImageBase + imagenes[index];
+            mainImg.src = _imgUrl(window.modalDetailsImageBase, imagenes[index]);
             document.querySelectorAll('#modal-details-image-dots .modal-gallery-dot').forEach((dot, i) => {
                 dot.style.background = i === index ? 'var(--primary)' : '#ddd';
                 dot.classList.toggle('active', i === index);
@@ -7858,7 +7861,7 @@ window.productsMultishop = [
             const imagenes = window.modalDetailsImages || [currentProduct.imagen];
             const currentImg = imagenes[window.modalDetailsImageIndex || 0] || currentProduct.imagen;
             if (window.currentProductCatalog === 'belleza' && window.currentProductSourceCatalog === 'maquillaje') {
-                openZoom(BASE_MAQUILLAJE_IMAGE_URL + currentImg, true);
+                openZoom(_imgUrl(BASE_MAQUILLAJE_IMAGE_URL, currentImg), true);
             } else {
                 openZoom(currentImg);
             }
@@ -8318,6 +8321,25 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             libreria: 'Librería',
             multishop: 'Multishop'
         };
+        const talleCalzado = ['35', '36', '37', '38', '39', '40', '41', '42', '43', '44'];
+        const nuevo = (cat, a) => {
+            const base = { id: a.id, nombre: a.nombre, imagen: a.imagen, precio: a.precio, precioOriginal: a.precio, caracteristicas: [], info: '', _catCentral: cat };
+            if (cat === 'perfumes') return { ...base, categoria: 'unisex' };
+            if (cat === 'calzados') return { ...base, categoria: 'adultos', talle: talleCalzado };
+            if (cat === 'belleza_maquillaje') return { ...base, categoria: 'maquillaje', _origin: 'maquillaje', imagenes: [a.imagen] };
+            if (cat === 'bazar_bazar') return { ...base, categoria: 'bazar' };
+            if (cat === 'bazar_melamina') return { ...base, categoria: 'melamina' };
+            if (cat === 'jugueteria_juguetes') return { ...base, categoria: 'juguetes' };
+            if (cat === 'jugueteria_peluches') return { ...base, categoria: 'peluches' };
+            if (cat === 'libreria') return { ...base, categoria: 'libreria' };
+            if (cat === 'electronicos') return { ...base, categoria: 'electronicos' };
+            if (cat === 'lenceria') return { ...base, categoria: 'lenceria', grupo: 'lenceria', subcategoria: 'conjuntos', precioCosto: a.precio };
+            return base;
+        };
+        const agregar = (arr, cat, extra) => {
+            if (!arr) return;
+            (data.agregados && data.agregados[cat] || []).forEach(a => { if (!arr.some(x => x.id === a.id)) arr.push({ ...nuevo(cat, a), ...extra }); });
+        };
 
         function _puedeAgregarAlCarrito(nuevaCategoria) {
             if (!window.cart || window.cart.length === 0) return true;
@@ -8667,7 +8689,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                 html += `
                 <div class="cart-item">
                     <div class="cart-item-image">
-                        <img src="${imgBase}${item.imagen}" alt="${item.nombre}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23f5f5f5%22 width=%22200%22 height=%22200%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-family=%22Arial%22 font-size=%2214%22 fill=%22%23999%22%3EProducto%3C/text%3E%3C/svg%3E'">
+                        <img src="${_imgUrl(imgBase, item.imagen)}" alt="${item.nombre}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23f5f5f5%22 width=%22200%22 height=%22200%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-family=%22Arial%22 font-size=%2214%22 fill=%22%23999%22%3EProducto%3C/text%3E%3C/svg%3E'">
                     </div>
                     <div class="cart-item-details">
                         <div class="cart-item-name">${item.nombre}${talleText}${varianteText}</div>
@@ -9392,7 +9414,32 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
         // ── DETECCIÓN "¿Ya se registró en este dispositivo?" (Registrarme vs Iniciar Sesión) ──
         const REGISTERED_FLAG_KEY = 'rw_uid_registrado';
         function marcarUsuarioRegistrado(uid) {
-            try { localStorage.setItem(REGISTERED_FLAG_KEY, uid || '1'); } catch (e) {}
+            agregar(window.products, 'perfumes');
+        agregar(window.maquillaje, 'belleza_maquillaje', { catalogo: 'maquillaje' });
+        agregar(window.shoes, 'calzados');
+        agregar(LENCERIA_DATA, 'lenceria');
+        agregar(SUPLEMENTOS_DATA, 'suplementos');
+        agregar(BAZAR_DATA, 'bazar_bazar');
+        agregar(MELAMINA_DATA, 'bazar_melamina');
+        agregar(JUGUETES_DATA, 'jugueteria_juguetes');
+        agregar(PELUCHES_DATA, 'jugueteria_peluches');
+        agregar(LIBRERIA_DATA, 'libreria');
+        agregar(ELECTRONICOS_DATA, 'electronicos');
+        agregar(window.productsBazar, 'bazar_bazar', { _bazarSub: 'bazar' });
+        agregar(window.productsBazar, 'bazar_melamina', { _bazarSub: 'melamina' });
+        agregar(window.productsJugueteria, 'jugueteria_juguetes', { _jugSub: 'juguetes' });
+        agregar(window.productsJugueteria, 'jugueteria_peluches', { _jugSub: 'peluches' });
+        agregar(window.productsLibreria, 'libreria');
+        agregar(window.productsElectronicos, 'electronicos');
+        agregar(window.productsMultishop, 'perfumes', { _multiSub: 'perfumes' });
+        agregar(window.productsMultishop, 'belleza_maquillaje', { _multiSub: 'maquillaje' });
+        agregar(window.productsMultishop, 'bazar_bazar', { _multiSub: 'bazar', _bazarSub: 'bazar' });
+        agregar(window.productsMultishop, 'bazar_melamina', { _multiSub: 'bazar', _bazarSub: 'melamina' });
+        agregar(window.productsMultishop, 'jugueteria_juguetes', { _multiSub: 'juguetes', _jugSub: 'juguetes' });
+        agregar(window.productsMultishop, 'jugueteria_peluches', { _multiSub: 'juguetes', _jugSub: 'peluches' });
+        agregar(window.productsMultishop, 'libreria', { _multiSub: 'libreria' });
+        agregar(window.productsMultishop, 'electronicos', { _multiSub: 'electronico' });
+        try { localStorage.setItem(REGISTERED_FLAG_KEY, uid || '1'); } catch (e) {}
         }
         function usuarioYaRegistrado() {
             try { return !!localStorage.getItem(REGISTERED_FLAG_KEY); } catch (e) { return false; }
@@ -10947,7 +10994,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             detailsContent.innerHTML = `
                 <div style="width: 100%; display: flex; flex-direction: column; align-items: flex-start; text-align: left;">
                     <div style="width: 100%; margin-bottom: 20px;">
-                        <img src="${BASE_IMAGE_URL}${product.imagen}" alt="${product.nombre}" style="width: 100%; border-radius: 8px; object-fit: cover;" onerror="this.src='${BASE_IMAGE_URL}portadauno.png'">
+                        <img src="${_imgUrl(BASE_IMAGE_URL, product.imagen)}" alt="${product.nombre}" style="width: 100%; border-radius: 8px; object-fit: cover;" onerror="this.src='${BASE_IMAGE_URL}portadauno.png'">
                     </div>
                     <div style="width: 100%; display: flex; flex-direction: column; align-items: flex-start;">
                         <h2 style="margin: 0 0 15px 0; color: var(--text); font-size: 24px; width: 100%;">${product.nombre}</h2>
@@ -11007,7 +11054,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             productosCarrusel.forEach((producto, index) => {
                 const slide = document.createElement('div');
                 slide.className = 'carrusel-slide';
-                slide.innerHTML = `<img src="${BASE_IMAGE_URL}${producto.imagen}" alt="${producto.nombre}" onerror="this.src='${BASE_IMAGE_URL}portadauno.png'">`;
+                slide.innerHTML = `<img src="${_imgUrl(BASE_IMAGE_URL, producto.imagen)}" alt="${producto.nombre}" onerror="this.src='${BASE_IMAGE_URL}portadauno.png'">`;
                 wrapper.appendChild(slide);
 
                 const dot = document.createElement('button');
@@ -11575,7 +11622,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             productosCarrusel.forEach((producto, index) => {
                 const slide = document.createElement('div');
                 slide.className = 'carrusel-slide';
-                slide.innerHTML = `<img src="${BASE_IMAGE_URL}${producto.imagen}" alt="${producto.nombre}" onerror="this.src='${BASE_IMAGE_URL}portadauno.png'">`;
+                slide.innerHTML = `<img src="${_imgUrl(BASE_IMAGE_URL, producto.imagen)}" alt="${producto.nombre}" onerror="this.src='${BASE_IMAGE_URL}portadauno.png'">`;
                 wrapper.appendChild(slide);
 
                 // Generar dots
