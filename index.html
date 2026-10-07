@@ -6202,6 +6202,43 @@ window.productsMultishop = [
 
 
 
+        // 🔧 Catálogo central (Worker de precios, KV): lo que se elimina definitivamente
+        // desde pedidos.html desaparece también de acá. Solo actúa sobre las categorías ya cargadas en el Worker.
+        fetch('https://preciosmayoristasrevendedores.tuweb.workers.dev/api/catalogo?categoria=todas')
+            .then(r => r.json())
+            .then(data => {
+                if (!data || !data.ok || !data.catalogos) return;
+                const vivos = {};
+                Object.keys(data.catalogos).forEach(k => { vivos[k] = new Set(data.catalogos[k]); });
+                const catDeId = id => id < 1000 ? 'perfumes' : id < 60000 ? 'belleza_maquillaje' : id < 61000 ? 'bazar_bazar' : id < 62000 ? 'bazar_melamina' : id < 62190 ? 'jugueteria_juguetes' : id < 64000 ? 'jugueteria_peluches' : id < 65000 ? 'libreria' : id < 65023 ? 'electronicos' : id < 70000 ? 'lenceria' : 'suplementos';
+                const quitar = (arr, cat) => {
+                    if (!arr) return;
+                    for (let i = arr.length - 1; i >= 0; i--) {
+                        const c = cat || catDeId(arr[i].id);
+                        if (vivos[c] && !vivos[c].has(arr[i].id)) arr.splice(i, 1);
+                    }
+                };
+                quitar(window.products);
+                quitar(window.maquillaje);
+                quitar(window.shoes, 'calzados');
+                quitar(LENCERIA_DATA, 'lenceria');
+                quitar(SUPLEMENTOS_DATA);
+                quitar(BAZAR_DATA);
+                quitar(MELAMINA_DATA);
+                quitar(LIBRERIA_DATA);
+                quitar(ELECTRONICOS_DATA);
+                quitar(JUGUETES_DATA);
+                quitar(PELUCHES_DATA);
+                quitar(SQUISHY_DATA);
+                quitar(window.productsBazar);
+                quitar(window.productsLibreria);
+                quitar(window.productsElectronicos);
+                quitar(window.productsJugueteria);
+                quitar(window.productsMultishop);
+                try { if (typeof renderProducts === 'function') renderProducts(); } catch(_e) {}
+            })
+            .catch(() => {});
+
         // ✅ CARRITO ÚNICO MULTICATÁLOGO
         window.unifiedCart = [];  // Carrito compartido entre perfumes y calzados
         window.perfumeCart = window.unifiedCart;  // Compatibilidad
