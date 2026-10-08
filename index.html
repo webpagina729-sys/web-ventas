@@ -3247,6 +3247,27 @@
         // (Se removió la supresión global de console.error: ocultaba errores reales
         // que podían estar contribuyendo a comportamientos inesperados en la app)
     </script>
+<style>
+/* Ordenar: botón compacto + cortina lateral */
+.sort-pill { display:inline-flex; align-items:center; gap:7px; padding:6px 12px; border:1px solid var(--border); border-radius:20px; background:var(--surface); color:var(--text); font-size:12.5px; font-weight:500; font-family:inherit; cursor:pointer; line-height:1; transition:border-color .2s, box-shadow .2s; }
+.sort-pill:hover, .sort-pill:active { border-color:var(--primary); box-shadow:0 0 0 3px rgba(0,102,255,.08); }
+.sort-pill svg { flex-shrink:0; color:var(--text-light); }
+.sort-pill b { font-weight:600; color:var(--primary); }
+.filters-container .sort-control { justify-content:flex-start; margin:-8px 0 -6px; width:100%; }
+.sort-cortina-overlay { position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:100060; opacity:0; visibility:hidden; transition:opacity .25s, visibility .25s; }
+.sort-cortina-overlay.abierto { opacity:1; visibility:visible; }
+.sort-cortina { position:absolute; top:0; right:0; bottom:0; width:min(280px,80vw); background:var(--surface); box-shadow:-8px 0 28px rgba(0,0,0,.18); transform:translateX(100%); transition:transform .28s cubic-bezier(.22,.8,.3,1); display:flex; flex-direction:column; }
+.sort-cortina-overlay.abierto .sort-cortina { transform:translateX(0); }
+.sort-cortina-head { display:flex; align-items:center; justify-content:space-between; padding:16px 16px 12px; border-bottom:1px solid var(--border); }
+.sort-cortina-head span { font-size:15px; font-weight:700; color:var(--text); }
+.sort-cortina-head button { background:none; border:none; font-size:20px; line-height:1; color:var(--text-light); cursor:pointer; padding:2px 6px; }
+.sort-cortina-opt { display:flex; align-items:center; justify-content:space-between; width:100%; padding:14px 16px; background:none; border:none; border-bottom:1px solid var(--border); font-size:14px; font-family:inherit; color:var(--text); cursor:pointer; text-align:left; }
+.sort-cortina-opt:active { background:rgba(0,0,0,.04); }
+.sort-cortina-opt.activa { color:var(--primary); font-weight:600; }
+.sort-cortina-opt .sc-dot { width:18px; height:18px; border-radius:50%; border:1.5px solid var(--border); flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+.sort-cortina-opt.activa .sc-dot { border-color:var(--primary); }
+.sort-cortina-opt.activa .sc-dot::after { content:''; width:8px; height:8px; border-radius:50%; background:var(--primary); }
+</style>
 </head>
 <body>
     <!-- HEADER TOP BAR -->
@@ -3512,22 +3533,23 @@
             </div>
         </div>
 
+        <!-- Ordenamiento -->
+        <div class="sort-control">
+            <button type="button" class="sort-pill" id="sort-pill" onclick="abrirSortCortina()"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="10" y1="17" x2="14" y2="17"/></svg><span>Ordenar: <b id="sort-pill-txt">Por defecto</b></span></button>
+            <select id="sort-select" class="sort-select" style="display:none" onchange="changeSort(this.value)">
+                <option value="default">Por defecto</option>
+                <option value="price-asc">Más barato</option>
+                <option value="price-desc">Más caro</option>
+            </select>
+        </div>
+
+
         <!-- Filtros -->
         <div class="filters">
             <button class="filter-btn active" onclick="filterProducts('todos')">Todos</button>
             <button class="filter-btn" onclick="filterProducts('masculino')">Hombre</button>
             <button class="filter-btn" onclick="filterProducts('femenino')">Mujer</button>
             <button class="filter-btn" onclick="filterProducts('unisex')">Unisex</button>
-        </div>
-
-        <!-- Ordenamiento -->
-        <div class="sort-control">
-            <label for="sort-select">Ordenar:</label>
-            <select id="sort-select" class="sort-select" onchange="changeSort(this.value)">
-                <option value="default">Por defecto</option>
-                <option value="price-asc">Más barato</option>
-                <option value="price-desc">Más caro</option>
-            </select>
         </div>
     </div>
 
@@ -13056,5 +13078,37 @@ async function validarCodigoRevendedor() {
     
     <!-- reCAPTCHA API -->
     <script src="https://www.google.com/recaptcha/api.js?onload=onRecaptchaReady&render=explicit" async defer></script>
+<script>
+(function () {
+    var sel = document.getElementById('sort-select');
+    if (!sel) return;
+    var ETQ = { 'default': 'Por defecto', 'price-desc': 'Más caro', 'price-asc': 'Más barato' };
+    var ORDEN = ['default', 'price-desc', 'price-asc'];
+    function sync() {
+        var v = sel.value || 'default';
+        var t = document.getElementById('sort-pill-txt'); if (t) t.textContent = ETQ[v] || ETQ['default'];
+        document.querySelectorAll('.sort-cortina-opt').forEach(function (b) { b.classList.toggle('activa', b.getAttribute('data-v') === v); });
+    }
+    try {
+        var d = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
+        Object.defineProperty(sel, 'value', { configurable: true, get: function () { return d.get.call(this); }, set: function (x) { d.set.call(this, x); sync(); } });
+    } catch (e) {}
+    var ov = document.createElement('div');
+    ov.className = 'sort-cortina-overlay'; ov.id = 'sort-cortina-overlay';
+    ov.innerHTML = '<div class="sort-cortina"><div class="sort-cortina-head"><span>Ordenar</span><button type="button" aria-label="Cerrar" data-cerrar="1">&times;</button></div>' +
+        ORDEN.map(function (v) { return '<button type="button" class="sort-cortina-opt" data-v="' + v + '">' + ETQ[v] + '<span class="sc-dot"></span></button>'; }).join('') + '</div>';
+    document.body.appendChild(ov);
+    function cerrar() { ov.classList.remove('abierto'); }
+    window.abrirSortCortina = function () { sync(); ov.classList.add('abierto'); };
+    ov.addEventListener('click', function (e) {
+        if (e.target === ov || e.target.getAttribute('data-cerrar')) { cerrar(); return; }
+        var b = e.target.closest('.sort-cortina-opt'); if (!b) return;
+        sel.value = b.getAttribute('data-v');
+        sel.dispatchEvent(new Event('change', { bubbles: true }));
+        sync(); cerrar();
+    });
+    sync();
+})();
+</script>
 </body>
 </html>
