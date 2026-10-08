@@ -6238,6 +6238,52 @@ window.productsMultishop = [
                 quitar(window.productsElectronicos);
                 quitar(window.productsJugueteria);
                 quitar(window.productsMultishop);
+                // Productos cargados desde pedidos.html ("Cargar productos"): se suman al catálogo.
+                const talleCalzado = ['35', '36', '37', '38', '39', '40', '41', '42', '43', '44'];
+                const nuevo = (cat, a) => {
+            const _lin = (Array.isArray(a.lineasVariantes) ? a.lineasVariantes : []).filter(l => l && l.nombre && Array.isArray(l.opciones) && l.opciones.length);
+                    const base = { id: a.id, nombre: a.nombre, imagen: a.imagen, precio: a.precio, precioOriginal: a.precio, caracteristicas: a.caracteristicas ? [a.caracteristicas] : [], info: '', momento: a.momento || '', variantes: _lin.length ? _lin.flatMap(l => l.opciones.map(o => l.nombre + ': ' + o)) : (Array.isArray(a.variantes) ? a.variantes : []), lineasVariantes: _lin, _agregado: true, _catCentral: cat };
+                    if (cat === 'perfumes') return { ...base, categoria: 'unisex' };
+                    if (cat === 'calzados') { const _tl = _lin.find(l => /talle/i.test(l.nombre)); const _resto = _lin.filter(l => l !== _tl); return { ...base, categoria: 'adultos', lineasVariantes: _resto, variantes: _resto.flatMap(l => l.opciones.map(o => l.nombre + ': ' + o)), talle: (_tl ? _tl.opciones : (Array.isArray(a.variantes) && a.variantes.length ? a.variantes : talleCalzado)) }; }
+                    if (cat === 'belleza_maquillaje') return { ...base, categoria: 'maquillaje', _origin: 'maquillaje', imagenes: [a.imagen] };
+                    if (cat === 'bazar_bazar') return { ...base, categoria: 'bazar' };
+                    if (cat === 'bazar_melamina') return { ...base, categoria: 'melamina' };
+                    if (cat === 'jugueteria_juguetes') return { ...base, categoria: 'juguetes' };
+                    if (cat === 'jugueteria_peluches') return { ...base, categoria: 'peluches' };
+                    if (cat === 'libreria') return { ...base, categoria: 'libreria' };
+                    if (cat === 'electronicos') return { ...base, categoria: 'electronicos' };
+                    if (cat === 'lenceria') return { ...base, categoria: 'lenceria', grupo: 'lenceria', subcategoria: 'conjuntos', precioCosto: a.precio };
+                    return base;
+                };
+                const agregar = (arr, cat, extra) => {
+                    if (!arr) return;
+                    (data.agregados && data.agregados[cat] || []).forEach(a => { if (!arr.some(x => x.id === a.id)) arr.push({ ...nuevo(cat, a), ...extra }); });
+                };
+                agregar(window.products, 'perfumes');
+                agregar(window.maquillaje, 'belleza_maquillaje', { catalogo: 'maquillaje' });
+                agregar(window.shoes, 'calzados');
+                agregar(LENCERIA_DATA, 'lenceria');
+                agregar(SUPLEMENTOS_DATA, 'suplementos');
+                agregar(BAZAR_DATA, 'bazar_bazar');
+                agregar(MELAMINA_DATA, 'bazar_melamina');
+                agregar(JUGUETES_DATA, 'jugueteria_juguetes');
+                agregar(PELUCHES_DATA, 'jugueteria_peluches');
+                agregar(LIBRERIA_DATA, 'libreria');
+                agregar(ELECTRONICOS_DATA, 'electronicos');
+                agregar(window.productsBazar, 'bazar_bazar', { _bazarSub: 'bazar' });
+                agregar(window.productsBazar, 'bazar_melamina', { _bazarSub: 'melamina' });
+                agregar(window.productsJugueteria, 'jugueteria_juguetes', { _jugSub: 'juguetes' });
+                agregar(window.productsJugueteria, 'jugueteria_peluches', { _jugSub: 'peluches' });
+                agregar(window.productsLibreria, 'libreria');
+                agregar(window.productsElectronicos, 'electronicos');
+                agregar(window.productsMultishop, 'perfumes', { _multiSub: 'perfumes' });
+                agregar(window.productsMultishop, 'belleza_maquillaje', { _multiSub: 'maquillaje' });
+                agregar(window.productsMultishop, 'bazar_bazar', { _multiSub: 'bazar', _bazarSub: 'bazar' });
+                agregar(window.productsMultishop, 'bazar_melamina', { _multiSub: 'bazar', _bazarSub: 'melamina' });
+                agregar(window.productsMultishop, 'jugueteria_juguetes', { _multiSub: 'juguetes', _jugSub: 'juguetes' });
+                agregar(window.productsMultishop, 'jugueteria_peluches', { _multiSub: 'juguetes', _jugSub: 'peluches' });
+                agregar(window.productsMultishop, 'libreria', { _multiSub: 'libreria' });
+                agregar(window.productsMultishop, 'electronicos', { _multiSub: 'electronico' });
                 try { if (typeof renderProducts === 'function') renderProducts(); } catch(_e) {}
             })
             .catch(() => {});
@@ -6650,6 +6696,7 @@ window.productsMultishop = [
 
             window.currentProduct = product;
             window.selectedVarianteAgregado = null;
+            window.selectedLineasAgregado = {};
             window.currentProductCatalog = 'lenceria';
             window.selectedTalleLenceria = null;
 
@@ -6888,6 +6935,7 @@ window.productsMultishop = [
 
             window.currentProduct = product;
             window.selectedVarianteAgregado = null;
+            window.selectedLineasAgregado = {};
             window.currentProductCatalog = 'suplementos';
 
             const modal = document.getElementById('modal-details-shoes');
@@ -7068,6 +7116,7 @@ window.productsMultishop = [
 
             window.currentProduct = product;
             window.selectedVarianteAgregado = null;
+            window.selectedLineasAgregado = {};
             window.currentProductCatalog = 'bazar';
 
             const modal = document.getElementById('modal-details-shoes');
@@ -7246,6 +7295,7 @@ window.productsMultishop = [
 
             window.currentProduct = product;
             window.selectedVarianteAgregado = null;
+            window.selectedLineasAgregado = {};
             window.currentProductCatalog = 'libreria';
 
             const modal = document.getElementById('modal-details-shoes');
@@ -7432,6 +7482,7 @@ window.productsMultishop = [
 
             window.currentProduct = product;
             window.selectedVarianteAgregado = null;
+            window.selectedLineasAgregado = {};
             window.currentProductCatalog = 'multishop';
             window.selectedVarianteMultishop = null;
 
@@ -7480,11 +7531,11 @@ window.productsMultishop = [
 
                         ${caracteristicasHtml}
 
-                        ${product._agregado ? _agregadoBloque(product, false) : `<div style="background: var(--gray-light); padding: 15px; border-radius: 8px; margin: 20px 0; width: 100%; text-align: left;">
+                        ${product._agregado ? _agregadoBloque(product, true) : `<div style="background: var(--gray-light); padding: 15px; border-radius: 8px; margin: 20px 0; width: 100%; text-align: left;">
                             <p style="margin: 0; color: var(--text); line-height: 1.5;">${product.info || ''}</p>
                         </div>`}
 
-                        ${variantesHtml}
+                        ${product._agregado ? '' : variantesHtml}
 
                         <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px; width: 100%;">
                             <button class="btn-primary" onclick="addToCartMultishop(${product.id})" style="width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Agregar Producto</button>
@@ -7516,9 +7567,9 @@ window.productsMultishop = [
             const product = (window.productsMultishop || []).find(p => p.id === productId);
             if (!product) return;
 
-            if (_agregadoVarianteFalta(product, window.selectedVarianteMultishop)) return;
+            if (_agregadoVarianteFalta(product)) return;
 
-            const varianteSeleccionada = window.selectedVarianteMultishop || null;
+            const varianteSeleccionada = (product._agregado ? window.selectedVarianteAgregado : window.selectedVarianteMultishop) || null;
 
             if (!_puedeAgregarAlCarrito('multishop')) return;
 
@@ -7821,7 +7872,11 @@ window.productsMultishop = [
         // ── Productos cargados desde pedidos.html ("Cargar productos"): Momento ideal y variantes ──
         // Solo actúan sobre productos con _agregado; el resto de los productos no cambia.
         window.selectedVarianteAgregado = null;
+        window.selectedLineasAgregado = {};
         function _agregadoEsc(t) { return String(t).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+        function _agregadoLineas(p) {
+            return (p && Array.isArray(p.lineasVariantes)) ? p.lineasVariantes.filter(l => l && Array.isArray(l.opciones) && l.opciones.length) : [];
+        }
         function _agregadoBloque(p, conVariantes) {
             if (!p || !p._agregado) return '';
             let h = '';
@@ -7831,7 +7886,15 @@ window.productsMultishop = [
                     <p style="margin: 0; color: var(--text-light); line-height: 1.5;">${_agregadoEsc(p.momento)}</p>
                 </div>`;
             }
-            if (conVariantes && Array.isArray(p.variantes) && p.variantes.length > 0) {
+            const lineas = _agregadoLineas(p);
+            if (conVariantes && lineas.length > 0) {
+                h += lineas.map((l, li) => `<div class="variant-group">
+                    <label class="variant-group-label">Elegí ${_agregadoEsc(l.nombre)}:</label>
+                    <div class="variant-row">
+                        ${l.opciones.map(o => `<button type="button" class="size-btn variante-btn-agregado" data-l="${li}" data-n="${_agregadoEsc(l.nombre)}" data-v="${_agregadoEsc(o)}" onclick="selectVarianteAgregado(this)">${_agregadoEsc(o)}</button>`).join('')}
+                    </div>
+                </div>`).join('');
+            } else if (conVariantes && Array.isArray(p.variantes) && p.variantes.length > 0) {
                 h += `<div class="variant-group">
                     <label class="variant-group-label">Elegí una variante:</label>
                     <div class="variant-row">
@@ -7842,14 +7905,32 @@ window.productsMultishop = [
             return h;
         }
         function selectVarianteAgregado(btn) {
-            document.querySelectorAll('.variante-btn-agregado').forEach(b => b.style.borderColor = 'var(--border)');
+            const li = btn.getAttribute('data-l');
+            const cont = btn.closest('#details-content-shoes') || document;
+            if (li === null) {
+                cont.querySelectorAll('.variante-btn-agregado').forEach(b => b.style.borderColor = 'var(--border)');
+                btn.style.borderColor = 'var(--primary)';
+                window.selectedVarianteAgregado = btn.getAttribute('data-v');
+                return;
+            }
+            cont.querySelectorAll('.variante-btn-agregado[data-l="' + li + '"]').forEach(b => b.style.borderColor = 'var(--border)');
             btn.style.borderColor = 'var(--primary)';
-            window.selectedVarianteAgregado = btn.getAttribute('data-v');
+            window.selectedLineasAgregado = window.selectedLineasAgregado || {};
+            window.selectedLineasAgregado[li] = btn.getAttribute('data-n') + ': ' + btn.getAttribute('data-v');
+            _agregadoActualizarSeleccion(window.currentProduct);
+        }
+        // Une la elección de cada línea ("Talle: 38 · Color: Rojo"); queda vacía hasta que se elijan todas.
+        function _agregadoActualizarSeleccion(p) {
+            const n = _agregadoLineas(p).length;
+            const sel = window.selectedLineasAgregado || {};
+            const partes = [];
+            for (let i = 0; i < n; i++) { if (sel[i]) partes.push(sel[i]); }
+            window.selectedVarianteAgregado = (n > 0 && partes.length === n) ? partes.join(' · ') : null;
         }
         function _agregadoVarianteFalta(p, sel) {
             if (!p || !p._agregado || !Array.isArray(p.variantes) || p.variantes.length === 0) return false;
             if ((arguments.length > 1 ? sel : window.selectedVarianteAgregado)) return false;
-            alert('Por favor elegí una variante');
+            alert(_agregadoLineas(p).length > 1 ? 'Por favor elegí una opción de cada variante' : 'Por favor elegí una variante');
             return true;
         }
         function _agregadoVarianteSel(p, sel) {
@@ -7867,6 +7948,19 @@ window.productsMultishop = [
             const addBtn = document.getElementById('modal-details-add-btn');
             if (!section || !container) return;
 
+            const lineas = (item && item._agregado) ? _agregadoLineas(item) : [];
+            if (lineas.length > 0) {
+                // Producto cargado desde pedidos.html con varias líneas de variantes (Talle, Color…): se elige una opción de cada una.
+                window.selectedLineasModal = {};
+                section.classList.remove('hidden');
+                container.innerHTML = lineas.map((l, li) => `<div style="width:100%;margin-bottom:8px">
+                    <div style="font-size:12px;font-weight:600;margin-bottom:5px;color:var(--text)">${_agregadoEsc(l.nombre)}</div>
+                    <div class="variant-row">${l.opciones.map(o => `<button type="button" class="variant-chip" data-l="${li}" data-n="${_agregadoEsc(l.nombre)}" data-v="${_agregadoEsc(o)}" onclick="selectLineaModal(this)">${_agregadoEsc(o)}</button>`).join('')}</div>
+                </div>`).join('');
+                if (addBtn) { addBtn.disabled = true; addBtn.style.opacity = '0.6'; }
+                return;
+            }
+
             if (item && Array.isArray(item.variantes) && item.variantes.length > 0) {
                 section.classList.remove('hidden');
                 container.innerHTML = item.variantes.map(v =>
@@ -7878,6 +7972,21 @@ window.productsMultishop = [
                 container.innerHTML = '';
                 if (addBtn) { addBtn.disabled = false; addBtn.style.opacity = '1'; }
             }
+        }
+
+        function selectLineaModal(btn) {
+            const li = btn.getAttribute('data-l');
+            document.querySelectorAll('#modal-details-variants .variant-chip[data-l="' + li + '"]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            window.selectedLineasModal = window.selectedLineasModal || {};
+            window.selectedLineasModal[li] = btn.getAttribute('data-n') + ': ' + btn.getAttribute('data-v');
+            const n = _agregadoLineas(window.currentProduct).length;
+            const partes = [];
+            for (let k = 0; k < n; k++) { if (window.selectedLineasModal[k]) partes.push(window.selectedLineasModal[k]); }
+            const completo = partes.length === n;
+            window.selectedVariante = completo ? partes.join(' · ') : null;
+            const addBtn = document.getElementById('modal-details-add-btn');
+            if (addBtn) { addBtn.disabled = !completo; addBtn.style.opacity = completo ? '1' : '0.6'; }
         }
 
         function selectVarianteModal(variante, btnEl) {
@@ -8388,26 +8497,6 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             libreria: 'Librería',
             multishop: 'Multishop'
         };
-        const talleCalzado = ['35', '36', '37', '38', '39', '40', '41', '42', '43', '44'];
-        const nuevo = (cat, a) => {
-            const base = { id: a.id, nombre: a.nombre, imagen: a.imagen, precio: a.precio, precioOriginal: a.precio, caracteristicas: a.caracteristicas ? [a.caracteristicas] : [], info: '', momento: a.momento || '', variantes: Array.isArray(a.variantes) ? a.variantes : [], _agregado: true, _catCentral: cat };
-            if (cat === 'perfumes') return { ...base, categoria: 'unisex' };
-            if (cat === 'calzados') return { ...base, categoria: 'adultos', variantes: [], talle: (Array.isArray(a.variantes) && a.variantes.length ? a.variantes : talleCalzado) };
-            if (cat === 'belleza_maquillaje') return { ...base, categoria: 'maquillaje', _origin: 'maquillaje', imagenes: [a.imagen] };
-            if (cat === 'bazar_bazar') return { ...base, categoria: 'bazar' };
-            if (cat === 'bazar_melamina') return { ...base, categoria: 'melamina' };
-            if (cat === 'jugueteria_juguetes') return { ...base, categoria: 'juguetes' };
-            if (cat === 'jugueteria_peluches') return { ...base, categoria: 'peluches' };
-            if (cat === 'libreria') return { ...base, categoria: 'libreria' };
-            if (cat === 'electronicos') return { ...base, categoria: 'electronicos' };
-            if (cat === 'lenceria') return { ...base, categoria: 'lenceria', grupo: 'lenceria', subcategoria: 'conjuntos', precioCosto: a.precio };
-            return base;
-        };
-        const agregar = (arr, cat, extra) => {
-            if (!arr) return;
-            (data.agregados && data.agregados[cat] || []).forEach(a => { if (!arr.some(x => x.id === a.id)) arr.push({ ...nuevo(cat, a), ...extra }); });
-        };
-
         function _puedeAgregarAlCarrito(nuevaCategoria) {
             if (!window.cart || window.cart.length === 0) return true;
 
@@ -8531,10 +8620,12 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                 return;
             }
 
+            if (_agregadoVarianteFalta(product)) return;
+
             if (!_puedeAgregarAlCarrito('calzados')) return;
 
             const existingItem = window.cart.find(item =>
-                getItemCatalog(item) === 'calzados' && item.id === productId && item.talle === window.selectedTalle
+                getItemCatalog(item) === 'calzados' && item.id === productId && item.talle === window.selectedTalle && (item.variante || null) === _agregadoVarianteSel(product)
             );
 
             if (existingItem) {
@@ -8544,6 +8635,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                     ...product, 
                     cantidad: 1, 
                     talle: window.selectedTalle,
+                    ..._agregadoVarianteItem(product),
                     catalogo: 'calzados'
                 });
             }
@@ -8624,6 +8716,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                 if (!item) return;
 
                 if (Array.isArray(item.variantes) && item.variantes.length > 0 && !window.selectedVariante) {
+                    if (_agregadoLineas(item).length > 0) { alert('Por favor elegí una opción de cada variante'); return; }
                     mostrarModalVarianteRequerida(item);
                     return;
                 }
@@ -8662,6 +8755,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             }
 
             if (productToAdd._agregado && Array.isArray(productToAdd.variantes) && productToAdd.variantes.length > 0 && !window.selectedVariante) {
+                if (_agregadoLineas(productToAdd).length > 0) { alert('Por favor elegí una opción de cada variante'); return; }
                 mostrarModalVarianteRequerida(productToAdd);
                 return;
             }
@@ -9488,32 +9582,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
         // ── DETECCIÓN "¿Ya se registró en este dispositivo?" (Registrarme vs Iniciar Sesión) ──
         const REGISTERED_FLAG_KEY = 'rw_uid_registrado';
         function marcarUsuarioRegistrado(uid) {
-            agregar(window.products, 'perfumes');
-        agregar(window.maquillaje, 'belleza_maquillaje', { catalogo: 'maquillaje' });
-        agregar(window.shoes, 'calzados');
-        agregar(LENCERIA_DATA, 'lenceria');
-        agregar(SUPLEMENTOS_DATA, 'suplementos');
-        agregar(BAZAR_DATA, 'bazar_bazar');
-        agregar(MELAMINA_DATA, 'bazar_melamina');
-        agregar(JUGUETES_DATA, 'jugueteria_juguetes');
-        agregar(PELUCHES_DATA, 'jugueteria_peluches');
-        agregar(LIBRERIA_DATA, 'libreria');
-        agregar(ELECTRONICOS_DATA, 'electronicos');
-        agregar(window.productsBazar, 'bazar_bazar', { _bazarSub: 'bazar' });
-        agregar(window.productsBazar, 'bazar_melamina', { _bazarSub: 'melamina' });
-        agregar(window.productsJugueteria, 'jugueteria_juguetes', { _jugSub: 'juguetes' });
-        agregar(window.productsJugueteria, 'jugueteria_peluches', { _jugSub: 'peluches' });
-        agregar(window.productsLibreria, 'libreria');
-        agregar(window.productsElectronicos, 'electronicos');
-        agregar(window.productsMultishop, 'perfumes', { _multiSub: 'perfumes' });
-        agregar(window.productsMultishop, 'belleza_maquillaje', { _multiSub: 'maquillaje' });
-        agregar(window.productsMultishop, 'bazar_bazar', { _multiSub: 'bazar', _bazarSub: 'bazar' });
-        agregar(window.productsMultishop, 'bazar_melamina', { _multiSub: 'bazar', _bazarSub: 'melamina' });
-        agregar(window.productsMultishop, 'jugueteria_juguetes', { _multiSub: 'juguetes', _jugSub: 'juguetes' });
-        agregar(window.productsMultishop, 'jugueteria_peluches', { _multiSub: 'juguetes', _jugSub: 'peluches' });
-        agregar(window.productsMultishop, 'libreria', { _multiSub: 'libreria' });
-        agregar(window.productsMultishop, 'electronicos', { _multiSub: 'electronico' });
-        try { localStorage.setItem(REGISTERED_FLAG_KEY, uid || '1'); } catch (e) {}
+            try { localStorage.setItem(REGISTERED_FLAG_KEY, uid || '1'); } catch (e) {}
         }
         function usuarioYaRegistrado() {
             try { return !!localStorage.getItem(REGISTERED_FLAG_KEY); } catch (e) { return false; }
@@ -11034,6 +11103,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             
             window.currentProduct = product;
             window.selectedVarianteAgregado = null;
+            window.selectedLineasAgregado = {};
             window.currentProductCatalog = 'calzados';
             const modal = document.getElementById('modal-details-shoes');
             const detailsContent = document.getElementById('details-content-shoes');
@@ -11081,7 +11151,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                         
                         ${caracteristicasHtml}
                         
-                        ${product._agregado ? _agregadoBloque(product, false) : `<div style="background: var(--gray-light); padding: 15px; border-radius: 8px; margin: 20px 0; width: 100%; text-align: left;">
+                        ${product._agregado ? _agregadoBloque(product, true) : `<div style="background: var(--gray-light); padding: 15px; border-radius: 8px; margin: 20px 0; width: 100%; text-align: left;">
                             <p style="margin: 0; color: var(--text); line-height: 1.5;">${product.info}</p>
                         </div>`}
                         
