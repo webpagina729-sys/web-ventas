@@ -6649,6 +6649,7 @@ window.productsMultishop = [
             if (!product) return;
 
             window.currentProduct = product;
+            window.selectedVarianteAgregado = null;
             window.currentProductCatalog = 'lenceria';
             window.selectedTalleLenceria = null;
 
@@ -6713,9 +6714,9 @@ window.productsMultishop = [
 
                         ${caracteristicasHtml}
 
-                        <div style="background: var(--gray-light); padding: 15px; border-radius: 8px; margin: 20px 0; width: 100%; text-align: left;">
+                        ${product._agregado ? _agregadoBloque(product, true) : `<div style="background: var(--gray-light); padding: 15px; border-radius: 8px; margin: 20px 0; width: 100%; text-align: left;">
                             <p style="margin: 0; color: var(--text); line-height: 1.5;">${product.info || ''}</p>
-                        </div>
+                        </div>`}
 
                         ${coloresHtml}
 
@@ -6757,13 +6758,15 @@ window.productsMultishop = [
             const product = (window.productsLenceria || []).find(p => p.id === productId);
             if (!product) return;
 
+            if (_agregadoVarianteFalta(product)) return;
+
             const talleSeleccionado = window.selectedTalleLenceria || null;
             const colorSeleccionado = window.selectedColorLenceria || null;
 
             if (!_puedeAgregarAlCarrito('lenceria')) return;
 
             const existingItem = window.cart.find(item =>
-                getItemCatalog(item) === 'lenceria' && item.id === productId &&
+                getItemCatalog(item) === 'lenceria' && item.id === productId && (item.variante || null) === _agregadoVarianteSel(product) &&
                 (item.talleLenceria || null) === talleSeleccionado &&
                 (item.colorLenceria || null) === colorSeleccionado
             );
@@ -6774,6 +6777,7 @@ window.productsMultishop = [
                 window.cart.push({
                     ...product,
                     cantidad: 1,
+                    ..._agregadoVarianteItem(product),
                     talleLenceria: talleSeleccionado,
                     colorLenceria: colorSeleccionado,
                     catalogo: 'lenceria'
@@ -6883,6 +6887,7 @@ window.productsMultishop = [
             if (!product) return;
 
             window.currentProduct = product;
+            window.selectedVarianteAgregado = null;
             window.currentProductCatalog = 'suplementos';
 
             const modal = document.getElementById('modal-details-shoes');
@@ -6916,6 +6921,8 @@ window.productsMultishop = [
 
                         ${caracteristicasHtml}
 
+                        ${_agregadoBloque(product, true)}
+
                         <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px; width: 100%;">
                             <button class="btn-primary" onclick="addToCartSuplementos(${product.id})" style="width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Agregar Producto</button>
                             <button class="btn-secondary" onclick="closeDetailsShoes()" style="width: 100%; padding: 12px; background: var(--border); color: var(--text); border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Cerrar</button>
@@ -6940,10 +6947,12 @@ window.productsMultishop = [
             const product = (window.productsSuplementos || []).find(p => p.id === productId);
             if (!product) return;
 
+            if (_agregadoVarianteFalta(product)) return;
+
             if (!_puedeAgregarAlCarrito('suplementos')) return;
 
             const existingItem = window.cart.find(item =>
-                getItemCatalog(item) === 'suplementos' && item.id === productId
+                getItemCatalog(item) === 'suplementos' && item.id === productId && (item.variante || null) === _agregadoVarianteSel(product)
             );
 
             if (existingItem) {
@@ -6952,6 +6961,7 @@ window.productsMultishop = [
                 window.cart.push({
                     ...product,
                     cantidad: 1,
+                    ..._agregadoVarianteItem(product),
                     catalogo: 'suplementos'
                 });
             }
@@ -7057,6 +7067,7 @@ window.productsMultishop = [
             if (!product) return;
 
             window.currentProduct = product;
+            window.selectedVarianteAgregado = null;
             window.currentProductCatalog = 'bazar';
 
             const modal = document.getElementById('modal-details-shoes');
@@ -7090,9 +7101,9 @@ window.productsMultishop = [
 
                         ${caracteristicasHtml}
 
-                        <div style="background: var(--gray-light); padding: 15px; border-radius: 8px; margin: 20px 0; width: 100%; text-align: left;">
+                        ${product._agregado ? _agregadoBloque(product, true) : `<div style="background: var(--gray-light); padding: 15px; border-radius: 8px; margin: 20px 0; width: 100%; text-align: left;">
                             <p style="margin: 0; color: var(--text); line-height: 1.5;">${product.info || ''}</p>
-                        </div>
+                        </div>`}
 
                         <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px; width: 100%;">
                             <button class="btn-primary" onclick="addToCartBazar(${product.id})" style="width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Agregar Producto</button>
@@ -7118,10 +7129,12 @@ window.productsMultishop = [
             const product = (window.productsBazar || []).find(p => p.id === productId);
             if (!product) return;
 
+            if (_agregadoVarianteFalta(product)) return;
+
             if (!_puedeAgregarAlCarrito('bazar')) return;
 
             const existingItem = window.cart.find(item =>
-                getItemCatalog(item) === 'bazar' && item.id === productId
+                getItemCatalog(item) === 'bazar' && item.id === productId && (item.variante || null) === _agregadoVarianteSel(product)
             );
 
             if (existingItem) {
@@ -7130,6 +7143,7 @@ window.productsMultishop = [
                 window.cart.push({
                     ...product,
                     cantidad: 1,
+                    ..._agregadoVarianteItem(product),
                     catalogo: 'bazar'
                 });
             }
@@ -7231,6 +7245,7 @@ window.productsMultishop = [
             if (!product) return;
 
             window.currentProduct = product;
+            window.selectedVarianteAgregado = null;
             window.currentProductCatalog = 'libreria';
 
             const modal = document.getElementById('modal-details-shoes');
@@ -7264,9 +7279,9 @@ window.productsMultishop = [
 
                         ${caracteristicasHtml}
 
-                        <div style="background: var(--gray-light); padding: 15px; border-radius: 8px; margin: 20px 0; width: 100%; text-align: left;">
+                        ${product._agregado ? _agregadoBloque(product, true) : `<div style="background: var(--gray-light); padding: 15px; border-radius: 8px; margin: 20px 0; width: 100%; text-align: left;">
                             <p style="margin: 0; color: var(--text); line-height: 1.5;">${product.info || ''}</p>
-                        </div>
+                        </div>`}
 
                         <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px; width: 100%;">
                             <button class="btn-primary" onclick="addToCartLibreria(${product.id})" style="width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Agregar Producto</button>
@@ -7292,10 +7307,12 @@ window.productsMultishop = [
             const product = (window.productsLibreria || []).find(p => p.id === productId);
             if (!product) return;
 
+            if (_agregadoVarianteFalta(product)) return;
+
             if (!_puedeAgregarAlCarrito('libreria')) return;
 
             const existingItem = window.cart.find(item =>
-                getItemCatalog(item) === 'libreria' && item.id === productId
+                getItemCatalog(item) === 'libreria' && item.id === productId && (item.variante || null) === _agregadoVarianteSel(product)
             );
 
             if (existingItem) {
@@ -7304,6 +7321,7 @@ window.productsMultishop = [
                 window.cart.push({
                     ...product,
                     cantidad: 1,
+                    ..._agregadoVarianteItem(product),
                     catalogo: 'libreria'
                 });
             }
@@ -7413,6 +7431,7 @@ window.productsMultishop = [
             if (!product) return;
 
             window.currentProduct = product;
+            window.selectedVarianteAgregado = null;
             window.currentProductCatalog = 'multishop';
             window.selectedVarianteMultishop = null;
 
@@ -7461,9 +7480,9 @@ window.productsMultishop = [
 
                         ${caracteristicasHtml}
 
-                        <div style="background: var(--gray-light); padding: 15px; border-radius: 8px; margin: 20px 0; width: 100%; text-align: left;">
+                        ${product._agregado ? _agregadoBloque(product, false) : `<div style="background: var(--gray-light); padding: 15px; border-radius: 8px; margin: 20px 0; width: 100%; text-align: left;">
                             <p style="margin: 0; color: var(--text); line-height: 1.5;">${product.info || ''}</p>
-                        </div>
+                        </div>`}
 
                         ${variantesHtml}
 
@@ -7497,6 +7516,8 @@ window.productsMultishop = [
             const product = (window.productsMultishop || []).find(p => p.id === productId);
             if (!product) return;
 
+            if (_agregadoVarianteFalta(product, window.selectedVarianteMultishop)) return;
+
             const varianteSeleccionada = window.selectedVarianteMultishop || null;
 
             if (!_puedeAgregarAlCarrito('multishop')) return;
@@ -7517,6 +7538,7 @@ window.productsMultishop = [
                     ...product,
                     cantidad: 1,
                     varianteMultishop: varianteSeleccionada,
+                    ..._agregadoVarianteItem(product, varianteSeleccionada),
                     catalogo: 'multishop'
                 });
             }
@@ -7754,7 +7776,8 @@ window.productsMultishop = [
             document.getElementById('modal-details-characteristics').innerHTML = currentProduct.caracteristicas.map(c => `<li>${c}</li>`).join('');
             document.getElementById('modal-details-info').textContent = currentProduct.info;
             document.getElementById('modal-details-moment').textContent = currentProduct.momento;
-            renderVariantSection(null);
+            ['characteristics', 'info', 'moment'].forEach(k => { const e = document.getElementById('modal-details-' + k); const s = e && e.closest('.modal-details-section'); if (s) s.style.display = (currentProduct._agregado && (k === 'info' || !e.textContent.trim())) ? 'none' : ''; });
+            renderVariantSection(currentProduct);
             document.getElementById('modal-details').classList.add('active');
         }
 
@@ -7795,6 +7818,49 @@ window.productsMultishop = [
         }
 
         // Renderiza (o esconde) el selector de variantes obligatorio dentro del modal de detalles
+        // ── Productos cargados desde pedidos.html ("Cargar productos"): Momento ideal y variantes ──
+        // Solo actúan sobre productos con _agregado; el resto de los productos no cambia.
+        window.selectedVarianteAgregado = null;
+        function _agregadoEsc(t) { return String(t).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+        function _agregadoBloque(p, conVariantes) {
+            if (!p || !p._agregado) return '';
+            let h = '';
+            if (p.momento) {
+                h += `<div style="background: var(--gray-light); padding: 15px; border-radius: 8px; margin: 20px 0; width: 100%; text-align: left;">
+                    <p style="margin: 0 0 10px 0; font-weight: 600; color: var(--text);">Momento Ideal:</p>
+                    <p style="margin: 0; color: var(--text-light); line-height: 1.5;">${_agregadoEsc(p.momento)}</p>
+                </div>`;
+            }
+            if (conVariantes && Array.isArray(p.variantes) && p.variantes.length > 0) {
+                h += `<div class="variant-group">
+                    <label class="variant-group-label">Elegí una variante:</label>
+                    <div class="variant-row">
+                        ${p.variantes.map(v => `<button type="button" class="size-btn variante-btn-agregado" data-v="${_agregadoEsc(v)}" onclick="selectVarianteAgregado(this)">${_agregadoEsc(v)}</button>`).join('')}
+                    </div>
+                </div>`;
+            }
+            return h;
+        }
+        function selectVarianteAgregado(btn) {
+            document.querySelectorAll('.variante-btn-agregado').forEach(b => b.style.borderColor = 'var(--border)');
+            btn.style.borderColor = 'var(--primary)';
+            window.selectedVarianteAgregado = btn.getAttribute('data-v');
+        }
+        function _agregadoVarianteFalta(p, sel) {
+            if (!p || !p._agregado || !Array.isArray(p.variantes) || p.variantes.length === 0) return false;
+            if ((arguments.length > 1 ? sel : window.selectedVarianteAgregado)) return false;
+            alert('Por favor elegí una variante');
+            return true;
+        }
+        function _agregadoVarianteSel(p, sel) {
+            if (!p || !p._agregado || !Array.isArray(p.variantes) || p.variantes.length === 0) return null;
+            return (arguments.length > 1 ? sel : window.selectedVarianteAgregado) || null;
+        }
+        function _agregadoVarianteItem(p, sel) {
+            const v = arguments.length > 1 ? _agregadoVarianteSel(p, sel) : _agregadoVarianteSel(p);
+            return v ? { variante: v } : {};
+        }
+
         function renderVariantSection(item) {
             const section = document.getElementById('modal-details-variant-section');
             const container = document.getElementById('modal-details-variants');
@@ -7842,6 +7908,7 @@ window.productsMultishop = [
             document.getElementById('modal-details-characteristics').innerHTML = (item.caracteristicas || []).map(c => `<li>${c}</li>`).join('');
             document.getElementById('modal-details-info').textContent = item.info || '';
             document.getElementById('modal-details-moment').textContent = item.momento || '';
+            ['characteristics', 'info', 'moment'].forEach(k => { const e = document.getElementById('modal-details-' + k); const s = e && e.closest('.modal-details-section'); if (s) s.style.display = (item._agregado && (k === 'info' || !e.textContent.trim())) ? 'none' : ''; });
             renderVariantSection(item);
             document.getElementById('modal-details').classList.add('active');
         }
@@ -8323,9 +8390,9 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
         };
         const talleCalzado = ['35', '36', '37', '38', '39', '40', '41', '42', '43', '44'];
         const nuevo = (cat, a) => {
-            const base = { id: a.id, nombre: a.nombre, imagen: a.imagen, precio: a.precio, precioOriginal: a.precio, caracteristicas: [], info: '', _catCentral: cat };
+            const base = { id: a.id, nombre: a.nombre, imagen: a.imagen, precio: a.precio, precioOriginal: a.precio, caracteristicas: a.caracteristicas ? [a.caracteristicas] : [], info: '', momento: a.momento || '', variantes: Array.isArray(a.variantes) ? a.variantes : [], _agregado: true, _catCentral: cat };
             if (cat === 'perfumes') return { ...base, categoria: 'unisex' };
-            if (cat === 'calzados') return { ...base, categoria: 'adultos', talle: talleCalzado };
+            if (cat === 'calzados') return { ...base, categoria: 'adultos', variantes: [], talle: (Array.isArray(a.variantes) && a.variantes.length ? a.variantes : talleCalzado) };
             if (cat === 'belleza_maquillaje') return { ...base, categoria: 'maquillaje', _origin: 'maquillaje', imagenes: [a.imagen] };
             if (cat === 'bazar_bazar') return { ...base, categoria: 'bazar' };
             if (cat === 'bazar_melamina') return { ...base, categoria: 'melamina' };
@@ -8594,14 +8661,21 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                 return;
             }
 
+            if (productToAdd._agregado && Array.isArray(productToAdd.variantes) && productToAdd.variantes.length > 0 && !window.selectedVariante) {
+                mostrarModalVarianteRequerida(productToAdd);
+                return;
+            }
+
             if (!_puedeAgregarAlCarrito('perfumes')) return;
 
-            const existingItem = window.cart.find(item => getItemCatalog(item) === 'perfumes' && item.id === productToAdd.id);
+            const varianteAgregado = (productToAdd._agregado && Array.isArray(productToAdd.variantes) && productToAdd.variantes.length > 0) ? (window.selectedVariante || null) : null;
+            const existingItem = window.cart.find(item => getItemCatalog(item) === 'perfumes' && item.id === productToAdd.id && (item.variante || null) === varianteAgregado);
             if (existingItem) {
                 existingItem.cantidad += (currentQty || 1);
             } else {
-                window.cart.push({ ...productToAdd, cantidad: (currentQty || 1), catalogo: 'perfumes' });
+                window.cart.push({ ...productToAdd, cantidad: (currentQty || 1), catalogo: 'perfumes', ...(varianteAgregado ? { variante: varianteAgregado } : {}) });
             }
+            window.selectedVariante = null;
             updateCartCount();
             updateCartDisplay();
             
@@ -10959,6 +11033,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             if (!product) return;
             
             window.currentProduct = product;
+            window.selectedVarianteAgregado = null;
             window.currentProductCatalog = 'calzados';
             const modal = document.getElementById('modal-details-shoes');
             const detailsContent = document.getElementById('details-content-shoes');
@@ -11006,9 +11081,9 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                         
                         ${caracteristicasHtml}
                         
-                        <div style="background: var(--gray-light); padding: 15px; border-radius: 8px; margin: 20px 0; width: 100%; text-align: left;">
+                        ${product._agregado ? _agregadoBloque(product, false) : `<div style="background: var(--gray-light); padding: 15px; border-radius: 8px; margin: 20px 0; width: 100%; text-align: left;">
                             <p style="margin: 0; color: var(--text); line-height: 1.5;">${product.info}</p>
-                        </div>
+                        </div>`}
                         
                         ${tallesHtml}
                         
