@@ -6240,7 +6240,83 @@ window.productsMultishop = [
                 quitar(window.productsMultishop);
                 // Productos cargados desde pedidos.html ("Cargar productos"): se suman al catálogo.
                 const talleCalzado = ['35', '36', '37', '38', '39', '40', '41', '42', '43', '44'];
-                const nuevo = (cat, a) => {
+                function _agregadoVivo(p, cat, a) {
+            if (!p || !p._agregado || !a) return p;
+            const lin = (Array.isArray(a.lineasVariantes) ? a.lineasVariantes : []).filter(l => l && l.nombre && Array.isArray(l.opciones) && l.opciones.length);
+            const todas = lin.length ? lin.flatMap(l => l.opciones.map(o => l.nombre + ': ' + o)) : (Array.isArray(a.variantes) ? a.variantes : []);
+            if (!todas.length) return p;
+            const esCal = cat === 'calzados';
+            const talleBase = p.talle;
+            const tlOrig = esCal ? lin.find(l => /talle/i.test(l.nombre)) : null;
+            const marca = arr => { try { Object.defineProperty(arr, '_vivo', { value: true }); } catch (e) {} return arr; };
+            const calc = () => {
+                const pl = window.VARIANTES_GLOBAL_PLATAFORMA;
+                const o = pl && pl[cat] && pl[cat][String(p.id)];
+                const act = (o && Array.isArray(o.variantes)) ? o.variantes : todas;
+                if (!lin.length) return { lineasVariantes: marca([]), variantes: marca(act.slice()), talle: (esCal && Array.isArray(a.variantes) && a.variantes.length) ? marca(act.slice()) : talleBase };
+                const vivas = lin.map(l => ({ nombre: l.nombre, opciones: act.filter(s => s.indexOf(l.nombre + ': ') === 0).map(s => s.slice(l.nombre.length + 2)) })).filter(l => l.opciones.length);
+                const resto = tlOrig ? vivas.filter(l => l.nombre !== tlOrig.nombre) : vivas;
+                const tl = tlOrig ? vivas.find(l => l.nombre === tlOrig.nombre) : null;
+                return { lineasVariantes: marca(resto), variantes: marca(resto.flatMap(l => l.opciones.map(op => l.nombre + ': ' + op))), talle: esCal ? (tlOrig ? marca(tl ? tl.opciones.slice() : []) : talleBase) : undefined };
+            };
+            ['lineasVariantes', 'variantes'].concat(esCal ? ['talle'] : []).forEach(k => Object.defineProperty(p, k, { get: () => calc()[k], set: () => {}, enumerable: true, configurable: true }));
+            return p;
+        }
+        // ── Productos nuevos cargados desde pedidos.html: aviso al entrar a la categoría ──
+        const _naReg = (window.__naReg = window.__naReg || []);
+        const _naRegistrar = (p, cat) => { if (!_naReg.some(r => r.p.id === p.id)) _naReg.push({ p, cat }); return p; };
+        if (!window.__naInit) {
+            window.__naInit = true;
+            const esc = t => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            const img = (p, t, ex) => `<img src="${esc(typeof resolveImgUrl === 'function' ? resolveImgUrl(p.imagen) : p.imagen)}" alt="" style="width:${t}px;height:${t}px;object-fit:cover;border-radius:10px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.16);${ex || ''}">`;
+            const overlay = (id, html) => {
+                let m = document.getElementById(id);
+                if (!m) { m = document.createElement('div'); m.className = 'modal-overlay'; m.id = id; m.style.zIndex = '100050'; document.body.appendChild(m); }
+                m.innerHTML = html;
+                return m;
+            };
+            window.cerrarNuevosAgregados = () => { const m = document.getElementById('naModal'); if (m) m.classList.remove('active'); };
+            window.cerrarNuevosAgregadosTodos = () => { const m = document.getElementById('naTodosModal'); if (m) m.classList.remove('active'); };
+            window.abrirNuevosAgregadosTodos = () => {
+                const lista = window.__naActual || [];
+                const m = overlay('naTodosModal', `<div class="modal-content" style="max-width:400px;max-height:80vh;display:flex;flex-direction:column;">
+                    <div class="modal-header" style="justify-content:center;"><h2 class="modal-title" style="text-align:center;font-size:17px;">Nuevos productos</h2></div>
+                    <div style="overflow-y:auto;margin:6px 0 14px;">${lista.map(p => `<div style="display:flex;align-items:center;gap:10px;padding:7px 4px;border-bottom:1px solid rgba(0,0,0,.07);">${img(p, 42)}<span style="font-size:12.5px;line-height:1.3;">${esc(p.nombre)}</span></div>`).join('')}</div>
+                    <button type="button" class="confirmation-button confirmation-button-primary" style="width:100%;" onclick="cerrarNuevosAgregadosTodos()">Cerrar</button></div>`);
+                m.classList.add('active');
+            };
+            const mostrar = lista => {
+                window.__naActual = lista;
+                const plural = lista.length > 1;
+                const medio = Math.floor(Math.min(lista.length, 8) / 2);
+                const m = overlay('naModal', `<div class="modal-content" style="max-width:400px;text-align:center;">
+                    <div class="modal-header" style="justify-content:center;"><h2 class="modal-title" style="text-align:center;font-size:18px;text-wrap:balance;">${plural ? 'Nuevos productos agregados al stock!' : 'Nuevo producto agregado al stock!'}</h2></div>
+                    <div style="display:flex;overflow-x:auto;padding:10px 0;margin:10px 0 ${plural ? '6px' : '16px'};"><div style="display:flex;align-items:center;gap:8px;margin:0 auto;">${lista.slice(0, 8).map((p, i) => img(p, i === medio && lista.length > 2 ? 76 : 56, i === medio && lista.length > 2 ? 'transform:translateY(-3px);' : (lista.length > 2 ? 'opacity:.88;' : ''))).join('')}</div></div>
+                    ${plural ? `<p onclick="abrirNuevosAgregadosTodos()" style="text-align:center;font-size:12.5px;font-weight:600;color:var(--primary,#d4446a);cursor:pointer;margin:0 0 14px;text-decoration:underline;">Ver todos</p>` : ''}
+                    <button type="button" class="confirmation-button confirmation-button-primary" style="width:100%;" onclick="cerrarNuevosAgregados()">Ok, continuar</button></div>`);
+                m.classList.add('active');
+            };
+            window.chequearNuevosAgregados = catalogo => {
+                if (!catalogo || typeof catalogo !== 'string') return;
+                const coincide = r => catalogo === r.cat || r.cat.indexOf(catalogo + '_') === 0 || r.cat.slice(-(catalogo.length + 1)) === '_' + catalogo || (catalogo === 'belleza' && r.cat === 'perfumes');
+                let vistos = []; try { vistos = JSON.parse(localStorage.getItem('nuevosAgregadosVistos') || '[]'); } catch (e) {}
+                const mem = (window.__naMostrados = window.__naMostrados || []);
+                const nuevos = _naReg.filter(r => coincide(r) && !vistos.includes(r.p.id) && !mem.includes(r.p.id)).map(r => r.p);
+                if (!nuevos.length) return;
+                nuevos.forEach(p => mem.push(p.id));
+                if (document.getElementById('naModal') && document.getElementById('naModal').classList.contains('active')) return;
+                try { localStorage.setItem('nuevosAgregadosVistos', JSON.stringify(vistos.concat(nuevos.map(p => p.id)))); } catch (e) {}
+                mostrar(nuevos);
+            };
+            let _cc = window.currentCatalog;
+            Object.defineProperty(window, 'currentCatalog', { configurable: true, enumerable: true, get: () => _cc, set: v => { const cambio = v !== _cc; _cc = v; if (v && cambio) setTimeout(() => window.chequearNuevosAgregados(v), 900); } });
+            setTimeout(() => { if (window.currentCatalog) window.chequearNuevosAgregados(window.currentCatalog); }, 1500);
+            if (window.VARIANTES_GLOBAL_PLATAFORMA === undefined) {
+                window.VARIANTES_GLOBAL_PLATAFORMA = {};
+                fetch('https://panelgestionestados.tuweb.workers.dev/api/variantes-global').then(r => r.json()).then(d => { if (d && d.ok) window.VARIANTES_GLOBAL_PLATAFORMA = d.variantes || {}; }).catch(() => {});
+            }
+        }
+        const nuevo = (cat, a) => {
             const _lin = (Array.isArray(a.lineasVariantes) ? a.lineasVariantes : []).filter(l => l && l.nombre && Array.isArray(l.opciones) && l.opciones.length);
                     const base = { id: a.id, nombre: a.nombre, imagen: a.imagen, precio: a.precio, precioOriginal: a.precio, caracteristicas: a.caracteristicas ? [a.caracteristicas] : [], info: '', momento: a.momento || '', variantes: _lin.length ? _lin.flatMap(l => l.opciones.map(o => l.nombre + ': ' + o)) : (Array.isArray(a.variantes) ? a.variantes : []), lineasVariantes: _lin, _agregado: true, _catCentral: cat };
                     if (cat === 'perfumes') return { ...base, categoria: 'unisex' };
@@ -6257,7 +6333,7 @@ window.productsMultishop = [
                 };
                 const agregar = (arr, cat, extra) => {
                     if (!arr) return;
-                    (data.agregados && data.agregados[cat] || []).forEach(a => { if (!arr.some(x => x.id === a.id)) arr.push({ ...nuevo(cat, a), ...extra }); });
+                    (data.agregados && data.agregados[cat] || []).forEach(a => { if (!arr.some(x => x.id === a.id)) arr.splice(Math.min(9, arr.length), 0, _naRegistrar(_agregadoVivo({ ...nuevo(cat, a), ...extra }, cat, a), cat)); });
                 };
                 agregar(window.products, 'perfumes');
                 agregar(window.maquillaje, 'belleza_maquillaje', { catalogo: 'maquillaje' });
