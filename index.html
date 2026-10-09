@@ -13124,5 +13124,133 @@ async function validarCodigoRevendedor() {
     sync();
 })();
 </script>
+<!-- ═══ AFILIADOS: "Liquidar Afiliaciones" (bloque agregado; no modifica nada existente) ═══ -->
+<script id="afiliados-liquidar">
+(function () {
+    'use strict';
+    var AF_URL = 'https://afiliados.tuweb.workers.dev';
+    var pagarConSaldo = false;
+
+    function fmt(n) { return '$' + Math.round(Number(n) || 0).toLocaleString('es-AR'); }
+    function cartTotal() {
+        try { return (window.cart || []).reduce(function (a, i) { return a + (Number(i.precio) || 0) * (Number(i.cantidad) || 0); }, 0); }
+        catch (e) { return 0; }
+    }
+    async function token() {
+        var u = firebase.auth().currentUser;
+        if (!u) throw new Error('Iniciá sesión para usar tu Total a Liquidar');
+        return await u.getIdToken();
+    }
+
+    // ── Botón junto a "Ir a Pagar" ──
+    function montarBoton() {
+        var pay = document.getElementById('btn-pay');
+        if (!pay || document.getElementById('btn-liq-afil')) return;
+        var b = document.createElement('button');
+        b.id = 'btn-liq-afil';
+        b.type = 'button';
+        b.textContent = 'Liquidar Afiliaciones';
+        b.style.cssText = 'background:#fff;color:#1B7F3D;border:2px solid #1B7F3D;padding:10px 14px;border-radius:var(--radius,8px);font-weight:700;font-size:13px;cursor:pointer;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap';
+        b.onclick = abrir;
+        pay.parentNode.insertBefore(b, pay.nextSibling);
+        pay.parentNode.style.flexWrap = 'wrap';
+    }
+
+    // ── Modal ──
+    function modal() {
+        var m = document.getElementById('afil-liq-modal');
+        if (m) return m;
+        m = document.createElement('div');
+        m.id = 'afil-liq-modal';
+        m.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100000;align-items:center;justify-content:center;padding:16px';
+        m.innerHTML = '<div style="background:#fff;border-radius:14px;max-width:420px;width:100%;padding:22px;font-family:inherit;color:#222"><div id="afil-liq-body"></div></div>';
+        m.addEventListener('click', function (e) { if (e.target === m) cerrar(); });
+        document.body.appendChild(m);
+        return m;
+    }
+    function cerrar() { modal().style.display = 'none'; }
+    function pintar(html) { modal().style.display = 'flex'; document.getElementById('afil-liq-body').innerHTML = html; }
+    var BTN = 'border:none;border-radius:10px;padding:12px;font-weight:700;font-size:14px;cursor:pointer;width:100%;margin-top:8px;';
+    window._afilLiqCerrar = cerrar;
+
+    async function abrir() {
+        // Mismo control de mínimo que "Ir a Pagar"
+        try {
+            var st = getCartMinimumStatus(window.cart);
+            if (!st.isValid) { abrirModalCarritoMinimo(); return; }
+        } catch (e) {}
+        pintar('<p style="text-align:center;margin:12px 0">Consultando tu Total a Liquidar…</p>');
+        var d;
+        try {
+            var r = await fetch(AF_URL + '/api/saldo-liquidar', { headers: { Authorization: 'Bearer ' + await token() } });
+            d = await r.json();
+            if (!d.ok) throw new Error(d.error || 'No se pudo consultar');
+        } catch (e) {
+            pintar('<h3 style="margin:0 0 8px">Liquidar Afiliaciones</h3><p>' + (e.message || 'Error') + '</p><button style="' + BTN + 'background:#eee" onclick="_afilLiqCerrar()">Cerrar</button>');
+            return;
+        }
+        var total = cartTotal();
+        var cab = '<h3 style="margin:0 0 12px">Liquidar Afiliaciones</h3>' +
+            '<div style="background:#f3faf5;border-radius:10px;padding:14px;text-align:center;margin-bottom:12px"><div style="font-size:12px;color:#666">Total a Liquidar</div>' +
+            '<div style="font-size:28px;font-weight:800;color:#1B7F3D">' + fmt(d.registrado ? d.saldo : 0) + '</div></div>' +
+            '<div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px"><span>Total del carrito</span><b>' + fmt(total) + '</b></div>';
+        if (!d.registrado) {
+            pintar(cab + '<p style="font-size:13px;color:#a33">No estás registrado en el Programa de Afiliados.</p><button style="' + BTN + 'background:#eee" onclick="_afilLiqCerrar()">Cerrar</button>');
+            return;
+        }
+        if (!d.habilitado) {
+            pintar(cab + '<p style="font-size:13px;color:#a33">Tu Total a Liquidar se habilita el ' + new Date(d.proximaLiquidacion).toLocaleDateString('es-AR') + ' (cada 30 días).</p><button style="' + BTN + 'background:#eee" onclick="_afilLiqCerrar()">Cerrar</button>');
+            return;
+        }
+        if (total > d.disponible) {
+            pintar(cab + '<p style="font-size:14px;font-weight:700;color:#a33;margin:8px 0">Tu dinero disponible a liquidar no alcanza para pagar este carrito</p>' +
+                '<button style="' + BTN + 'background:#009EE3;color:#fff" onclick="_afilLiqIrMP()">Ir a Mercado Pago</button>' +
+                '<button style="' + BTN + 'background:#eee" onclick="_afilLiqCancelar()">Cancelar</button>');
+            return;
+        }
+        pintar(cab + '<p style="font-size:13px;color:#555;margin:6px 0">Al pagar con tu Total a Liquidar, el sobrante ' + fmt(d.disponible - total) + ' queda disponible.</p>' +
+            '<button style="' + BTN + 'background:#1B7F3D;color:#fff" onclick="_afilLiqPagar()">Pagar con Total a Liquidar</button>' +
+            '<button style="' + BTN + 'background:#eee" onclick="_afilLiqCancelar()">Cancelar</button>');
+    }
+
+    // Cancelar: vuelve al carrito (que sigue abierto debajo)
+    window._afilLiqCancelar = function () { pagarConSaldo = false; cerrar(); };
+    // Ir a Mercado Pago: mismo flujo que "Ir a Pagar"
+    window._afilLiqIrMP = function () { pagarConSaldo = false; cerrar(); proceedToPayment(); };
+    // Pagar con saldo: sigue el flujo normal (datos de envío) y al crear la preferencia se intercepta
+    window._afilLiqPagar = function () { pagarConSaldo = true; cerrar(); proceedToPayment(); };
+
+    // ── Intercepta SOLO la creación de preferencia de MP cuando se paga con saldo ──
+    var _fetch = window.fetch;
+    window.fetch = async function (input, init) {
+        try {
+            var url = typeof input === 'string' ? input : (input && input.url) || '';
+            if (pagarConSaldo && url.indexOf('/api/mp/create-preference') !== -1) {
+                var body = {};
+                try { body = JSON.parse((init && init.body) || '{}'); } catch (e) {}
+                var id = body.external_reference;
+                var r = await _fetch(AF_URL + '/api/pagar-stock', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + await token() },
+                    body: JSON.stringify({ pedidoId: id })
+                });
+                var d = await r.json().catch(function () { return {}; });
+                pagarConSaldo = false;
+                if (!r.ok || !d.ok) {
+                    return new Response(JSON.stringify({ error: d.error || 'No se pudo pagar con tu Total a Liquidar' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+                }
+                return new Response(JSON.stringify({ init_point: window.location.origin + '?status=success&pedidoId=' + encodeURIComponent(id) }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+            }
+        } catch (e) { pagarConSaldo = false; }
+        return _fetch.apply(this, arguments);
+    };
+
+    // Si cierran el checkout sin pagar, se vuelve al pago normal
+    var _cc = window.closeCheckout;
+    if (typeof _cc === 'function') window.closeCheckout = function () { pagarConSaldo = false; return _cc.apply(this, arguments); };
+
+    montarBoton();
+})();
+</script>
 </body>
 </html>
