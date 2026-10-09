@@ -13252,5 +13252,28 @@ async function validarCodigoRevendedor() {
     montarBoton();
 })();
 </script>
+<!-- ═══ AFILIADOS: ingreso directo tras registrarse en afiliados.html (bloque agregado; no modifica nada existente) ═══ -->
+<script id="afiliados-ingreso">
+(function () {
+    'use strict';
+    var m = (location.hash || '').match(/[#&]ct=([^&]+)/);
+    if (!m) return;                       // visita normal: no hace nada
+    var ct = decodeURIComponent(m[1]);
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}  // saca el token de la URL
+    var intentos = 0;
+    function entrar() {
+        if (!(window.firebase && firebase.auth)) { if (++intentos < 50) setTimeout(entrar, 200); return; }
+        try { if (typeof cancelarAutoAperturaAuth === 'function') cancelarAutoAperturaAuth(); } catch (e) {}
+        firebase.auth().signInWithCustomToken(ct).then(function (cred) {
+            // Mismo punto al que llega quien se registra con Google: pide fecha de nacimiento y
+            // contraseña de seguridad, y desde ahí sigue el flujo normal de stock.html.
+            try { marcarUsuarioRegistrado(cred.user.uid); } catch (e) {}
+            try { if (typeof closeAuthModal === 'function') closeAuthModal(); } catch (e) {}
+            abrirModalDatosAdicionales();
+        }).catch(function (e) { console.error('Ingreso desde afiliados:', e); });
+    }
+    entrar();
+})();
+</script>
 </body>
 </html>
