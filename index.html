@@ -3790,7 +3790,7 @@
                             <svg class="eye-hide" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
                         </button>
                     </div>
-                    <div id="recaptcha-login" style="margin: 15px 0; display: flex; justify-content: center; overflow: hidden; max-width: 100%; transform-origin: center;"></div>
+                    <div class="cf-turnstile" id="turnstile-login-vis" data-sitekey="0x4AAAAAAEuP7UTtW1odDnHM" data-theme="light" style="margin: 15px 0; display: flex; justify-content: center; overflow: hidden; max-width: 100%; transform-origin: center;"></div>
                     <button type="submit" class="auth-btn">Ingresar</button>
                 </form>
                 <div class="auth-switch">
@@ -3842,7 +3842,7 @@
                             <svg class="eye-hide" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
                         </button>
                     </div>
-                    <div id="recaptcha-register" style="margin: 15px 0; display: flex; justify-content: center; overflow: hidden; max-width: 100%; transform-origin: center;"></div>
+                    <div class="cf-turnstile" id="turnstile-register" data-sitekey="0x4AAAAAAEuP7UTtW1odDnHM" data-theme="light" style="margin: 15px 0; display: flex; justify-content: center; overflow: hidden; max-width: 100%; transform-origin: center;"></div>
                     <button type="submit" class="auth-btn">Crear Cuenta</button>
                 </form>
                 <div class="auth-switch">
@@ -10389,13 +10389,14 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
 
         // REGISTRO CON FIREBASE
 
-        // Paso 1 (formulario manual): validar datos y reCAPTCHA, luego pedir consentimiento
+        // Paso 1 (formulario manual): validar datos y verificación Turnstile, luego pedir consentimiento
         function handleManualRegisterSubmit(e) {
             e.preventDefault();
 
-            const recaptchaResponse = grecaptcha.getResponse(window.grecaptchaRegisterId);
-            if (!recaptchaResponse) {
-                alert('Por favor, completa el reCAPTCHA');
+            // Verificación de seguridad (Cloudflare Turnstile) del registro
+            const turnstileRegistro = (typeof turnstile !== 'undefined') ? turnstile.getResponse('#turnstile-register') : '';
+            if (!turnstileRegistro) {
+                alert('Por favor, completa la verificación de seguridad');
                 return;
             }
 
@@ -10534,11 +10535,10 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
         async function loginUser(e) {
             e.preventDefault();
             
-            // Validar reCAPTCHA usando el ID del widget de login
-            const recaptchaResponse = grecaptcha.getResponse(window.grecaptchaLoginId);
-            console.log('📋 reCAPTCHA Response:', recaptchaResponse);
-            if (!recaptchaResponse) {
-                alert('Por favor, completa el reCAPTCHA');
+            // Verificación de seguridad (Cloudflare Turnstile) del login
+            const turnstileLogin = (typeof turnstile !== 'undefined') ? turnstile.getResponse('#turnstile-login-vis') : '';
+            if (!turnstileLogin) {
+                alert('Por favor, completa la verificación de seguridad');
                 return;
             }
             
@@ -13084,47 +13084,8 @@ async function validarCodigoRevendedor() {
             // Diagnóstico de la plataforma (función vacía por ahora)
         };
         
-        window.grecaptchaLoginId = null;
-        window.grecaptchaRegisterId = null;
-        
-        // Callback para cuando reCAPTCHA esté listo
-        window.onRecaptchaReady = function() {
-            console.log('reCAPTCHA API cargada');
-            // En pantallas angostas (celulares) el tamaño "normal" (304px) no entra
-            // en el modal y se ve cortado; usamos "compact" (164px) en ese caso.
-            const recaptchaSize = window.innerWidth < 360 ? 'compact' : 'normal';
-
-            // Login
-            if (document.getElementById('recaptcha-login')) {
-                try {
-                    window.grecaptchaLoginId = grecaptcha.render('recaptcha-login', {
-                        sitekey: '6LeNuM0sAAAAAJ8_Jdv1DhVqhJMsmDZl7KokfCw_',
-                        theme: 'light',
-                        size: recaptchaSize
-                    });
-                } catch(e) { console.error('Error login captcha', e); }
-            }
-
-            // Register
-            if (document.getElementById('recaptcha-register')) {
-                try {
-                    window.grecaptchaRegisterId = grecaptcha.render('recaptcha-register', {
-                        sitekey: '6LeNuM0sAAAAAJ8_Jdv1DhVqhJMsmDZl7KokfCw_',
-                        theme: 'light',
-                        size: recaptchaSize
-                    });
-                } catch(e) { console.error('Error register captcha', e); }
-            }
-        };
-        
-        // Ejecutar el callback si grecaptcha ya está disponible
-        if (typeof grecaptcha !== 'undefined' && grecaptcha.render) {
-            window.onRecaptchaReady();
-        }
     </script>
     
-    <!-- reCAPTCHA API -->
-    <script src="https://www.google.com/recaptcha/api.js?onload=onRecaptchaReady&render=explicit" async defer></script>
 <script>
 (function () {
     var sel = document.getElementById('sort-select');
