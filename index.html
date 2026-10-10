@@ -2289,7 +2289,7 @@
             .nichos-section { padding: 72px 24px; }
             .nichos-pretitle { font-size: 22px; }
             .nichos-title-box { font-size: 17px; padding: 10px 22px; width: auto; }
-            .nicho-item { max-width: 820px; padding: 0; }
+            .nichos-section .nicho-item { max-width: 980px; padding: 0; }
             .nicho-title { font-size: 24px; }
             .nicho-subtitle { font-size: 15px; }
             .carrusel-container { height: 320px; margin-bottom: 20px; }
@@ -2313,8 +2313,12 @@
             .nichos-section-inner {
                 max-width: 1400px;
             }
-            .nicho-item { max-width: 900px; }
+            .nichos-section .nicho-item { max-width: 1100px; }
             .carrusel-container { height: 360px; }
+        }
+        /* Celular girado / tablet vertical: las tarjetas de nichos usan todo el ancho útil (igual que index.html). */
+        @media (min-width: 600px) and (max-width: 899px) {
+            .nichos-section .nicho-item { max-width: none; }
         }
 
         /* LOAD MORE SECTION */
@@ -9683,7 +9687,9 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             // su cuenta, ya que son parte del mismo paso visual) — por eso
             // hace falta avanzarColaModales() acá, recién cuando el usuario
             // termina de ver la guía y la cierra.
-            encolarModalAutomatico(mostrarModalConfirmarCorreo);
+            // Aviso de verificación de Firebase retirado: la confirmación de correo
+            // se hace solo con el formulario de Brevo (mostrarEmailConfirmationModalPrimeraVez).
+            // encolarModalAutomatico(mostrarModalConfirmarCorreo);
             encolarModalAutomatico(mostrarEmailConfirmationModalPrimeraVez);
             avanzarColaModales();
         }
