@@ -3246,6 +3246,56 @@
                 top: 10px;
             }
         }
+
+        /* CINTAS: negra (pedido mínimo / precio), azul (Emprende con Nosotros) y verde (Elegí tu tienda ideal) */
+        .banner .banner-badge {
+            background: #0d0d0f;
+            color: #fff;
+            width: 100%;
+            max-width: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: clamp(9px, 2.45vw, 14px);
+            font-weight: 600;
+            letter-spacing: .1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            box-sizing: border-box;
+            box-shadow: 0 2px 8px rgba(0,0,0,.18);
+        }
+        .banner .banner-badge .banner-badge-sep { opacity: .55; margin: 0 4px; }
+        .nichos-section .nichos-pretitle {
+            background: var(--primary);
+            color: #fff;
+            width: 92%;
+            max-width: 1280px;
+            margin: 0 auto 10px auto;
+            padding: 9px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            line-height: 1.3;
+            box-sizing: border-box;
+            box-shadow: 0 2px 8px rgba(0,102,255,.22);
+        }
+        .nichos-section .nichos-title-box {
+            width: 85%;
+            max-width: 420px;
+            padding: 9px 16px;
+            font-size: 16px;
+            margin: 0 auto 28px auto;
+        }
+        @media (min-width: 900px) and (max-width: 1399px) {
+            .banner .banner-badge { width: calc(100% - 64px); }
+        }
+        @media (max-width: 380px) {
+            .banner .banner-badge { padding: 9px 6px; font-size: 8.8px; letter-spacing: 0; }
+            .banner .banner-badge svg { display: none; }
+        }
+        @media (min-width: 900px) {
+            .nichos-section .nichos-pretitle { font-size: 18px; padding: 11px 24px; }
+            .nichos-section .nichos-title-box { font-size: 19px; padding: 11px 22px; margin-bottom: 36px; }
+        }
     </style>
     <script>
         // (Se removió la supresión global de console.error: ocultaba errores reales
@@ -3343,8 +3393,7 @@
         <div class="banner-inner">
             <img src="logoservi.png" alt="Revende Ways" class="banner-logo-img" onerror="this.style.display='none'">
             <p class="banner-subtitle">Revende con nosotros. Te damos tu tienda lista para comenzar con +500 productos.</p>
-            <div class="banner-badge"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-0.15em"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> Pedido mínimo en cada categoría</div>
-            <p class="banner-badge-note">Precio solo para revendedores</p>
+            <div class="banner-badge"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-0.15em"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> Pedido mínimo en cada categoría <span class="banner-badge-sep">/</span> Precio solo para revendedores</div>
         </div>
     </section>
 
