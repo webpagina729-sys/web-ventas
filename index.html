@@ -13252,6 +13252,124 @@ async function validarCodigoRevendedor() {
     montarBoton();
 })();
 </script>
+<!-- ═══ AFILIADOS: pagar con crédito de afiliados (bloque agregado; no modifica nada existente) ═══ -->
+<script id="afiliados-credito">
+(function () {
+    'use strict';
+    var AF_URL = 'https://afiliados.tuweb.workers.dev';
+    var pagarConCredito = false;
+    // Mínimo de crédito por categoría (Salud/Suplementos y Calzados además deben cumplir sus unidades).
+    var CATS = {
+        perfumes: { n: 'Perfumes', min: 150000 }, bazar: { n: 'Bazar', min: 150000 }, libreria: { n: 'Librería', min: 150000 },
+        belleza: { n: 'Belleza y Cuidado Personal', min: 200000 }, lenceria: { n: 'Lencería', min: 200000 }, multishop: { n: 'Multishop', min: 250000 },
+        suplementos: { n: 'Salud / Suplementos', min: 400000, uni: 15 }, calzados: { n: 'Calzados', min: 426000, uni: 12 }
+    };
+    function fmt(n) { return '$' + Math.round(Number(n) || 0).toLocaleString('es-AR'); }
+    function cartTotal() { try { return (window.cart || []).reduce(function (a, i) { return a + (Number(i.precio) || 0) * (Number(i.cantidad) || 0); }, 0); } catch (e) { return 0; } }
+    async function token() { var u = firebase.auth().currentUser; if (!u) throw new Error('Iniciá sesión para usar tu crédito de afiliados'); return await u.getIdToken(); }
+
+    function montarBoton() {
+        var ref = document.getElementById('btn-liq-afil') || document.getElementById('btn-pay');
+        if (!ref || document.getElementById('btn-cred-afil')) return false;
+        var b = document.createElement('button');
+        b.id = 'btn-cred-afil'; b.type = 'button'; b.textContent = 'Pagar con crédito de afiliados';
+        b.style.cssText = 'background:#fff;color:#0B5ED7;border:2px solid #0B5ED7;padding:10px 14px;border-radius:var(--radius,8px);font-weight:700;font-size:13px;cursor:pointer;text-transform:uppercase;letter-spacing:.3px';
+        b.onclick = abrir;
+        ref.parentNode.insertBefore(b, ref.nextSibling);
+        ref.parentNode.style.flexWrap = 'wrap';
+        return true;
+    }
+
+    function modal() {
+        var m = document.getElementById('afil-cred-modal');
+        if (m) return m;
+        m = document.createElement('div'); m.id = 'afil-cred-modal';
+        m.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100000;align-items:center;justify-content:center;padding:16px';
+        m.innerHTML = '<div style="background:#fff;border-radius:14px;max-width:420px;width:100%;padding:22px;font-family:inherit;color:#222;max-height:90vh;overflow:auto"><div id="afil-cred-body"></div></div>';
+        m.addEventListener('click', function (e) { if (e.target === m) cerrar(); });
+        document.body.appendChild(m); return m;
+    }
+    function cerrar() { modal().style.display = 'none'; }
+    function pintar(html) { modal().style.display = 'flex'; document.getElementById('afil-cred-body').innerHTML = html; }
+    var BTN = 'border:none;border-radius:10px;padding:12px;font-weight:700;font-size:14px;cursor:pointer;width:100%;margin-top:8px;';
+    window._afilCredCerrar = cerrar;
+    window._afilCredCancelar = function () { pagarConCredito = false; cerrar(); };
+    window._afilCredIrMP = function () { pagarConCredito = false; cerrar(); proceedToPayment(); };
+    window._afilCredPagar = function () { pagarConCredito = true; cerrar(); proceedToPayment(); };
+
+    function cab(credito, total) {
+        return '<h3 style="margin:0 0 12px">Crédito de afiliados</h3>' +
+            '<div style="background:#eef4ff;border-radius:10px;padding:14px;text-align:center;margin-bottom:12px"><div style="font-size:12px;color:#666">Tu crédito</div><div style="font-size:28px;font-weight:800;color:#0B5ED7">' + fmt(credito) + '</div></div>' +
+            (total != null ? '<div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px"><span>Total del carrito</span><b>' + fmt(total) + '</b></div>' : '');
+    }
+    function aviso(credito, total, html, conMP) {
+        pintar(cab(credito, total) + '<div style="font-size:13px;line-height:1.45;color:#a33;margin:8px 0">' + html + '</div>' +
+            (conMP ? '<button style="' + BTN + 'background:#009EE3;color:#fff" onclick="_afilCredIrMP()">Ir a Mercado Pago</button>' : '') +
+            '<button style="' + BTN + 'background:#eee" onclick="_afilCredCancelar()">' + (conMP ? 'Cancelar' : 'Entendido') + '</button>');
+    }
+
+    async function abrir() {
+        pintar('<p style="text-align:center;margin:12px 0">Consultando tu crédito…</p>');
+        var d;
+        try {
+            var r = await fetch(AF_URL + '/api/saldo-liquidar', { headers: { Authorization: 'Bearer ' + await token() } });
+            d = await r.json(); if (!d.ok) throw new Error(d.error || 'No se pudo consultar');
+        } catch (e) { pintar('<h3 style="margin:0 0 8px">Crédito de afiliados</h3><p>' + (e.message || 'Error') + '</p><button style="' + BTN + 'background:#eee" onclick="_afilCredCerrar()">Cerrar</button>'); return; }
+        var credito = Number(d.credito) || 0, total = cartTotal();
+        if (!d.registrado || credito <= 0) { aviso(0, null, 'Todavía no tenés crédito de afiliados. Lo generás desde Solicitar cobro, en tu panel de afiliados, eligiendo "Crédito de compra en Stock".', false); return; }
+
+        var st; try { st = getCartMinimumStatus(window.cart); } catch (e) { st = { isValid: true }; }
+        var cats = {}; try { (window.cart || []).forEach(function (i) { var c = getItemCatalog(i); if (CATS[c]) cats[c] = 1; }); } catch (e) {}
+
+        // Aclaraciones de Salud/Suplementos y Calzados: el crédito cubre el carrito pero con menos productos que el objetivo.
+        var objetivos = [['suplementos', st.suplementosQty], ['calzados', st.shoesQty]];
+        for (var k = 0; k < objetivos.length; k++) {
+            var c = objetivos[k][0], q = Number(objetivos[k][1]) || 0, def = CATS[c];
+            if (cats[c] && q < def.uni) {
+                if (total >= credito) {
+                    aviso(credito, total, '<b>' + def.n + ':</b> tu crédito cubre el carrito, pero lo usaste en ' + q + ' producto' + (q !== 1 ? 's' : '') + '. Tenés que utilizar el crédito dentro del <b>objetivo de ' + def.uni + ' unidades</b> (te faltan ' + (def.uni - q) + ') para poder pagar.', false);
+                    return;
+                }
+                if (typeof abrirModalCarritoMinimo === 'function') { cerrar(); abrirModalCarritoMinimo(); return; }
+            }
+        }
+        if (!st.isValid) { cerrar(); if (typeof abrirModalCarritoMinimo === 'function') abrirModalCarritoMinimo(); return; }
+
+        // Mínimo de crédito para las categorías del carrito.
+        var falla = Object.keys(cats).filter(function (c) { return credito < CATS[c].min; });
+        if (falla.length) {
+            aviso(credito, total, 'Tu crédito no alcanza el mínimo para usarlo en: ' + falla.map(function (c) { return '<b>' + CATS[c].n + '</b> (mínimo ' + fmt(CATS[c].min) + (CATS[c].uni ? ' y ' + CATS[c].uni + ' unidades' : '') + ')'; }).join(', ') + '. Podés pagar este carrito con Mercado Pago.', true);
+            return;
+        }
+        if (total > credito) { aviso(credito, total, 'Tu crédito de afiliados no alcanza para pagar este carrito.', true); return; }
+        pintar(cab(credito, total) + '<p style="font-size:13px;color:#555;margin:6px 0">Al pagar con tu crédito, el sobrante ' + fmt(credito - total) + ' queda disponible para tu próxima compra.</p>' +
+            '<button style="' + BTN + 'background:#0B5ED7;color:#fff" onclick="_afilCredPagar()">Pagar con crédito de afiliados</button>' +
+            '<button style="' + BTN + 'background:#eee" onclick="_afilCredCancelar()">Cancelar</button>');
+    }
+
+    // Intercepta SOLO la creación de preferencia de MP cuando se paga con crédito.
+    var _fetch = window.fetch;
+    window.fetch = async function (input, init) {
+        try {
+            var url = typeof input === 'string' ? input : (input && input.url) || '';
+            if (pagarConCredito && url.indexOf('/api/mp/create-preference') !== -1) {
+                var body = {}; try { body = JSON.parse((init && init.body) || '{}'); } catch (e) {}
+                var id = body.external_reference;
+                var r = await _fetch(AF_URL + '/api/pagar-stock', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + await token() }, body: JSON.stringify({ pedidoId: id, medio: 'credito' }) });
+                var d = await r.json().catch(function () { return {}; });
+                pagarConCredito = false;
+                if (!r.ok || !d.ok) return new Response(JSON.stringify({ error: d.error || 'No se pudo pagar con tu crédito de afiliados' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+                return new Response(JSON.stringify({ init_point: window.location.origin + '?status=success&pedidoId=' + encodeURIComponent(id) }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+            }
+        } catch (e) { pagarConCredito = false; }
+        return _fetch.apply(this, arguments);
+    };
+    var _cc = window.closeCheckout;
+    if (typeof _cc === 'function') window.closeCheckout = function () { pagarConCredito = false; return _cc.apply(this, arguments); };
+
+    montarBoton();
+})();
+</script>
 <!-- ═══ AFILIADOS: ingreso directo tras registrarse en afiliados.html (bloque agregado; no modifica nada existente) ═══ -->
 <script id="afiliados-ingreso">
 (function () {
