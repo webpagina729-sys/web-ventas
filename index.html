@@ -3268,6 +3268,39 @@
 .sort-cortina-opt.activa .sc-dot { border-color:var(--primary); }
 .sort-cortina-opt.activa .sc-dot::after { content:''; width:8px; height:8px; border-radius:50%; background:var(--primary); }
 </style>
+<script id="auth-worker-datos">
+/* Envía la sesión (token de Firebase) a los workers de datos cuando se lee o
+   modifica algo del propio revendedor: perfil, carrito, pedidos personales,
+   enlaces, combos y promociones. No cambia ninguna función de la página. */
+(function () {
+  if (window.__authWorkerDatos) return;
+  window.__authWorkerDatos = true;
+  var DATOS = /^\/api\/(perfil|carrito|crear-cuenta|login-vendedor-uid|pedido-personal|pedidos-personales|estadisticas-usuario|eliminar-tienda|actualizar-datos-vendedor|guardar-datos-registro|guardar-whatsapp-inicial|aprobar-pedido|panel-gestion|pedido\/borrar)(\/|$)/;
+  var REGLAS = {
+    'datosderevendedor.tuweb.workers.dev': { ruta: DATOS, soloPost: false },
+    'workerwebcliente.tuweb.workers.dev': { ruta: /^\/slug$/, soloPost: true },
+    'combosydescuentos.tuweb.workers.dev': { ruta: /^\/(combo|combo\/toggle|combo\/eliminar|promocion|promocion\/toggle|promocion\/eliminar|slug)$/, soloPost: true }
+  };
+  var orig = window.fetch.bind(window);
+  window.fetch = async function (input, init) {
+    try {
+      if (typeof input !== 'string') return orig(input, init);
+      var u = new URL(input, location.href);
+      var r = REGLAS[u.hostname];
+      if (!r || !r.ruta.test(u.pathname)) return orig(input, init);
+      if (r.soloPost && String((init && init.method) || 'GET').toUpperCase() !== 'POST') return orig(input, init);
+      var h = new Headers((init && init.headers) || undefined);
+      try {
+        var us = window.firebase && firebase.auth && firebase.auth().currentUser;
+        if (us && !h.has('Authorization')) h.set('Authorization', 'Bearer ' + (await us.getIdToken()));
+      } catch (e) {}
+      var nuevo = {}; for (var k in (init || {})) nuevo[k] = init[k];
+      nuevo.headers = h;
+      return orig(input, nuevo);
+    } catch (e) { return orig(input, init); }
+  };
+})();
+</script>
 </head>
 <body>
     <!-- HEADER TOP BAR -->
