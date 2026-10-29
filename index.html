@@ -11114,15 +11114,37 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
         }
         
         // LOGOUT
+        // 🔧 FIX: logoutUser() sólo cerraba la sesión de Firebase y borraba
+        // REMEMBER_SESSION_KEY — pero dejaba codigoVendedorLocal (y otras
+        // claves que identifican a la cuenta) guardadas en localStorage.
+        // Esa clave es justo la que initializeUserSession() usa como
+        // "último recurso" cuando Firestore no tiene datos, así que al
+        // cerrar sesión y volver a entrar (o registrarse de nuevo en el
+        // mismo navegador), la cuenta anterior podía seguir "recordada".
+        // Ahora se limpia todo lo que identifica a la cuenta, igual que ya
+        // hace index.html, sin tocar preferencias sueltas de la UI que no
+        // identifican a nadie (categoría elegida, avisos ya vistos, etc.).
+        function _limpiarSesionLocalStock() {
+            [
+                REMEMBER_SESSION_KEY,
+                REGISTERED_FLAG_KEY,
+                'codigoVendedorLocal',
+                'codigoRevendedorValidado', 'codigoRevendedorValidadoFecha',
+                'emailConfirmado', 'emailConfirmationModalConfirmado',
+                'ultimoPedidoId', 'ultimoTelefonoCliente',
+            ].forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
+        }
+
         async function logoutUser() {
             try {
                 await firebase.auth().signOut();
-                try { localStorage.removeItem(REMEMBER_SESSION_KEY); } catch (e) {}
+                _limpiarSesionLocalStock();
                 // Cerrar cinta superior y recargar página
                 updateUIForAuthentication(false);
                 window.location.reload();
             } catch (error) {
                 console.error('Error al cerrar sesión:', error.message);
+                _limpiarSesionLocalStock();
                 window.location.reload();
             }
         }
@@ -11132,10 +11154,44 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
         // RECONSTRUCCIÓN DE SESIÓN DESDE FIREBASE
         // ═══════════════════════════════════════════════════════════════════════════
 
+        // 🔧 FIX: si Firebase Auth tiene sesión (authUser) pero Firestore
+        // NO tiene documento para ese uid, antes se asumía siempre "usuario
+        // nuevo" y se fabricaba un perfil + código de revendedor nuevo. El
+        // problema: eso pasa EXACTAMENTE IGUAL si la cuenta ya existía y su
+        // documento fue borrado de la base (ej. desde Firebase Console) —
+        // la sesión del navegador sigue viva aunque la cuenta ya no exista,
+        // y quedabas "adentro" con una cuenta inventada en vez de tener que
+        // registrarte de nuevo. Antes de concluir "no existe", se hace una
+        // única confirmación extra con más margen de espera (por si es un
+        // registro recién hecho que todavía no terminó de guardarse) y,
+        // si sigue sin aparecer, se cierra la sesión en vez de inventar una.
+        async function _confirmarCuentaBorradaYCerrarSesion(authUser) {
+            await new Promise(r => setTimeout(r, 1800));
+            const confirmado = await loadUserDataFromFirestoreWithRetry(authUser.uid, 2, 700);
+            if (confirmado) {
+                _initializeUserSessionConDatos(confirmado, authUser);
+                return;
+            }
+            console.warn('Cuenta sin documento en Firestore (probablemente eliminada) — cerrando sesión.');
+            try { await firebase.auth().signOut(); } catch (e) {}
+            _limpiarSesionLocalStock();
+            window.currentUser = null;
+            updateUIForAuthentication(false);
+        }
+
         // Reconstruye la interfaz completa del usuario desde los datos cargados
         function initializeUserSession(userData, authUser) {
             if (!authUser) return;
 
+            if (!userData) {
+                _confirmarCuentaBorradaYCerrarSesion(authUser);
+                return;
+            }
+
+            _initializeUserSessionConDatos(userData, authUser);
+        }
+
+        function _initializeUserSessionConDatos(userData, authUser) {
             // Si no hay datos de Firestore, crear objeto mínimo
             const safeUserData = userData || {
                 nombre: authUser.email.split('@')[0],
