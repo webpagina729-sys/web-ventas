@@ -3431,7 +3431,7 @@
             <div class="nichos-title-box">¡Elegí tu tienda ideal y ármate de productos para entregas inmediatas!</div>
             
             <!-- NICHO 1: PERFUMERÍA -->
-            <div class="nicho-item">
+            <div class="nicho-item" data-categoria-original="perfumes">
                 <div class="nicho-info">
                     <h3 class="nicho-title">Perfumería</h3>
                     <p class="nicho-subtitle">Fragancias premium de inspiración árabe para tu catálogo</p>
@@ -3453,7 +3453,7 @@
             </div>
 
             <!-- NICHO 2: BELLEZA Y CUIDADO PERSONAL -->
-            <div class="nicho-item">
+            <div class="nicho-item" data-categoria-original="belleza">
                 <div class="nicho-info">
                     <h3 class="nicho-title">Belleza y Cuidado Personal</h3>
                     <p class="nicho-subtitle">PERFUMERÍA + MAQUILLAJE</p>
@@ -3475,7 +3475,7 @@
             </div>
 
             <!-- NICHO 3: CALZADOS -->
-            <div class="nicho-item">
+            <div class="nicho-item" data-categoria-original="calzados">
                 <div class="nicho-info">
                     <h3 class="nicho-title">Calzados</h3>
                     <p class="nicho-subtitle">Los calzados son importados, calidad premium de Brasil. Zapatillas deportivas urbanas.</p>
@@ -3497,7 +3497,7 @@
             </div>
 
             <!-- NICHO 4: LENCERÍA -->
-            <div class="nicho-item">
+            <div class="nicho-item" data-categoria-original="lenceria">
                 <div class="nicho-info">
                     <h3 class="nicho-title">Lencería</h3>
                     <p class="nicho-subtitle">Conjuntos, packs colaless y lencería para toda la familia</p>
@@ -3519,7 +3519,7 @@
             </div>
 
             <!-- NICHO 5: SALUD Y SUPLEMENTOS -->
-            <div class="nicho-item">
+            <div class="nicho-item" data-categoria-original="suplementos">
                 <div class="nicho-info">
                     <h3 class="nicho-title">Salud/Suplementos</h3>
                     <p class="nicho-subtitle">Suplementos y vitaminas para energía, belleza y bienestar</p>
@@ -3541,7 +3541,7 @@
             </div>
 
             <!-- NICHO 6: BAZAR -->
-            <div class="nicho-item">
+            <div class="nicho-item" data-categoria-original="bazar">
                 <div class="nicho-info">
                     <h3 class="nicho-title">Bazar</h3>
                     <p class="nicho-subtitle">Artículos de bazar y vajilla de melamina para el hogar</p>
@@ -3563,7 +3563,7 @@
             </div>
 
             <!-- NICHO 7: LIBRERÍA -->
-            <div class="nicho-item">
+            <div class="nicho-item" data-categoria-original="libreria">
                 <div class="nicho-info">
                     <h3 class="nicho-title">Librería</h3>
                     <p class="nicho-subtitle">Útiles escolares y de librería mayorista</p>
@@ -3585,7 +3585,7 @@
             </div>
 
             <!-- NICHO 8: MULTISHOP -->
-            <div class="nicho-item">
+            <div class="nicho-item" data-categoria-original="multishop">
                 <div class="nicho-info">
                     <h3 class="nicho-title">Multishop</h3>
                     <p class="nicho-subtitle">Todo en un solo pedido: perfumes, maquillaje, juguetes, bazar, librería y electrónica</p>
@@ -3969,6 +3969,19 @@
                 Completa el mínimo de compra para enviar el carrito
             </p>
             <button type="button" class="confirmation-button confirmation-button-primary" style="width: 100%;" onclick="cerrarModalCarritoMinimo()">Entendido</button>
+        </div>
+    </div>
+
+    <!-- 🆕 "Ocultar categoría" (toggle en pedidos.html): al tocar el botón de
+         una categoría oculta, en vez de llevar al catálogo real, se muestra
+         este aviso — mismo estilo que el resto de los modales de acá arriba. -->
+    <div class="modal-overlay" id="categoriaProximamenteModal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <div class="modal-header" style="justify-content: center;">
+                <h2 class="modal-title" id="categoriaProximamenteTitulo" style="text-align:center;"></h2>
+            </div>
+            <div id="categoriaProximamenteCarrusel" style="display:flex;align-items:center;justify-content:center;gap:6px;margin:14px 0 18px;overflow-x:auto;padding:10px 0;"></div>
+            <button type="button" class="confirmation-button confirmation-button-primary" style="width: 100%;" onclick="document.getElementById('categoriaProximamenteModal').classList.remove('active')">Aceptar y Continuar</button>
         </div>
     </div>
 
@@ -13066,11 +13079,52 @@ async function validarCodigoRevendedor() {
         // SCRIPT DE VERIFICACIÓN PARA USUARIO
         // ════════════════════════════════════════════════
         
+        // 🆕 "Ocultar categoría" (toggle en pedidos.html, ver /api/categorias-ocultas):
+        // la tarjeta de una categoría ORIGINAL (las que tienen
+        // data-categoria-original en el HTML de acá arriba) sigue viéndose
+        // igual para revendedores/clientes, pero su botón de acción queda
+        // bloqueado con un aviso de "disponible próximamente" en vez de
+        // llevar al catálogo. No toca lógica de cálculo, variantes ni
+        // datos — solo intercepta el click.
+        function abrirModalCategoriaProximamenteStock(nichoEl) {
+            const modal = document.getElementById('categoriaProximamenteModal');
+            const titulo = document.getElementById('categoriaProximamenteTitulo');
+            const carrusel = document.getElementById('categoriaProximamenteCarrusel');
+            if (!modal || !titulo || !carrusel) return;
+            const nombre = (nichoEl.querySelector('.nicho-title') || {}).textContent || 'Esta categoría';
+            titulo.textContent = 'La categoría ' + nombre + ' estará disponible próximamente';
+            const imgs = nichoEl.querySelectorAll('.carrusel-wrapper img');
+            carrusel.innerHTML = Array.prototype.slice.call(imgs).slice(0, 8).map(img =>
+                '<img src="' + img.src + '" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:10px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.18);">'
+            ).join('');
+            modal.classList.add('active');
+        }
+
+        async function ocultarCategoriasOriginalesSegunConfigStock() {
+            try {
+                const r = await fetch('https://preciosmayoristasrevendedores.tuweb.workers.dev/api/categorias-ocultas').then(r => r.json());
+                const ocultas = (r && r.ok && Array.isArray(r.categorias)) ? r.categorias : [];
+                ocultas.forEach(id => {
+                    document.querySelectorAll('[data-categoria-original="' + id + '"]').forEach(el => {
+                        el.querySelectorAll('.nicho-button').forEach(btn => {
+                            btn.addEventListener('click', function (e) {
+                                e.preventDefault();
+                                e.stopImmediatePropagation();
+                                abrirModalCategoriaProximamenteStock(el);
+                            }, true);
+                        });
+                    });
+                });
+            } catch (e) { /* silencioso */ }
+        }
+
         // DOMContentLoaded único y consolidado
         document.addEventListener('DOMContentLoaded', function(event) {
             // Ejecutar solo una vez
             if (window.domLoaded) return;
             window.domLoaded = true;
+
+            ocultarCategoriasOriginalesSegunConfigStock();
 
             // Mostrar "Registrarme" o "Iniciar sesión" según corresponda, antes de esperar a Firebase
             actualizarBotonHeaderAuth();
