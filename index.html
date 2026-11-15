@@ -10166,13 +10166,27 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                 }
             } catch (e) {}
 
+            // 🔧 ARREGLO: antes este fetch era "fire-and-forget" — nunca se
+            // revisaba si el worker realmente guardó la contraseña (podía
+            // responder 403/500 y la página seguía igual, mostrando la
+            // pantalla de "guardá tu contraseña" como si hubiese funcionado).
+            // Ahora, si el guardado falla, se avisa y NO se avanza: el modal
+            // sigue abierto para reintentar con la misma contraseña.
+            let guardadoOk = false;
             try {
-                await fetch('https://datosderevendedor.tuweb.workers.dev/api/guardar-datos-registro', {
+                const resGuardar = await fetch('https://datosderevendedor.tuweb.workers.dev/api/guardar-datos-registro', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ uid: user.uid, fechaNacimiento, passwordSeguridad: password })
                 });
+                const dataGuardar = resGuardar.ok ? await resGuardar.json().catch(() => null) : null;
+                guardadoOk = !!(dataGuardar && dataGuardar.ok);
             } catch (e) {}
+
+            if (!guardadoOk) {
+                alert('No pudimos guardar tu contraseña de seguridad. Revisá tu conexión y tocá "Aceptar" de nuevo.');
+                return;
+            }
 
             const modal = document.getElementById('datos-adicionales-modal');
             if (modal) modal.classList.remove('active');
@@ -10223,14 +10237,27 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                 }
             } catch (e) {}
 
+            // 🔧 ARREGLO: mismo problema que en el modal de alta con Google —
+            // este fetch nunca revisaba la respuesta del worker. Si el
+            // guardado fallaba (403/500/red), la página avanzaba igual y
+            // mostraba la pantalla de "guardá tu contraseña" sin que esa
+            // contraseña hubiera quedado realmente en la base de datos.
+            let guardadoOk = false;
             try {
-                await fetch('https://datosderevendedor.tuweb.workers.dev/api/guardar-datos-registro', {
+                const resGuardar = await fetch('https://datosderevendedor.tuweb.workers.dev/api/guardar-datos-registro', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ uid: user.uid, passwordSeguridad: password })
                 });
+                const dataGuardar = resGuardar.ok ? await resGuardar.json().catch(() => null) : null;
+                guardadoOk = !!(dataGuardar && dataGuardar.ok);
             } catch (e) {
                 console.error('No se pudo guardar la contraseña de seguridad:', e);
+            }
+
+            if (!guardadoOk) {
+                alert('No pudimos guardar tu contraseña de seguridad. Revisá tu conexión y tocá "Aceptar" de nuevo.');
+                return;
             }
 
             const modal = document.getElementById('password-seguridad-manual-modal');
