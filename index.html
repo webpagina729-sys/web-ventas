@@ -3174,16 +3174,21 @@
             max-width: 1200px;
             padding-left: 16px;
             padding-right: 16px;
-            flex-wrap: wrap;
-            row-gap: 8px;
+            flex-wrap: nowrap;
         }
         .header-actions {
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
             justify-content: flex-end;
-            min-width: 0;
+            flex-shrink: 0;
         }
-        .header-actions > * { flex-shrink: 1; min-width: 0; }
-        .logo { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+        /* 🔧 "Registrarme"/"Ya tengo una cuenta" siempre en una sola fila, a
+           la derecha, con su tamaño de letra ya responsive (media queries
+           de .login-btn/.header-ya-cuenta-btn): no se achican por flexbox
+           (flex-shrink:0). Si no entran junto al logo, el logo se achica
+           (con "…" si hace falta) en vez de que los botones bajen de fila. */
+        .header-actions > * { flex-shrink: 0; }
+        .logo-group { min-width: 0; flex-shrink: 1; }
+        .logo { min-width: 0; flex-shrink: 1; overflow: hidden; text-overflow: ellipsis; }
         /* Modales perfectamente centrados dentro de la pantalla */
         #auth-modal, #accion-modal, #accion-guide-modal, .modal-overlay {
             padding: 16px;
