@@ -203,6 +203,19 @@
             background: var(--primary);
             color: white;
         }
+        /* 🔧 NUEVO: "Ya tengo una cuenta" al lado de "Registrarme" — mismo
+           diseño y color de letra que .login-btn (azul), solo con el
+           contorno en verde para diferenciarlo, y un poco más chico para
+           que entren compactos los dos juntos en el header. */
+        .header-ya-cuenta-btn {
+            font-size: 11px;
+            padding: 6px 10px;
+            border-color: var(--success);
+        }
+        .header-ya-cuenta-btn:hover {
+            background: var(--success);
+            color: white;
+        }
         .cart-btn {
             background: var(--primary);
             color: white;
@@ -2183,6 +2196,7 @@
             .logo { font-size: 16px; }
             .logo-icon { width: 26px; height: 26px; }
             .login-btn { font-size: 10px; padding: 5px 8px; }
+            .header-ya-cuenta-btn { font-size: 9px; padding: 5px 7px; }
             .cart-btn { font-size: 10px; padding: 5px 8px; }
             .header-searchbar { display: none; }
             .banner-inner { margin: 0 8px; }
@@ -3387,6 +3401,9 @@
                     <span class="cart-count" id="cart-count">0</span>
                 </button>
                 <button class="login-btn" id="header-auth-btn" onclick="handleHeaderAuthClick()">Iniciar sesión</button>
+                <!-- 🔧 NUEVO: acceso directo al login, al lado de "Registrarme" -
+                     por si el dispositivo no detecta que el usuario ya tiene cuenta. -->
+                <button class="login-btn header-ya-cuenta-btn" id="header-ya-cuenta-btn" onclick="switchToLogin(); abrirLogin();">Ya tengo una cuenta</button>
             </div>
         </div>
     </header>
@@ -6345,7 +6362,11 @@ window.productsMultishop = [
 
         // 🔧 Catálogo central (Worker de precios, KV): lo que se elimina definitivamente
         // desde pedidos.html desaparece también de acá. Solo actúa sobre las categorías ya cargadas en el Worker.
-        fetch('https://preciosmayoristasrevendedores.tuweb.workers.dev/api/catalogo?categoria=todas')
+        // 🔧 NUEVO: se manda el código del revendedor para que el worker filtre del
+        // lado del servidor los "agregados" que YA le mostró a este código (ver
+        // run() más abajo) — antes esto dependía 100% del localStorage del
+        // navegador, que iOS/Safari puede borrar solo y hacía reaparecer avisos viejos.
+        fetch('https://preciosmayoristasrevendedores.tuweb.workers.dev/api/catalogo?categoria=todas&codigo=' + encodeURIComponent(localStorage.getItem('codigoVendedorLocal') || localStorage.getItem('codigoRevendedorValidado') || ''))
             .then(r => r.json())
             .then(data => {
                 if (!data || !data.ok || !data.catalogos) return;
@@ -6451,6 +6472,20 @@ window.productsMultishop = [
                 if (!nuevos.length) return;
                 nuevos.forEach(p => mem.push(p.id));
                 try { localStorage.setItem('nuevosAgregadosVistos', JSON.stringify(vistos.concat(nuevos.map(p => p.id)))); } catch (e) {}
+                // 🔧 NUEVO: además de guardarlo en este navegador, se le avisa al
+                // servidor que a ESTE código ya se le mostró — así, aunque le
+                // borren el localStorage o entre desde otro dispositivo, no vuelve
+                // a aparecer (antes dependía 100% de este localStorage).
+                try {
+                    const _codigoNA = localStorage.getItem('codigoVendedorLocal') || localStorage.getItem('codigoRevendedorValidado') || '';
+                    if (_codigoNA) {
+                        fetch('https://preciosmayoristasrevendedores.tuweb.workers.dev/api/catalogo/agregados-vistos', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ codigo: _codigoNA, ids: nuevos.map(p => p.id) })
+                        }).catch(() => {});
+                    }
+                } catch (e) {}
                 const abierto = document.getElementById('naModal') && document.getElementById('naModal').classList.contains('active');
                 // Si ya hay un aviso abierto, los productos se suman al mismo (nunca un segundo modal).
                 mostrar(abierto ? (window.__naActual || []).concat(nuevos) : nuevos);
