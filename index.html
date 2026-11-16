@@ -11126,6 +11126,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
         function updateUIForAuthentication(isLoggedIn) {
             const ribbon = document.getElementById('topRibbon');
             const loginBtn = document.getElementById('header-auth-btn');
+            const yaCuentaBtn = document.getElementById('header-ya-cuenta-btn');
             const miTiendaBtn = document.getElementById('header-mitienda-btn');
             const cartBtn = document.getElementById('header-cart-btn');
             const footerLinks = document.getElementById('final-footer-links');
@@ -11133,6 +11134,9 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             if (isLoggedIn) {
                 ribbon.classList.add('show');
                 if (loginBtn) loginBtn.style.display = 'none';
+                // 🔧 FIX: "Ya tengo una cuenta" (al lado de "Registrarme") debe
+                // dejar de verse con la sesión iniciada, igual que loginBtn.
+                if (yaCuentaBtn) yaCuentaBtn.style.display = 'none';
                 if (miTiendaBtn) miTiendaBtn.style.display = 'flex';
                 if (cartBtn) cartBtn.style.display = 'flex';
                 // "Comprar / Contacto / Devoluciones / Más opciones de
@@ -11142,6 +11146,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             } else {
                 ribbon.classList.remove('show');
                 if (loginBtn) loginBtn.style.display = 'block';
+                if (yaCuentaBtn) yaCuentaBtn.style.display = 'block';
                 if (miTiendaBtn) miTiendaBtn.style.display = 'none';
                 if (cartBtn) cartBtn.style.display = 'none';
                 if (footerLinks) footerLinks.style.display = 'none';
