@@ -3335,6 +3335,16 @@
         }
     </style>
     <script>
+// Reemplazo compacto y prolijo del alert() nativo del navegador.
+function toastStock(msg) {
+    const toast = document.getElementById('toast-stock');
+    if (!toast) return;
+    toast.textContent = msg;
+    toast.style.display = 'block';
+    clearTimeout(window._toastStockTimer);
+    window._toastStockTimer = setTimeout(() => { toast.style.display = 'none'; }, 3500);
+}
+
         // (Se removió la supresión global de console.error: ocultaba errores reales
         // que podían estar contribuyendo a comportamientos inesperados en la app)
     </script>
@@ -3394,6 +3404,7 @@
 </script>
 </head>
 <body>
+<div id="toast-stock" style="display:none;position:fixed;bottom:28px;left:50%;transform:translateX(-50%);z-index:9999;background:var(--text);color:#fff;padding:14px 24px;border-radius:10px;font-size:14px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,.18);text-align:center;max-width:90vw;white-space:pre-line;"></div>
     <!-- HEADER TOP BAR -->
     <header class="header-top">
         <div class="header-top-inner">
@@ -3952,6 +3963,18 @@
             <p style="font-size: 15px; font-weight: 700; color: var(--text); margin: 0 0 16px;">Por favor: Selecciona una variante</p>
             <div id="variant-required-chips" class="variant-chips" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 18px;"></div>
             <button type="button" class="confirmation-button confirmation-button-primary" id="variant-required-confirm-btn" style="width: 100%; opacity: 0.5; cursor: not-allowed;" disabled onclick="confirmarVarianteYAgregar()">Agregar al carrito</button>
+        </div>
+    </div>
+
+    <!-- MODAL "Cambiar categoría del carrito" (reemplaza el confirm() nativo) -->
+    <div class="modal-overlay" id="cambiar-categoria-carrito-modal" onclick="if(event.target.id==='cambiar-categoria-carrito-modal'){window._resolverCambioCategoria(false);}">
+        <div class="modal-content" style="max-width: 360px; text-align: center;">
+            <div class="modal-header" style="justify-content: center;">
+                <h2 class="modal-title" id="cambiar-categoria-carrito-titulo">¿Vaciar el carrito?</h2>
+            </div>
+            <p id="cambiar-categoria-carrito-texto" style="font-size: 13px; line-height: 1.5; color: var(--text-light); margin: 4px 0 22px; white-space: pre-line;"></p>
+            <button type="button" class="confirmation-button confirmation-button-primary" style="width: 100%;" onclick="window._resolverCambioCategoria(true)">Sí, vaciar y agregar</button>
+            <button type="button" class="confirmation-button" style="width: 100%; margin-top: 10px; background: #f5f5f5; color: var(--text);" onclick="window._resolverCambioCategoria(false)">Cancelar</button>
         </div>
     </div>
 
@@ -7062,7 +7085,7 @@ window.productsMultishop = [
             window.selectedColorLenceria = color;
         }
 
-        function addToCartLenceria(productId) {
+        async function addToCartLenceria(productId) {
             const currentUser = firebase.auth().currentUser;
             if (!currentUser) {
                 closeDetailsShoes();
@@ -7080,7 +7103,7 @@ window.productsMultishop = [
             const talleSeleccionado = window.selectedTalleLenceria || null;
             const colorSeleccionado = window.selectedColorLenceria || null;
 
-            if (!_puedeAgregarAlCarrito('lenceria')) return;
+            if (!(await _puedeAgregarAlCarrito('lenceria'))) return;
 
             const existingItem = window.cart.find(item =>
                 getItemCatalog(item) === 'lenceria' && item.id === productId && (item.variante || null) === _agregadoVarianteSel(product) &&
@@ -7252,7 +7275,7 @@ window.productsMultishop = [
             modal.classList.add('active');
         }
 
-        function addToCartSuplementos(productId) {
+        async function addToCartSuplementos(productId) {
             const currentUser = firebase.auth().currentUser;
             if (!currentUser) {
                 closeDetailsShoes();
@@ -7267,7 +7290,7 @@ window.productsMultishop = [
 
             if (_agregadoVarianteFalta(product)) return;
 
-            if (!_puedeAgregarAlCarrito('suplementos')) return;
+            if (!(await _puedeAgregarAlCarrito('suplementos'))) return;
 
             const existingItem = window.cart.find(item =>
                 getItemCatalog(item) === 'suplementos' && item.id === productId && (item.variante || null) === _agregadoVarianteSel(product)
@@ -7435,7 +7458,7 @@ window.productsMultishop = [
             modal.classList.add('active');
         }
 
-        function addToCartBazar(productId) {
+        async function addToCartBazar(productId) {
             const currentUser = firebase.auth().currentUser;
             if (!currentUser) {
                 closeDetailsShoes();
@@ -7450,7 +7473,7 @@ window.productsMultishop = [
 
             if (_agregadoVarianteFalta(product)) return;
 
-            if (!_puedeAgregarAlCarrito('bazar')) return;
+            if (!(await _puedeAgregarAlCarrito('bazar'))) return;
 
             const existingItem = window.cart.find(item =>
                 getItemCatalog(item) === 'bazar' && item.id === productId && (item.variante || null) === _agregadoVarianteSel(product)
@@ -7614,7 +7637,7 @@ window.productsMultishop = [
             modal.classList.add('active');
         }
 
-        function addToCartLibreria(productId) {
+        async function addToCartLibreria(productId) {
             const currentUser = firebase.auth().currentUser;
             if (!currentUser) {
                 closeDetailsShoes();
@@ -7629,7 +7652,7 @@ window.productsMultishop = [
 
             if (_agregadoVarianteFalta(product)) return;
 
-            if (!_puedeAgregarAlCarrito('libreria')) return;
+            if (!(await _puedeAgregarAlCarrito('libreria'))) return;
 
             const existingItem = window.cart.find(item =>
                 getItemCatalog(item) === 'libreria' && item.id === productId && (item.variante || null) === _agregadoVarianteSel(product)
@@ -7824,7 +7847,7 @@ window.productsMultishop = [
             window.selectedVarianteMultishop = variante;
         }
 
-        function addToCartMultishop(productId) {
+        async function addToCartMultishop(productId) {
             const currentUser = firebase.auth().currentUser;
             if (!currentUser) {
                 closeDetailsShoes();
@@ -7841,7 +7864,7 @@ window.productsMultishop = [
 
             const varianteSeleccionada = (product._agregado ? window.selectedVarianteAgregado : window.selectedVarianteMultishop) || null;
 
-            if (!_puedeAgregarAlCarrito('multishop')) return;
+            if (!(await _puedeAgregarAlCarrito('multishop'))) return;
 
             const existingItem = window.cart.find(item =>
                 getItemCatalog(item) === 'multishop' && item.id === productId &&
@@ -8200,7 +8223,7 @@ window.productsMultishop = [
         function _agregadoVarianteFalta(p, sel) {
             if (!p || !p._agregado || !Array.isArray(p.variantes) || p.variantes.length === 0) return false;
             if ((arguments.length > 1 ? sel : window.selectedVarianteAgregado)) return false;
-            alert(_agregadoLineas(p).length > 1 ? 'Por favor elegí una opción de cada variante' : 'Por favor elegí una variante');
+            toastStock(_agregadoLineas(p).length > 1 ? 'Por favor elegí una opción de cada variante' : 'Por favor elegí una variante');
             return true;
         }
         function _agregadoVarianteSel(p, sel) {
@@ -8729,7 +8752,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
         async function recuperarPedidoFallido(pedidoId) {
             const user = firebase.auth().currentUser;
             if (!user) {
-                alert('Error: Debes estar autenticado');
+                toastStock('Error: Debes estar autenticado');
                 return;
             }
 
@@ -8739,13 +8762,13 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                 const result = await sincronizarPedidoConMercadoPago(pedidoId);
 
                 if (result.success) {
-                    alert(result.message);
+                    toastStock(result.message);
                 } else {
-                    alert(result.error + '\n\nContacta a soporte si el problema persiste');
+                    toastStock(result.error + '\n\nContacta a soporte si el problema persiste');
                 }
             } catch (error) {
                 console.error('Error en recuperación:', error);
-                alert('Error al recuperar pedido: ' + error.message);
+                toastStock('Error al recuperar pedido: ' + error.message);
             }
         }
 
@@ -8767,7 +8790,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             libreria: 'Librería',
             multishop: 'Multishop'
         };
-        function _puedeAgregarAlCarrito(nuevaCategoria) {
+        async function _puedeAgregarAlCarrito(nuevaCategoria) {
             if (!window.cart || window.cart.length === 0) return true;
 
             const categoriaActual = getItemCatalog(window.cart[0]);
@@ -8776,10 +8799,10 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             const nombreActual = CATALOGO_NOMBRES[categoriaActual] || categoriaActual;
             const nombreNueva = CATALOGO_NOMBRES[nuevaCategoria] || nuevaCategoria;
 
-            const confirmado = confirm(
-                `Tu carrito ya tiene productos de "${nombreActual}".\n\n` +
+            const confirmado = await window.pedirConfirmacionCambioCategoria(
                 `El carrito de stock solo puede tener productos de una sola categoría a la vez.\n\n` +
-                `¿Querés vaciar el carrito para agregar este producto de "${nombreNueva}"?`
+                `¿Querés vaciar el carrito para agregar este producto de "${nombreNueva}"?`,
+                `Tu carrito ya tiene productos de "${nombreActual}"`
             );
 
             if (!confirmado) return false;
@@ -8872,7 +8895,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
         }
 
         // Agregar zapatilla al carrito (con validación de talle)
-        function addToCart(productId) {
+        async function addToCart(productId) {
             const currentUser = firebase.auth().currentUser;
             if (!currentUser) {
                 closeDetailsShoes();
@@ -8886,13 +8909,13 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             if (!product) return;
 
             if (!window.selectedTalle) {
-                alert('Por favor selecciona un talle');
+                toastStock('Por favor selecciona un talle');
                 return;
             }
 
             if (_agregadoVarianteFalta(product)) return;
 
-            if (!_puedeAgregarAlCarrito('calzados')) return;
+            if (!(await _puedeAgregarAlCarrito('calzados'))) return;
 
             const existingItem = window.cart.find(item =>
                 getItemCatalog(item) === 'calzados' && item.id === productId && item.talle === window.selectedTalle && (item.variante || null) === _agregadoVarianteSel(product)
@@ -8971,7 +8994,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             addToCartFromModal();
         }
 
-        function addToCartFromModal() {
+        async function addToCartFromModal() {
             // Validar que hay sesión activa
             const currentUser = firebase.auth().currentUser;
             if (!currentUser) {
@@ -8986,12 +9009,12 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                 if (!item) return;
 
                 if (Array.isArray(item.variantes) && item.variantes.length > 0 && !window.selectedVariante) {
-                    if (_agregadoLineas(item).length > 0) { alert('Por favor elegí una opción de cada variante'); return; }
+                    if (_agregadoLineas(item).length > 0) { toastStock('Por favor elegí una opción de cada variante'); return; }
                     mostrarModalVarianteRequerida(item);
                     return;
                 }
 
-                if (!_puedeAgregarAlCarrito('belleza')) return;
+                if (!(await _puedeAgregarAlCarrito('belleza'))) return;
 
                 const variante = window.selectedVariante || null;
                 const existingItem = window.cart.find(cartItem =>
@@ -9020,17 +9043,17 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             window.currentCatalog = 'perfumes';
             const productToAdd = (window.currentProductCatalog === 'perfumes' && window.currentProduct) ? window.currentProduct : currentProduct;
             if (!productToAdd || !window.products.some(p => p.id === productToAdd.id)) {
-                alert('No se pudo agregar el perfume seleccionado. Volvé a elegirlo.');
+                toastStock('No se pudo agregar el perfume seleccionado. Volvé a elegirlo.');
                 return;
             }
 
             if (productToAdd._agregado && Array.isArray(productToAdd.variantes) && productToAdd.variantes.length > 0 && !window.selectedVariante) {
-                if (_agregadoLineas(productToAdd).length > 0) { alert('Por favor elegí una opción de cada variante'); return; }
+                if (_agregadoLineas(productToAdd).length > 0) { toastStock('Por favor elegí una opción de cada variante'); return; }
                 mostrarModalVarianteRequerida(productToAdd);
                 return;
             }
 
-            if (!_puedeAgregarAlCarrito('perfumes')) return;
+            if (!(await _puedeAgregarAlCarrito('perfumes'))) return;
 
             const varianteAgregado = (productToAdd._agregado && Array.isArray(productToAdd.variantes) && productToAdd.variantes.length > 0) ? (window.selectedVariante || null) : null;
             const existingItem = window.cart.find(item => getItemCatalog(item) === 'perfumes' && item.id === productToAdd.id && (item.variante || null) === varianteAgregado);
@@ -9679,7 +9702,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
 
             } catch (error) {
                 console.error('❌ [CHECKOUT] ERROR FINAL:', error.message, error);
-                alert('Error: ' + error.message);
+                toastStock('Error: ' + error.message);
             } finally {
                 if (payButton) {
                     payButton.disabled = false;
@@ -9717,7 +9740,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                 clearCartFromFirebase();
                 
                 // Mostrar confirmación
-                alert('¡Gracias por tu pedido! Nos pondremos en contacto pronto.');
+                toastStock('¡Gracias por tu pedido! Nos pondremos en contacto pronto.');
                 
                 // Limpiar URL
                 window.history.replaceState({}, document.title, window.location.pathname);
@@ -10075,6 +10098,24 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             preventBodyScroll(false);
         }
 
+        // Modal de confirmación profesional para "cambiar la categoría del
+        // carrito" (reemplaza el confirm() nativo del navegador).
+        let _resolverCC = null;
+        window.pedirConfirmacionCambioCategoria = function(texto, titulo) {
+            return new Promise((resolve) => {
+                _resolverCC = resolve;
+                const p = document.getElementById('cambiar-categoria-carrito-texto');
+                if (p) p.textContent = texto;
+                const t = document.getElementById('cambiar-categoria-carrito-titulo');
+                if (t) t.textContent = titulo || '¿Vaciar el carrito?';
+                document.getElementById('cambiar-categoria-carrito-modal').classList.add('active');
+            });
+        };
+        window._resolverCambioCategoria = function(val) {
+            document.getElementById('cambiar-categoria-carrito-modal').classList.remove('active');
+            if (_resolverCC) { const r = _resolverCC; _resolverCC = null; r(val); }
+        };
+
         function confirmarRecordarSesion(recordar) {
             try {
                 if (recordar) {
@@ -10145,8 +10186,8 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             const user = firebase.auth().currentUser;
             if (!user) return;
             user.sendEmailVerification()
-                .then(() => alert('Te reenviamos el correo de verificación. Revisá tu bandeja de entrada (y spam).'))
-                .catch(() => alert('No pudimos reenviar el correo. Intentá de nuevo en unos minutos.'));
+                .then(() => toastStock('Te reenviamos el correo de verificación. Revisá tu bandeja de entrada (y spam).'))
+                .catch(() => toastStock('No pudimos reenviar el correo. Intentá de nuevo en unos minutos.'));
         }
 
         // ── MODAL "COMPLETÁ TUS DATOS" (fecha nacimiento + contraseña de seguridad, altas con Google) ──
@@ -10187,8 +10228,8 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             const errorEl = document.getElementById('datos-password-seguridad-error');
             if (errorEl) errorEl.style.display = 'none';
 
-            if (!dia || !mes || !anio) { alert('Completá tu fecha de nacimiento.'); return; }
-            if (password.length < 6) { alert('La contraseña de seguridad debe tener al menos 6 caracteres.'); return; }
+            if (!dia || !mes || !anio) { toastStock('Completá tu fecha de nacimiento.'); return; }
+            if (password.length < 6) { toastStock('La contraseña de seguridad debe tener al menos 6 caracteres.'); return; }
 
             const fechaNacimiento = `${anio}-${mes}-${dia}`;
             const user = firebase.auth().currentUser;
@@ -10226,7 +10267,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             } catch (e) {}
 
             if (!guardadoOk) {
-                alert('No pudimos guardar tu contraseña de seguridad. Revisá tu conexión y tocá "Aceptar" de nuevo.');
+                toastStock('No pudimos guardar tu contraseña de seguridad. Revisá tu conexión y tocá "Aceptar" de nuevo.');
                 return;
             }
 
@@ -10260,7 +10301,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             const password = document.getElementById('password-seguridad-manual-input')?.value || '';
             const errorEl = document.getElementById('password-seguridad-manual-error');
             if (errorEl) errorEl.style.display = 'none';
-            if (password.length < 6) { alert('La contraseña de seguridad debe tener al menos 6 caracteres.'); return; }
+            if (password.length < 6) { toastStock('La contraseña de seguridad debe tener al menos 6 caracteres.'); return; }
 
             const user = firebase.auth().currentUser;
             if (!user) return;
@@ -10298,7 +10339,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             }
 
             if (!guardadoOk) {
-                alert('No pudimos guardar tu contraseña de seguridad. Revisá tu conexión y tocá "Aceptar" de nuevo.');
+                toastStock('No pudimos guardar tu contraseña de seguridad. Revisá tu conexión y tocá "Aceptar" de nuevo.');
                 return;
             }
 
@@ -10396,7 +10437,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
 
         async function loginWithGoogle(intent) {
             if (esNavegadorInApp()) {
-                alert('Para iniciar sesión con Google necesitás abrir esta página en tu navegador (Chrome, Safari, etc.), no dentro de esta app.\n\nTocá los ⋮ o ••• (los 3 puntitos) arriba a la derecha y elegí "Abrir en el navegador".');
+                toastStock('Para iniciar sesión con Google necesitás abrir esta página en tu navegador (Chrome, Safari, etc.), no dentro de esta app.\n\nTocá los ⋮ o ••• (los 3 puntitos) arriba a la derecha y elegí "Abrir en el navegador".');
                 return;
             }
             try {
@@ -10459,14 +10500,14 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                         provider.addScope('profile');
                         await firebase.auth().signInWithRedirect(provider);
                     } catch(e) {
-                        alert('Tu navegador bloqueó la ventana de Google. Habilitá los pop-ups para este sitio e intentá de nuevo.');
+                        toastStock('Tu navegador bloqueó la ventana de Google. Habilitá los pop-ups para este sitio e intentá de nuevo.');
                     }
                 } else if (error.code === 'auth/unauthorized-domain') {
-                    alert('Este dominio no está autorizado en Firebase. Agregalo en Firebase Console → Authentication → Authorized domains.');
+                    toastStock('Este dominio no está autorizado en Firebase. Agregalo en Firebase Console → Authentication → Authorized domains.');
                 } else if (error.code === 'auth/operation-not-allowed') {
-                    alert('El inicio de sesión con Google no está habilitado en Firebase. Activalo en Firebase Console → Authentication → Sign-in methods.');
+                    toastStock('El inicio de sesión con Google no está habilitado en Firebase. Activalo en Firebase Console → Authentication → Sign-in methods.');
                 } else {
-                    alert('Error al iniciar sesión con Google: ' + (error.message || error.code));
+                    toastStock('Error al iniciar sesión con Google: ' + (error.message || error.code));
                 }
             }
         }
@@ -10550,7 +10591,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             // Verificación de seguridad (Cloudflare Turnstile) del registro
             const turnstileRegistro = (typeof turnstile !== 'undefined') ? turnstile.getResponse('#turnstile-register') : '';
             if (!turnstileRegistro) {
-                alert('Por favor, completa la verificación de seguridad');
+                toastStock('Por favor, completa la verificación de seguridad');
                 return;
             }
 
@@ -10692,7 +10733,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             // Verificación de seguridad (Cloudflare Turnstile) del login
             const turnstileLogin = (typeof turnstile !== 'undefined') ? turnstile.getResponse('#turnstile-login-vis') : '';
             if (!turnstileLogin) {
-                alert('Por favor, completa la verificación de seguridad');
+                toastStock('Por favor, completa la verificación de seguridad');
                 return;
             }
             
@@ -10849,7 +10890,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
         function copyCodigoVendedor() {
             let codigo = window.currentUser?.codigoVendedor || '';
             if (!codigo) { codigo = localStorage.getItem('codigoVendedorLocal') || ''; }
-            if (!codigo || codigo.trim() === '') { alert('Tu código de revendedor aún no está disponible. Por favor intenta más tarde.'); return; }
+            if (!codigo || codigo.trim() === '') { toastStock('Tu código de revendedor aún no está disponible. Por favor intenta más tarde.'); return; }
             
             navigator.clipboard.writeText(codigo).then(() => {
                 // Feedback en modal de perfil
@@ -10862,7 +10903,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
                 const regBtn = event && event.target ? event.target.closest('button') : null;
                 if (regFeedback) { regFeedback.classList.add('show'); setTimeout(() => { regFeedback.classList.remove('show'); }, 2500); }
                 if (regBtn && regBtn.classList) { regBtn.classList.add('copied'); setTimeout(() => { regBtn.classList.remove('copied'); }, 2500); }
-            }).catch(() => { alert('No se pudo copiar el código. Intenta de nuevo.'); });
+            }).catch(() => { toastStock('No se pudo copiar el código. Intenta de nuevo.'); });
         }
         
         function closeEmailConfirmationModal(e) {
@@ -12306,7 +12347,7 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             
             // Si NO está logueado, abrir login
             if (!firebase.auth().currentUser) {
-                alert('Debes iniciar sesión primero para acceder al catálogo de revendedor.');
+                toastStock('Debes iniciar sesión primero para acceder al catálogo de revendedor.');
                 abrirLogin();
                 return;
             }
@@ -12866,7 +12907,7 @@ async function validarCodigoRevendedor() {
                 window.open('https://8cc1455f.sibforms.com/serve/MUIFAOe2caIUk_JszJEAGAXuWMAooq9jBLGOvdN8R2ecTP9XnIzhvmcJIr6sHXcB-ap4DPs38CfVHsbJyu1Nc6djziTbM7FfS-bGHzYXXhYj1V_wcohxKLoFy4sbfPH_xNmDgwVR4xVaaf4dyK_QlVjLzdj4E012J39XFQGdXYOvmNEzae4U9jt0_pRuCZHcElDfRt6XW7T4QwrXbA==', '_blank');
             } else {
                 // Usuario no logueado: ir a registro
-                alert('Redirigiendo a formulario de registro... próximamente');
+                toastStock('Redirigiendo a formulario de registro... próximamente');
             }
         }
 
