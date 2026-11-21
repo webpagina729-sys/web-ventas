@@ -11263,8 +11263,28 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
             ].forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
         }
 
+        // 🆕 Avisa a datosderevendedor.tuweb.workers.dev que esta sesión se
+        // cerró, para que mitienda.revendeways.shop (index.html y las
+        // demás — otro dominio, con su propia sesión aislada) también se
+        // cierre la próxima vez que cargue. Se pide el token ANTES de
+        // signOut() (una vez cerrada la sesión local ya no hay token para
+        // pedir). Si esto falla por lo que sea, no afecta el cierre de
+        // sesión local de acá.
+        async function _avisarCierreSesionCompartido() {
+            try {
+                const u = firebase.auth().currentUser;
+                if (!u) return;
+                const idToken = await u.getIdToken();
+                await fetch('https://datosderevendedor.tuweb.workers.dev/api/cerrar-sesion', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + idToken },
+                });
+            } catch (e) { console.warn('No se pudo avisar el cierre de sesión compartido:', e); }
+        }
+
         async function logoutUser() {
             try {
+                await _avisarCierreSesionCompartido();
                 await firebase.auth().signOut();
                 _limpiarSesionLocalStock();
                 // Cerrar cinta superior y recargar página
@@ -12069,6 +12089,24 @@ async function savePedidoToFirestore(checkout, cartItems, totales) {
 
                             // Intentar cargar datos de Firestore CON REINTENTOS
                             const userData = await loadUserDataFromFirestoreWithRetry(user.uid);
+
+                            // 🆕 Cierre de sesión cruzado entre dominios: si la
+                            // sesión se cerró (desde esta misma página o desde
+                            // mitienda.revendeways.shop) DESPUÉS de que este
+                            // navegador inició esta sesión, se cierra acá
+                            // también en vez de reconstruirla como si
+                            // siguiera activa.
+                            try {
+                                if (userData && userData.sesionCerradaEn && user.metadata && user.metadata.lastSignInTime) {
+                                    const inicioSesion = new Date(user.metadata.lastSignInTime).getTime();
+                                    if (userData.sesionCerradaEn > inicioSesion) {
+                                        await firebase.auth().signOut().catch(() => {});
+                                        _limpiarSesionLocalStock();
+                                        window.location.reload();
+                                        return;
+                                    }
+                                }
+                            } catch (e) { console.warn('Chequeo de cierre de sesión cruzado falló:', e); }
 
                             // Inicializar sesión con datos de Firestore o datos mínimos
                             initializeUserSession(userData, user);
